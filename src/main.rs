@@ -1,52 +1,13 @@
-use actix_web::{
-    get,
-    web::{self, Data},
-    App, HttpResponse, HttpServer, Responder, ResponseError,
-};
-use serde::Serialize;
-use sqlx::{postgres::PgPoolOptions, query_as, types::Uuid, PgPool};
-use std::fmt::Display;
+mod app;
+mod routes;
+mod models;
+mod error;
+mod traits;
+
+use actix_web::{HttpServer, App, web, middleware::{TrailingSlash, NormalizePath}};
+use sqlx::postgres::PgPoolOptions;
+use app::AppState;
 use thiserror::Error;
-
-use dotenvy;
-
-#[derive(Serialize)]
-struct User {
-    username: String,
-    password: String,
-    name: String,
-    email: Option<String>,
-    id: Uuid,
-}
-
-#[derive(Debug)]
-struct AppError;
-impl Display for AppError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("NOOOOOOOOOOOOOOOOO")
-    }
-}
-impl ResponseError for AppError {}
-
-#[get("/hello")]
-async fn hello() -> impl Responder {
-    "world"
-}
-
-#[get("/users")]
-async fn get_all(app: Data<AppState>) -> actix_web::Result<impl Responder> {
-    let users: Vec<_> = query_as!(User, "SELECT * FROM users")
-        .fetch_all(&app.pool)
-        .await
-        .map_err(|_| AppError)?;
-
-    Ok(web::Json(users))
-}
-
-#[derive(Clone)]
-struct AppState {
-    pool: PgPool,
-}
 
 #[derive(Debug, Error)]
 enum InitError {
@@ -72,8 +33,8 @@ async fn main() -> Result<(), InitError> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
-            .service(hello)
-            .service(get_all)
+            .configure(routes::router)
+            .wrap(NormalizePath::new(TrailingSlash::Always))
     })
     .bind(("127.0.0.1", 8080))?
     .run()
