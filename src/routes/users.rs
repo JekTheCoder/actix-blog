@@ -34,6 +34,10 @@ async fn post_one(app: AppData, req: web::Json<CreateReq>) -> impl Responder {
         name,
         email,
     } = req.0;
+    let password = match bcrypt::hash(&password, bcrypt::DEFAULT_COST) {
+        Ok(p) => p,
+        Err(_) => return HttpResponse::BadRequest().finish(),
+    };
 
     query!(
         "INSERT INTO users(username, password, name, email) VALUES($1, $2, $3, $4)",
