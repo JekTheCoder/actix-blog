@@ -1,7 +1,7 @@
 use crate::{
     app::AppData,
     error::http::internal::InternalError,
-    models::user::{CreateReq, User},
+    models::user::{CreateReq, User, self},
     traits::into_http::IntoHttp,
 };
 use actix_web::{
@@ -51,6 +51,21 @@ async fn post_one(app: AppData, req: web::Json<CreateReq>) -> impl Responder {
     .into_http()
 }
 
+#[get("/{id}/")]
+async fn get_one(app: AppData, id: web::Path<uuid::Uuid>) -> impl Responder {
+    let id = id.into_inner();
+    query_as!(user::Response, "SELECT username, name, id FROM users WHERE id = $1", id)
+    .fetch_one(&app.pool)
+    .await
+    .ok()
+    .into_http()
+}
+
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(web::scope("/users").service(get_all).service(post_one));
+    cfg.service(
+        web::scope("/users")
+        .service(get_all)
+        .service(post_one)
+        .service(get_one)
+    );
 }

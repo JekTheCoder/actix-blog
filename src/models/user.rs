@@ -22,3 +22,10 @@ pub struct CreateReq {
     #[validate(email(message="email not valid"))]
     pub email: Option<String>,
 }
+
+#[derive(Debug, Serialize)]
+pub struct Response {
+    pub username: String,
+    pub name: String,
+    pub id: Uuid,
+}
