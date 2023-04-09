@@ -1,17 +1,21 @@
 use actix_web::{
     post,
-    web::{self, scope, Data, Json, ServiceConfig},
+    web::{scope, Data, Json, ServiceConfig},
     HttpResponse, Responder, ResponseError,
 };
-use serde::{Deserialize, Serialize};
-use sqlx::{query, query_as};
+use serde::Deserialize;
+use sqlx::query_as;
 use validator::Validate;
 
 use crate::{
     app::AppData,
-    models::user::{self, CreateReq, User},
-    services::auth::{AuthEncoder, JwtEncodeError},
-    traits::into_http::IntoHttp,
+    error::http::{code::HttpCode, json::JsonResponse},
+    models::{
+        insert_return::IdReturn,
+        login::LoginResponse,
+        user::{self, CreateReq},
+    },
+    services::auth::AuthEncoder,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -28,29 +32,6 @@ impl ResponseError for LoginInvalid {
     fn status_code(&self) -> actix_web::http::StatusCode {
         actix_web::http::StatusCode::BAD_REQUEST
     }
-}
-
-#[derive(Serialize)]
-struct LoginResponse {
-    user: user::Response,
-    token: String,
-    refresh_token: String,
-}
-
-#[derive(Serialize)]
-struct Tokens {
-    token: String,
-    refresh_token: String,
-}
-
-fn authorize(encoder: &AuthEncoder, id: uuid::Uuid) -> Result<Tokens, JwtEncodeError> {
-    let auth_token = encoder.auth(id)?;
-    let refresh_token = encoder.refresh(id)?;
-
-    Ok(Tokens {
-        token: auth_token,
-        refresh_token,
-    })
 }
 
 #[post("/login/")]
@@ -70,9 +51,16 @@ async fn login(
     .await
     .map_err(|_| LoginInvalid)?;
 
-    match bcrypt::verify(password, &found.password) {
-        Ok(true) => {
-            let tokens = authorize(encoder.as_ref(), found.id).map_err(|_| LoginInvalid)?;
+    let verified =
+        bcrypt::verify(password, &found.password).map_err(|_| HttpCode::internal_error())?;
+
+    match verified {
+        false => Err(LoginInvalid.into()),
+        true => {
+            let tokens = encoder
+                .generate_tokens(found.id)
+                .map_err(|_| HttpCode::internal_error())?;
+
             let response = LoginResponse {
                 user: found.into(),
                 refresh_token: tokens.refresh_token,
@@ -81,12 +69,7 @@ async fn login(
 
             Ok(HttpResponse::Ok().json(response))
         }
-        _ => Err(actix_web::error::Error::from(LoginInvalid)),
     }
-}
-
-struct InsertReturn {
-    id: uuid::Uuid,
 }
 
 #[post("/register/")]
@@ -94,10 +77,9 @@ async fn register(
     app: AppData,
     encoder: Data<AuthEncoder>,
     req: Json<CreateReq>,
-) -> impl Responder {
-    if let Err(validate) = req.validate() {
-        return HttpResponse::BadRequest().json(validate);
-    };
+) -> actix_web::Result<impl Responder> {
+    req.validate()
+        .map_err(|reason| JsonResponse::body(reason))?;
 
     let CreateReq {
         username,
@@ -105,13 +87,12 @@ async fn register(
         name,
         email,
     } = req.0;
-    let password = match bcrypt::hash(&password, bcrypt::DEFAULT_COST) {
-        Ok(p) => p,
-        Err(_) => return HttpResponse::BadRequest().finish(),
-    };
+
+    let password =
+        bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| HttpCode::internal_error())?;
 
     let id = query_as!(
-        InsertReturn,
+        IdReturn,
         "INSERT INTO users(username, password, name, email) VALUES($1, $2, $3, $4) RETURNING id",
         username,
         password,
@@ -119,21 +100,19 @@ async fn register(
         email
     )
     .fetch_one(&app.pool)
-    .await;
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::Database(_) => HttpCode::conflict(),
+        _ => HttpCode::internal_error(),
+    })?
+    .id;
 
-    let id = match id {
-        Ok(id) => id.id,
-        Err(sqlx::Error::Database(_)) => return HttpResponse::Conflict().finish(),
-        Err(_) => return HttpResponse::InternalServerError().finish(),
-    };
+    let user_res = user::Response { id, name, username };
+    let tokens = encoder
+        .generate_tokens(id)
+        .map_err(|_| HttpCode::internal_error())?;
 
-    let user = user::Response { name, username, id };
-    let tokens = authorize(encoder.as_ref(), id).unwrap();
-    HttpResponse::Created().json(LoginResponse {
-        user,
-        token: tokens.token,
-        refresh_token: tokens.refresh_token,
-    })
+    Ok(HttpResponse::Created().json(LoginResponse::new(user_res, tokens)))
 }
 
 pub fn router(cfg: &mut ServiceConfig) {

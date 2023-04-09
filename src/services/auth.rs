@@ -2,6 +2,8 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
+use crate::models::tokens::Tokens;
+
 #[derive(thiserror::Error, Debug)]
 #[error("Jwt encode error")]
 pub struct JwtEncodeError;
@@ -44,6 +46,19 @@ impl AuthEncoder {
 
     pub fn refresh(&self, id: uuid::Uuid) -> Result<String, JwtEncodeError> {
         self.encode(Duration::weeks(60), id)
+    }
+
+    pub fn generate_tokens(
+        &self,
+        id: uuid::Uuid,
+    ) -> Result<Tokens, JwtEncodeError> {
+        let auth_token = self.auth(id)?;
+        let refresh_token = self.refresh(id)?;
+
+        Ok(Tokens {
+            token: auth_token,
+            refresh_token,
+        })
     }
 }
 
