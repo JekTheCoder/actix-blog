@@ -3,6 +3,7 @@ mod routes;
 mod models;
 mod error;
 mod traits;
+mod services;
 
 use actix_web::{HttpServer, App, web, middleware::{TrailingSlash, NormalizePath}};
 use sqlx::postgres::PgPoolOptions;
@@ -29,10 +30,12 @@ async fn main() -> Result<(), InitError> {
         .await
         .expect("Pg pool not conected");
     let app_state = AppState { pool };
+    let encoder = crate::services::encoder::Encoder::default();
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
+            .app_data(web::Data::new(encoder.clone()))
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always))
     })
