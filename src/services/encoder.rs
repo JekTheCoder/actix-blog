@@ -13,7 +13,7 @@ impl Default for Encoder {
         let secret = dotenvy::var("JWT_SECRET").expect("JWT SECRET not found");
         let header = Header::default();
 
-        let key = EncodingKey::from_base64_secret(&secret).expect("Creating encoding key failed");
+        let key = EncodingKey::from_secret(secret.as_bytes());
         Self { key, header }
     }
 }

@@ -1,6 +1,6 @@
-use validator::Validate;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
 #[derive(Serialize)]
 pub struct User {
@@ -13,13 +13,13 @@ pub struct User {
 
 #[derive(Deserialize, Validate)]
 pub struct CreateReq {
-    #[validate(length(min=1))]
+    #[validate(length(min = 1))]
     pub username: String,
-    #[validate(length(min=1))]
+    #[validate(length(min = 1))]
     pub password: String,
-    #[validate(length(min=1))]
+    #[validate(length(min = 1))]
     pub name: String,
-    #[validate(email(message="email not valid"))]
+    #[validate(email(message = "email not valid"))]
     pub email: Option<String>,
 }
 
@@ -28,4 +28,14 @@ pub struct Response {
     pub username: String,
     pub name: String,
     pub id: Uuid,
+}
+
+impl From<User> for Response {
+    fn from(value: User) -> Self {
+        Self {
+            username: value.username,
+            name: value.name,
+            id: value.id,
+        }
+    }
 }

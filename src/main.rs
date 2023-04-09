@@ -30,12 +30,14 @@ async fn main() -> Result<(), InitError> {
         .await
         .expect("Pg pool not conected");
     let app_state = AppState { pool };
-    let encoder = crate::services::encoder::Encoder::default();
+    let encoder = crate::services::auth::AuthEncoder::default();
+    let decoder = crate::services::auth::AuthDecoder::default();
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(app_state.clone()))
             .app_data(web::Data::new(encoder.clone()))
+            .app_data(web::Data::new(decoder.clone()))
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always))
     })
