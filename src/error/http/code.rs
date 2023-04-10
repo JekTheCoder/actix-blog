@@ -30,4 +30,8 @@ impl HttpCode {
     pub fn conflict() -> Self {
         Self(StatusCode::CONFLICT)
     }
+
+    pub fn unauthorized() -> Self {
+        Self(StatusCode::UNAUTHORIZED)
+    }
 }

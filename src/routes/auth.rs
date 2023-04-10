@@ -1,7 +1,7 @@
 use actix_web::{
-    post,
+    get, post,
     web::{scope, Data, Json, ServiceConfig},
-    HttpResponse, Responder, ResponseError,
+    HttpRequest, HttpResponse, Responder, ResponseError,
 };
 use serde::Deserialize;
 use sqlx::query_as;
@@ -15,7 +15,8 @@ use crate::{
         login::LoginResponse,
         user::{self, CreateReq},
     },
-    services::auth::encoder::AuthEncoder,
+    services::auth::{encoder::AuthEncoder, RefreshDecoder},
+    utils::http::bearer,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -115,6 +116,29 @@ async fn register(
     Ok(HttpResponse::Created().json(LoginResponse::new(user_res, tokens)))
 }
 
+#[get("/refresh/")]
+async fn refresh(
+    req: HttpRequest,
+    decoder: Data<RefreshDecoder>,
+    encoder: Data<AuthEncoder>,
+) -> actix_web::Result<impl Responder> {
+    let refresh_token = bearer(&req).ok_or_else(|| HttpCode::unauthorized())?;
+    let id = decoder
+        .decode(refresh_token)
+        .map_err(|_| HttpCode::unauthorized())?;
+
+    let tokens = encoder
+        .generate_tokens(id)
+        .map_err(|_| HttpCode::internal_error())?;
+
+    Ok(HttpResponse::Ok().json(tokens))
+}
+
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("/auth").service(login).service(register));
+    cfg.service(
+        scope("/auth")
+            .service(login)
+            .service(register)
+            .service(refresh),
+    );
 }
