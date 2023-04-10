@@ -5,6 +5,7 @@ mod routes;
 mod services;
 mod traits;
 mod utils; 
+mod extractors;
 
 use actix_web::{
     middleware::{NormalizePath, TrailingSlash},

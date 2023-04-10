@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct User {
     pub username: String,
     pub password: String,
