@@ -1,7 +1,11 @@
-use crate::{app::AppData, traits::into_http::IntoHttp};
-use actix_web::{get, web::{ServiceConfig, Path, scope}, Responder};
-use sqlx::query_as;
 use crate::models::user;
+use crate::{app::AppData, traits::into_http::IntoHttp};
+use actix_web::{
+    get,
+    web::{scope, Path, ServiceConfig},
+    Responder,
+};
+use sqlx::query_as;
 
 #[get("/{id}/")]
 async fn get_one(app: AppData, id: Path<uuid::Uuid>) -> impl Responder {

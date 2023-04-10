@@ -15,7 +15,7 @@ use crate::{
         login::LoginResponse,
         user::{self, CreateReq},
     },
-    services::auth::AuthEncoder,
+    services::auth::encoder::AuthEncoder,
 };
 
 #[derive(Clone, Debug, Deserialize)]

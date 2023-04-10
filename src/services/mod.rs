@@ -1,2 +1,1 @@
-pub mod encoder;
-pub mod auth; 
+pub mod auth;
