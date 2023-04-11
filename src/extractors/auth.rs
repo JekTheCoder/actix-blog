@@ -7,7 +7,7 @@ use crate::{
     services::auth::AuthDecoder,
     utils::{future::Future, http::bearer},
 };
-use actix_web::{error::ErrorUnauthorized, FromRequest, web::Data};
+use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 use sqlx::query_as;
 
 #[derive(Debug)]
@@ -26,7 +26,9 @@ impl FromRequest for AuthUser {
             None => return Box::pin(ready(Err(ErrorUnauthorized("")))),
         };
 
-        let decoder = req.app_data::<Data<AuthDecoder>>().expect("Decoder not found");
+        let decoder = req
+            .app_data::<Data<AuthDecoder>>()
+            .expect("Decoder not found");
         let id = match decoder.decode(token) {
             Ok(decoded) => decoded,
             _ => return Box::pin(ready(Err(ErrorUnauthorized("")))),
@@ -38,10 +40,10 @@ impl FromRequest for AuthUser {
             .clone();
 
         Box::pin(async move {
-            let user = query_as!(User, "SELECT * FROM users WHERE id = $1", id)
-                .fetch_one(&app.pool)
+            let user = User::complete_by_id(&app.pool, id)
                 .await
                 .map_err(|_| ErrorUnauthorized(""))?;
+
             Ok(AuthUser { user })
         })
     }

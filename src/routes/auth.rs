@@ -13,9 +13,11 @@ use crate::{
     models::{
         insert_return::IdReturn,
         login::LoginResponse,
-        user::{self, CreateReq},
+        user::{self, CreateReq, User},
     },
     services::auth::{encoder::AuthEncoder, RefreshDecoder},
+    traits::catch_http::CatchHttp,
+    utils::http::bearer,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -42,14 +44,9 @@ async fn login(
 ) -> actix_web::Result<impl Responder> {
     let LoginReq { username, password } = req.0;
 
-    let found = query_as!(
-        user::User,
-        "SELECT * FROM users WHERE username = $1",
-        username
-    )
-    .fetch_one(&app.pool)
-    .await
-    .map_err(|_| LoginInvalid)?;
+    let found = User::by_username(&app.pool, &username)
+        .await
+        .map_err(|_| LoginInvalid)?;
 
     let verified =
         bcrypt::verify(password, &found.password).map_err(|_| HttpCode::internal_error())?;
@@ -81,33 +78,14 @@ async fn register(
     req.validate()
         .map_err(|reason| JsonResponse::body(reason))?;
 
-    let CreateReq {
-        username,
-        password,
-        name,
-        email,
-    } = req.0;
+    let id = User::create(&app.pool, &req.0).await.catch_http()?;
+    let inner = req.into_inner();
 
-    let password =
-        bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| HttpCode::internal_error())?;
-
-    let id = query_as!(
-        IdReturn,
-        "INSERT INTO users(username, password, name, email) VALUES($1, $2, $3, $4) RETURNING id",
-        username,
-        password,
-        name,
-        email
-    )
-    .fetch_one(&app.pool)
-    .await
-    .map_err(|e| match e {
-        sqlx::Error::Database(_) => HttpCode::conflict(),
-        _ => HttpCode::internal_error(),
-    })?
-    .id;
-
-    let user_res = user::Response { id, name, username };
+    let user_res = user::Response {
+        id,
+        name: inner.name,
+        username: inner.username,
+    };
     let tokens = encoder
         .generate_tokens(id)
         .map_err(|_| HttpCode::internal_error())?;
