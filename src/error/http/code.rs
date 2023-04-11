@@ -1,8 +1,6 @@
 use actix_web::{http::StatusCode, HttpResponse, Responder, ResponseError};
 use thiserror::Error;
 
-use crate::error::insert::InsertError;
-
 #[derive(Debug, Error)]
 #[error("response {0}")]
 pub struct HttpCode(StatusCode);

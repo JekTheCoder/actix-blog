@@ -1,12 +1,10 @@
 use std::future::Future;
 
-use crate::{error::insert::InsertError, models::insert_return::IdReturn};
+use crate::{error::insert::InsertError, models::insert_return::IdReturn, db::Pool};
 use serde::{Deserialize, Serialize};
 use sqlx::query_as;
 use uuid::Uuid;
 use validator::Validate;
-
-use crate::app::Pool;
 
 #[derive(Serialize, Debug)]
 pub struct User {

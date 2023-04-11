@@ -5,7 +5,7 @@ use sqlx::{query, query_as};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::app::{Pool, QueryResult};
+use crate::db::{Pool, QueryResult};
 
 pub struct Blog {
     pub id: Uuid,

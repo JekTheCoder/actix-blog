@@ -1,17 +1,21 @@
 use actix_web::{
     post,
-    web::{scope, Json, ServiceConfig},
+    web::{scope, Data, Json, ServiceConfig},
     Responder,
 };
-use sqlx::query_as;
 use validator::Validate;
 
-use crate::{error::http::json::JsonResponse, extractors::auth::AuthUser, models::blog::CreateReq};
+use crate::{db::Pool, models::blog::Blog, traits::catch_http::CatchHttp};
+use crate::{extractors::auth::AuthUser, models::blog::CreateReq};
 
 #[post("/")]
-async fn create_one(req: Json<CreateReq>, user: AuthUser) -> actix_web::Result<impl Responder> {
-    req.validate().map_err(|json| JsonResponse::body(json))?;
-    
+async fn create_one(
+    pool: Data<Pool>,
+    req: Json<CreateReq>,
+    user: AuthUser,
+) -> actix_web::Result<impl Responder> {
+    req.validate().catch_http()?;
+    let blog = Blog::create(pool.get_ref(), &req, user.into_inner().id);
 
     Ok("")
 }

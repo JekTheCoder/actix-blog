@@ -1,6 +1,6 @@
 use actix_web::ResponseError;
 
-use crate::error::{http::code::HttpCode, insert::InsertError};
+use crate::error::{http::{code::HttpCode, json::JsonResponse}, insert::InsertError};
 
 pub trait CatchHttp<T, E> {
     type E;
@@ -32,5 +32,13 @@ impl IntoHttpErr for InsertError {
             InsertError::NoInsert => HttpCode::conflict(),
             InsertError::Unknown => HttpCode::internal_error(),
         }
+    }
+}
+
+impl IntoHttpErr for validator::ValidationErrors {
+    type Err = JsonResponse<Self>;
+
+    fn http_err(self) -> Self::Err {
+        JsonResponse::body(self)
     }
 }

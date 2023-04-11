@@ -1,14 +1,11 @@
 use std::future::ready;
 
 use crate::{
-    app::AppState,
-    error::http::code::HttpCode,
     models::user::User,
     services::auth::AuthDecoder,
-    utils::{future::Future, http::bearer},
+    utils::{future::Future, http::bearer}, db::Pool,
 };
 use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
-use sqlx::query_as;
 
 #[derive(Debug)]
 pub struct AuthUser {
@@ -34,13 +31,13 @@ impl FromRequest for AuthUser {
             _ => return Box::pin(ready(Err(ErrorUnauthorized("")))),
         };
 
-        let app = req
-            .app_data::<Data<AppState>>()
+        let pool = req
+            .app_data::<Data<Pool>>()
             .expect("App state not found")
             .clone();
 
         Box::pin(async move {
-            let user = User::complete_by_id(&app.pool, id)
+            let user = User::complete_by_id(&pool, id)
                 .await
                 .map_err(|_| ErrorUnauthorized(""))?;
 

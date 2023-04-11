@@ -1,20 +1,19 @@
-mod app;
+mod db;
 mod error;
+mod extractors;
 mod models;
 mod routes;
 mod services;
 mod traits;
-mod utils; 
-mod extractors;
+mod utils;
 
 use actix_web::{
     middleware::{NormalizePath, TrailingSlash},
     web::Data,
     App, HttpServer,
 };
-use app::AppState;
+use db::PoolOptions;
 use services::auth::{AuthDecoder, AuthEncoder, RefreshDecoder};
-use sqlx::postgres::PgPoolOptions;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -31,19 +30,19 @@ async fn main() -> Result<(), InitError> {
 
     let database = dotenvy::var("DATABASE_URL").expect("DATABASE could not load");
 
-    let pool = PgPoolOptions::new()
+    let pool = PoolOptions::new()
         .max_connections(10)
         .connect(&database)
         .await
         .expect("Pg pool not conected");
-    let app_state = AppState { pool };
+
     let encoder = AuthEncoder::default();
     let auth_decoder = AuthDecoder::default();
     let refresh_decoder = RefreshDecoder::default();
 
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new(app_state.clone()))
+            .app_data(Data::new(pool.clone()))
             .app_data(Data::new(encoder.clone()))
             .app_data(Data::new(auth_decoder.clone()))
             .app_data(Data::new(refresh_decoder.clone()))

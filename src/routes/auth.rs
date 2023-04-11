@@ -4,20 +4,14 @@ use actix_web::{
     HttpResponse, Responder, ResponseError,
 };
 use serde::Deserialize;
-use sqlx::query_as;
 use validator::Validate;
 
 use crate::{
-    app::AppData,
     error::http::{code::HttpCode, json::JsonResponse},
-    models::{
-        insert_return::IdReturn,
-        login::LoginResponse,
-        user::{self, CreateReq, User},
-    },
+    models::{login::LoginResponse, user::{User, self}},
     services::auth::{encoder::AuthEncoder, RefreshDecoder},
     traits::catch_http::CatchHttp,
-    utils::http::bearer,
+    utils::http::bearer, db::Pool,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -38,13 +32,13 @@ impl ResponseError for LoginInvalid {
 
 #[post("/login/")]
 async fn login(
-    app: AppData,
+    pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
     req: Json<LoginReq>,
 ) -> actix_web::Result<impl Responder> {
     let LoginReq { username, password } = req.0;
 
-    let found = User::by_username(&app.pool, &username)
+    let found = User::by_username(pool.get_ref(), &username)
         .await
         .map_err(|_| LoginInvalid)?;
 
@@ -71,14 +65,14 @@ async fn login(
 
 #[post("/register/")]
 async fn register(
-    app: AppData,
+    pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
-    req: Json<CreateReq>,
+    req: Json<user::CreateReq>,
 ) -> actix_web::Result<impl Responder> {
     req.validate()
         .map_err(|reason| JsonResponse::body(reason))?;
 
-    let id = User::create(&app.pool, &req.0).await.catch_http()?;
+    let id = User::create(pool.get_ref(), &req.0).await.catch_http()?;
     let inner = req.into_inner();
 
     let user_res = user::Response {

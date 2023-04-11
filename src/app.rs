@@ -1,7 +1,7 @@
-use sqlx::{PgPool, Postgres, Database};
+use sqlx::{PgPool, Postgres};
 
 pub type Pool = PgPool;
-pub type QueryResult = <Postgres as Database>::QueryResult;
+pub type QueryResult = <Postgres>::QueryResult;
 
 #[derive(Clone)]
 pub struct AppState {
