@@ -1,5 +1,5 @@
 use actix_web::{
-    post,
+    get, post,
     web::{scope, Data, Json, ServiceConfig},
     Responder,
 };
@@ -7,9 +7,12 @@ use validator::Validate;
 
 use crate::{
     db::Pool,
-    extractors::auth::AuthUser,
-    models::blog::{Blog, CreateReq},
-    traits::{catch_http::CatchHttp, into_http::IntoHttp, into_response::IntoResponse},
+    extractors::{auth::AuthUser, partial_query::PartialQuery},
+    models::{
+        blog::{Blog, CreateReq},
+        select_slice::SelectSlice,
+    },
+    traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
 
 #[post("/")]
@@ -24,6 +27,13 @@ async fn create_one(
         .into_response()
 }
 
+#[get("/")]
+async fn get_all(pool: Data<Pool>, slice: PartialQuery<SelectSlice>) -> impl Responder {
+    Blog::get_all(pool.get_ref(), slice.into_inner())
+        .await
+        .json_result()
+}
+
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("blogs").service(create_one));
+    cfg.service(scope("/blogs").service(create_one).service(get_all));
 }

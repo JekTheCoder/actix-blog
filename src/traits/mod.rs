@@ -3,3 +3,5 @@ pub mod into_http_err;
 pub mod into_response;
 pub mod catch_http;
 pub mod json_result;
+pub mod partial_default;
+pub mod map_ready;

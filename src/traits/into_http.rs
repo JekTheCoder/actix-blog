@@ -1,6 +1,5 @@
 use crate::db::QueryResult;
 use actix_web::{HttpResponse, Responder};
-use sqlx::postgres::PgQueryResult;
 
 pub trait IntoHttp {
     type Http: Responder;
@@ -19,7 +18,7 @@ pub trait IntoHttp {
 //    }
 //}
 
-impl IntoHttp for PgQueryResult {
+impl IntoHttp for QueryResult {
     type Http = HttpResponse;
 
     fn into_http(self) -> Self::Http {

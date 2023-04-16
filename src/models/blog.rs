@@ -1,6 +1,6 @@
 use std::future::Future;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as};
 use uuid::Uuid;
 use validator::Validate;
@@ -10,6 +10,9 @@ use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
 };
 
+use super::select_slice::SelectSlice;
+
+#[derive(Serialize)]
 pub struct Blog {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -23,17 +26,6 @@ pub struct CreateReq {
     pub title: String,
     #[validate(length(min = 1))]
     pub content: String,
-}
-
-async fn create(pool: &Pool, req: CreateReq, user_id: Uuid) -> Result<QueryResult, sqlx::Error> {
-    query!(
-        "INSERT INTO blogs(user_id, title, content) VALUES($1, $2, $3)",
-        user_id,
-        req.title,
-        req.content
-    )
-    .execute(pool)
-    .await
 }
 
 impl Blog {
@@ -66,6 +58,25 @@ impl Blog {
                 id
             )
             .fetch_one(pool)
+            .await
+            .map_err(|e| e.into())
+        })
+    }
+
+    pub fn get_all<'a>(
+        pool: &'a Pool,
+        slice: SelectSlice,
+    ) -> impl Future<Output = Result<Vec<Blog>, SelectErr>> + 'a {
+        let SelectSlice { limit, offset } = slice;
+
+        Box::pin(async move {
+            query_as!(
+                Blog,
+                "SELECT id, title, content, user_id FROM blogs LIMIT $1 OFFSET $2",
+                limit,
+                offset
+            )
+            .fetch_all(pool)
             .await
             .map_err(|e| e.into())
         })
