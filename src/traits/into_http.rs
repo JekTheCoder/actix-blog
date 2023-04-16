@@ -1,26 +1,32 @@
-use actix_web::HttpResponse;
-use serde::Serialize;
+use crate::db::QueryResult;
+use actix_web::{HttpResponse, Responder};
 use sqlx::postgres::PgQueryResult;
 
 pub trait IntoHttp {
-    fn into_http(self) -> HttpResponse;
+    type Http: Responder;
+    fn into_http(self) -> Self::Http;
 }
 
-impl IntoHttp for Result<PgQueryResult, sqlx::Error> {
-    fn into_http(self) -> HttpResponse {
-        match self {
-            Ok(_) => HttpResponse::Ok().finish(),
-            Err(sqlx::Error::RowNotFound) => HttpResponse::Conflict().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
-        }
-    }
-}
+//impl IntoHttp for QueryResult {
+//    type Http = HttpResponse;
+//
+//    fn into_http(self) -> Self::Http {
+//        if self.rows_affected() == 0 {
+//            HttpResponse::Conflict().finish()
+//        } else {
+//            HttpResponse::Created().finish()
+//        }
+//    }
+//}
 
-impl<T: Serialize> IntoHttp for Option<T> {
-    fn into_http(self) -> HttpResponse {
-        match self {
-            Some(t) => HttpResponse::Ok().json(t),
-            None => HttpResponse::NotFound().finish(),
+impl IntoHttp for PgQueryResult {
+    type Http = HttpResponse;
+
+    fn into_http(self) -> Self::Http {
+        if self.rows_affected() == 0 {
+            HttpResponse::Conflict().finish()
+        } else {
+            HttpResponse::Created().finish()
         }
     }
 }

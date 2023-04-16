@@ -1,44 +1,16 @@
-use actix_web::ResponseError;
+use super::into_http_err::IntoHttpErr;
 
-use crate::error::{http::{code::HttpCode, json::JsonResponse}, insert::InsertError};
-
-pub trait CatchHttp<T, E> {
-    type E;
-    fn catch_http(self) -> Result<T, Self::E>;
+pub trait CatchHttp<T> {
+    type Err;
+    fn catch_http(self) -> Result<T, Self::Err>;
 }
 
-impl<T, E> CatchHttp<T, E> for Result<T, E>
+impl<T, E> CatchHttp<T> for Result<T, E>
 where
     E: IntoHttpErr,
 {
-    type E = E::Err;
-
-    fn catch_http(self) -> Result<T, Self::E> {
+    type Err = E::Err;
+    fn catch_http(self) -> Result<T, <Result<T, E> as CatchHttp<T>>::Err> {
         self.map_err(|e| e.http_err())
-    }
-}
-
-pub trait IntoHttpErr {
-    type Err: ResponseError;
-
-    fn http_err(self) -> Self::Err;
-}
-
-impl IntoHttpErr for InsertError {
-    type Err = HttpCode;
-
-    fn http_err(self) -> Self::Err {
-        match self {
-            InsertError::NoInsert => HttpCode::conflict(),
-            InsertError::Unknown => HttpCode::internal_error(),
-        }
-    }
-}
-
-impl IntoHttpErr for validator::ValidationErrors {
-    type Err = JsonResponse<Self>;
-
-    fn http_err(self) -> Self::Err {
-        JsonResponse::body(self)
     }
 }

@@ -1,6 +1,10 @@
 use std::future::Future;
 
-use crate::{error::insert::InsertError, models::insert_return::IdReturn, db::Pool};
+use crate::{
+    db::Pool,
+    error::sqlx::{insert::InsertErr, select::SelectErr},
+    models::insert_return::IdReturn,
+};
 use serde::{Deserialize, Serialize};
 use sqlx::query_as;
 use uuid::Uuid;
@@ -48,14 +52,19 @@ impl User {
     pub fn by_username<'a>(
         pool: &'a Pool,
         username: &'a str,
-    ) -> impl Future<Output = Result<User, sqlx::Error>> + 'a {
-        query_as!(User, "SELECT * FROM users WHERE username = $1", username).fetch_one(pool)
+    ) -> impl Future<Output = Result<User, SelectErr>> + 'a {
+        Box::pin(async move {
+            query_as!(User, "SELECT * FROM users WHERE username = $1", username)
+                .fetch_one(pool)
+                .await
+                .map_err(|e| e.into())
+        })
     }
 
     pub fn create<'a>(
         pool: &'a Pool,
         req: &'a CreateReq,
-    ) -> impl Future<Output = Result<Uuid, InsertError>> + 'a {
+    ) -> impl Future<Output = Result<Uuid, InsertErr>> + 'a {
         Box::pin(async move {
             let CreateReq {
                 username,
@@ -64,7 +73,7 @@ impl User {
                 password,
             } = req;
             let password =
-                bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| InsertError::Unknown)?;
+                bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| InsertErr::Unknown)?;
 
             query_as!(
                 IdReturn,
@@ -84,19 +93,28 @@ impl User {
     pub fn by_id<'a>(
         pool: &'a Pool,
         id: Uuid,
-    ) -> impl Future<Output = Result<Response, sqlx::Error>> + 'a {
-        query_as!(
-            Response,
-            "SELECT username, name, id FROM users WHERE id = $1",
-            id
-        )
-        .fetch_one(pool)
+    ) -> impl Future<Output = Result<Response, SelectErr>> + 'a {
+        Box::pin(async move {
+            query_as!(
+                Response,
+                "SELECT username, name, id FROM users WHERE id = $1",
+                id
+            )
+            .fetch_one(pool)
+            .await
+            .map_err(|e| e.into())
+        })
     }
 
     pub fn complete_by_id<'a>(
         pool: &'a Pool,
         id: Uuid,
-    ) -> impl Future<Output = Result<User, sqlx::Error>> + 'a {
-        query_as!(User, "SELECT * FROM users WHERE id = $1", id).fetch_one(pool)
+    ) -> impl Future<Output = Result<User, SelectErr>> + 'a {
+        Box::pin(async move {
+            query_as!(User, "SELECT * FROM users WHERE id = $1", id)
+                .fetch_one(pool)
+                .await
+                .map_err(|e| e.into())
+        })
     }
 }

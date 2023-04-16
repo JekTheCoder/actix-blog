@@ -5,8 +5,12 @@ use actix_web::{
 };
 use validator::Validate;
 
-use crate::{db::Pool, models::blog::Blog, traits::catch_http::CatchHttp};
-use crate::{extractors::auth::AuthUser, models::blog::CreateReq};
+use crate::{
+    db::Pool,
+    extractors::auth::AuthUser,
+    models::blog::{Blog, CreateReq},
+    traits::{catch_http::CatchHttp, into_http::IntoHttp, into_response::IntoResponse},
+};
 
 #[post("/")]
 async fn create_one(
@@ -15,9 +19,9 @@ async fn create_one(
     user: AuthUser,
 ) -> actix_web::Result<impl Responder> {
     req.validate().catch_http()?;
-    let blog = Blog::create(pool.get_ref(), &req, user.into_inner().id);
-
-    Ok("")
+    Blog::create(pool.get_ref(), &req, user.into_inner().id)
+        .await
+        .into_response()
 }
 
 pub fn router(cfg: &mut ServiceConfig) {

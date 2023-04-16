@@ -5,7 +5,10 @@ use sqlx::{query, query_as};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::db::{Pool, QueryResult};
+use crate::{
+    db::{Pool, QueryResult},
+    error::sqlx::{insert::InsertErr, select::SelectErr},
+};
 
 pub struct Blog {
     pub id: Uuid,
@@ -38,25 +41,33 @@ impl Blog {
         pool: &'a Pool,
         req: &'a CreateReq,
         user_id: Uuid,
-    ) -> impl Future<Output = Result<QueryResult, sqlx::Error>> + 'a {
-        query!(
-            "INSERT INTO blogs(user_id, title, content) VALUES($1, $2, $3)",
-            user_id,
-            req.title,
-            req.content
-        )
-        .execute(pool)
+    ) -> impl Future<Output = Result<QueryResult, InsertErr>> + 'a {
+        Box::pin(async move {
+            query!(
+                "INSERT INTO blogs(user_id, title, content) VALUES($1, $2, $3)",
+                user_id,
+                req.title,
+                req.content
+            )
+            .execute(pool)
+            .await
+            .map_err(|e| e.into())
+        })
     }
 
     pub fn by_id<'a>(
         pool: &'a Pool,
         id: Uuid,
-    ) -> impl Future<Output = Result<Blog, sqlx::Error>> + 'a {
-        query_as!(
-            Blog,
-            "SELECT id, title, content, user_id FROM blogs WHERE id = $1",
-            id
-        )
-        .fetch_one(pool)
+    ) -> impl Future<Output = Result<Blog, SelectErr>> + 'a {
+        Box::pin(async move {
+            query_as!(
+                Blog,
+                "SELECT id, title, content, user_id FROM blogs WHERE id = $1",
+                id
+            )
+            .fetch_one(pool)
+            .await
+            .map_err(|e| e.into())
+        })
     }
 }
