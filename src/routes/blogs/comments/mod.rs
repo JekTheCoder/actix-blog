@@ -1,4 +1,6 @@
 mod comment;
+mod replies;
+
 mod create_comment;
 
 use crate::{
@@ -52,6 +54,7 @@ pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/{blog_id}/comments")
             .service(get_all)
-            .service(create),
+            .service(create)
+            .configure(replies::router)
     );
 }
