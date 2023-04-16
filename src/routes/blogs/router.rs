@@ -35,5 +35,10 @@ async fn get_all(pool: Data<Pool>, slice: PartialQuery<SelectSlice>) -> impl Res
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("/blogs").service(create_one).service(get_all));
+    cfg.service(
+        scope("/blogs")
+            .service(create_one)
+            .service(get_all)
+            .configure(super::comments::router),
+    );
 }
