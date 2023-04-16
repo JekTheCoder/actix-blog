@@ -1,7 +1,11 @@
 use crate::{traits::into_http_err::IntoHttpErr, error::http::code::HttpCode};
+use actix_web::{ResponseError, http::StatusCode};
 
+#[derive(thiserror::Error, Debug)]
 pub enum SelectErr {
+    #[error("Resource not found")]
     NotFound,
+    #[error("Internal server error")]
     Unknown,
 }
 
@@ -20,6 +24,15 @@ impl IntoHttpErr for SelectErr {
         match self {
             Self::NotFound => HttpCode::not_found(),
             Self::Unknown => HttpCode::internal_error(),
+        }
+    }
+}
+
+impl ResponseError for SelectErr {
+    fn status_code(&self) -> actix_web::http::StatusCode {
+        match self {
+            SelectErr::NotFound => StatusCode::NOT_FOUND,
+            SelectErr::Unknown => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
