@@ -7,10 +7,8 @@ use validator::Validate;
 
 use crate::{
     db::{Pool, QueryResult},
-    error::sqlx::{insert::InsertErr, select::SelectErr},
+    error::sqlx::{insert::InsertErr, select::SelectErr}, models::select_slice::SelectSlice,
 };
-
-use super::select_slice::SelectSlice;
 
 #[derive(Serialize)]
 pub struct Blog {

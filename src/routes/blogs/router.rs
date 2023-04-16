@@ -5,13 +5,11 @@ use actix_web::{
 };
 use validator::Validate;
 
+use super::blog::{Blog, CreateReq};
 use crate::{
     db::Pool,
     extractors::{auth::AuthUser, partial_query::PartialQuery},
-    models::{
-        blog::{Blog, CreateReq},
-        select_slice::SelectSlice,
-    },
+    models::select_slice::SelectSlice,
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
 
