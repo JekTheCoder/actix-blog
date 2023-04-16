@@ -1,13 +1,16 @@
 use std::future::Future;
 
+use futures_util::TryFutureExt;
 use serde::{Deserialize, Serialize};
 use sqlx::{query, query_as};
 use uuid::Uuid;
 use validator::Validate;
 
+use super::blog_preview::BlogPreview;
 use crate::{
     db::{Pool, QueryResult},
-    error::sqlx::{insert::InsertErr, select::SelectErr}, models::select_slice::SelectSlice,
+    error::sqlx::{insert::InsertErr, select::SelectErr},
+    models::select_slice::SelectSlice,
 };
 
 #[derive(Serialize)]
@@ -64,19 +67,17 @@ impl Blog {
     pub fn get_all<'a>(
         pool: &'a Pool,
         slice: SelectSlice,
-    ) -> impl Future<Output = Result<Vec<Blog>, SelectErr>> + 'a {
+    ) -> impl Future<Output = Result<Vec<BlogPreview>, SelectErr>> + 'a {
         let SelectSlice { limit, offset } = slice;
 
-        Box::pin(async move {
-            query_as!(
-                Blog,
-                "SELECT id, title, content, user_id FROM blogs LIMIT $1 OFFSET $2",
+        query_as!(
+                BlogPreview,
+                "SELECT id, title, SUBSTRING(content, 0, 200) as content, user_id FROM blogs \
+                LIMIT $1 OFFSET $2",
                 limit,
                 offset
             )
             .fetch_all(pool)
-            .await
             .map_err(|e| e.into())
-        })
     }
 }

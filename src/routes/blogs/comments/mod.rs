@@ -1,5 +1,5 @@
-mod comment;
-mod replies;
+pub mod comment;
+pub mod replies;
 
 mod create_comment;
 
