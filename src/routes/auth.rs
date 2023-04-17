@@ -87,17 +87,19 @@ async fn register(
     Ok(HttpResponse::Created().json(LoginResponse::new(user_res, tokens)))
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct RefreshReq {
     pub refresh_token: String,
-}
+}   
 
-#[post("/refresh/")]
+#[get("/refresh/")]
 async fn refresh(
     req: Json<RefreshReq>,
     decoder: Data<RefreshDecoder>,
     encoder: Data<AuthEncoder>,
+    refresh: Json<RefreshReq>,
 ) -> actix_web::Result<impl Responder> {
+    let refresh_token = bearer(&req).ok_or_else(|| HttpCode::unauthorized())?;
     let id = decoder
         .decode(&req.refresh_token)
         .map_err(|_| HttpCode::unauthorized())?;
