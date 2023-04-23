@@ -1,7 +1,7 @@
 use actix_web::{
-    get, post,
+    post,
     web::{scope, Data, Json, ServiceConfig},
-    HttpRequest, HttpResponse, Responder, ResponseError,
+    HttpResponse, Responder, ResponseError,
 };
 use serde::Deserialize;
 use sqlx::query_as;
@@ -16,7 +16,6 @@ use crate::{
         user::{self, CreateReq},
     },
     services::auth::{encoder::AuthEncoder, RefreshDecoder},
-    utils::http::bearer,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -116,15 +115,19 @@ async fn register(
     Ok(HttpResponse::Created().json(LoginResponse::new(user_res, tokens)))
 }
 
-#[get("/refresh/")]
+#[derive(Deserialize, Debug)]
+pub struct RefreshReq {
+    pub refresh_token: String,
+}
+
+#[post("/refresh/")]
 async fn refresh(
-    req: HttpRequest,
+    req: Json<RefreshReq>,
     decoder: Data<RefreshDecoder>,
     encoder: Data<AuthEncoder>,
 ) -> actix_web::Result<impl Responder> {
-    let refresh_token = bearer(&req).ok_or_else(|| HttpCode::unauthorized())?;
     let id = decoder
-        .decode(refresh_token)
+        .decode(&req.refresh_token)
         .map_err(|_| HttpCode::unauthorized())?;
 
     let tokens = encoder
