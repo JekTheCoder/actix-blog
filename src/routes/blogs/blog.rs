@@ -16,7 +16,7 @@ use crate::{
 #[derive(Serialize)]
 pub struct Blog {
     pub id: Uuid,
-    pub user_id: Uuid,
+    pub admin_id: Uuid,
     pub title: String,
     pub content: String,
 }
@@ -33,12 +33,12 @@ impl Blog {
     pub fn create<'a>(
         pool: &'a Pool,
         req: &'a CreateReq,
-        user_id: Uuid,
+        admin_id: Uuid,
     ) -> impl Future<Output = Result<QueryResult, InsertErr>> + 'a {
         Box::pin(async move {
             query!(
-                "INSERT INTO blogs(user_id, title, content) VALUES($1, $2, $3)",
-                user_id,
+                "INSERT INTO blogs(admin_id, title, content) VALUES($1, $2, $3)",
+                admin_id,
                 req.title,
                 req.content
             )
@@ -55,7 +55,7 @@ impl Blog {
         Box::pin(async move {
             query_as!(
                 Blog,
-                "SELECT id, title, content, user_id FROM blogs WHERE id = $1",
+                "SELECT id, title, content, admin_id FROM blogs WHERE id = $1",
                 id
             )
             .fetch_one(pool)
@@ -72,7 +72,7 @@ impl Blog {
 
         query_as!(
                 BlogPreview,
-                "SELECT id, title, SUBSTRING(content, 0, 200) as content, user_id FROM blogs \
+                "SELECT id, title, SUBSTRING(content, 0, 200) as content, admin_id FROM blogs \
                 LIMIT $1 OFFSET $2",
                 limit,
                 offset

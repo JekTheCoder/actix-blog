@@ -7,11 +7,14 @@ use serde::Deserialize;
 use validator::Validate;
 
 use crate::{
+    db::Pool,
     error::http::{code::HttpCode, json::JsonResponse},
-    models::{login::LoginResponse, user::{User, self}},
+    models::{
+        login::LoginResponse,
+        user::{self, CreateReq, User},
+    },
     services::auth::{encoder::AuthEncoder, RefreshDecoder},
     traits::catch_http::CatchHttp,
-    utils::http::bearer, db::Pool,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -73,13 +76,10 @@ async fn register(
         .map_err(|reason| JsonResponse::body(reason))?;
 
     let id = User::create(pool.get_ref(), &req.0).await.catch_http()?;
-    let inner = req.into_inner();
 
-    let user_res = user::Response {
-        id,
-        name: inner.name,
-        username: inner.username,
-    };
+    let CreateReq { name, username, .. } = req.into_inner();
+    let user_res = user::Response { id, name, username };
+
     let tokens = encoder
         .generate_tokens(id)
         .map_err(|_| HttpCode::internal_error())?;
@@ -90,16 +90,14 @@ async fn register(
 #[derive(Debug, Deserialize)]
 pub struct RefreshReq {
     pub refresh_token: String,
-}   
+}
 
-#[get("/refresh/")]
+#[post("/refresh/")]
 async fn refresh(
     req: Json<RefreshReq>,
     decoder: Data<RefreshDecoder>,
     encoder: Data<AuthEncoder>,
-    refresh: Json<RefreshReq>,
 ) -> actix_web::Result<impl Responder> {
-    let refresh_token = bearer(&req).ok_or_else(|| HttpCode::unauthorized())?;
     let id = decoder
         .decode(&req.refresh_token)
         .map_err(|_| HttpCode::unauthorized())?;
