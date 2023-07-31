@@ -1,5 +1,5 @@
-use std::ops::Deref;
 use jsonwebtoken::{decode, DecodingKey, Validation};
+use std::ops::Deref;
 
 use super::claims::Claims;
 

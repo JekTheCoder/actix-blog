@@ -2,7 +2,8 @@ use actix_web::{dev::Payload, web::Query, FromRequest, HttpRequest};
 use serde::de::DeserializeOwned;
 use std::{
     fmt::Debug,
-    future::{ready, Ready}, ops::{Deref, DerefMut},
+    future::{ready, Ready},
+    ops::{Deref, DerefMut},
 };
 
 use crate::traits::partial_default::PartialDefault;
@@ -50,4 +51,3 @@ impl<T: Debug + PartialDefault> PartialQuery<T> {
         self.0
     }
 }
-

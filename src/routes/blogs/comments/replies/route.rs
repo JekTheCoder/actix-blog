@@ -7,12 +7,11 @@ use serde::Deserialize;
 use uuid::Uuid;
 use validator::Validate;
 
-use super::reply::Reply;
 use crate::{
-    db::Pool,
     extractors::{auth::AuthUser, partial_query::PartialQuery},
     models::select_slice::SelectSlice,
     routes::blogs::comments::create_comment::CreateComment,
+    shared::db::{models::replies, Pool},
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
 
@@ -31,10 +30,10 @@ pub async fn get_all(
     let (_blog_id, comment_id) = path.into_inner();
     let res = match parent_id.into_inner().parent_id {
         Some(parent_id) => {
-            Reply::get_many_by_parent(pool.get_ref(), comment_id, parent_id, slice.into_inner())
+            replies::get_many_by_parent(pool.get_ref(), comment_id, parent_id, slice.into_inner())
                 .await
         }
-        None => Reply::get_many(pool.get_ref(), comment_id, slice.into_inner()).await,
+        None => replies::get_many(pool.get_ref(), comment_id, slice.into_inner()).await,
     };
 
     res.json_result()
@@ -51,9 +50,9 @@ pub async fn create(
     req.validate().catch_http()?;
     let (_blog_id, comment_id) = path.into_inner();
 
-    Reply::create(
+    replies::create(
         pool.get_ref(),
-        &req,
+        &req.content,
         user.into_inner().id,
         comment_id,
         parent_id.parent_id,

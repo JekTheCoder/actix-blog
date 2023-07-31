@@ -1,5 +1,5 @@
-use crate::{traits::into_http_err::IntoHttpErr, error::http::code::HttpCode};
-use actix_web::{ResponseError, http::StatusCode};
+use crate::{error::http::code::HttpCode, traits::into_http_err::IntoHttpErr};
+use actix_web::{http::StatusCode, ResponseError};
 
 #[derive(thiserror::Error, Debug)]
 pub enum SelectErr {

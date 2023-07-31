@@ -1,9 +1,12 @@
-use std::future::ready;
+use std::future;
 
 use crate::{
-    models::user::User,
     services::auth::AuthDecoder,
-    utils::{future::Future, http::bearer}, db::Pool,
+    shared::db::{
+        models::users::{self, User},
+        Pool,
+    },
+    utils::{future::Future, http::bearer},
 };
 use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 
@@ -20,7 +23,7 @@ impl FromRequest for AuthUser {
         let token = bearer(req);
         let token = match token {
             Some(t) => t,
-            None => return Box::pin(ready(Err(ErrorUnauthorized("")))),
+            None => return Box::pin(future::ready(Err(ErrorUnauthorized("")))),
         };
 
         let decoder = req
@@ -28,7 +31,7 @@ impl FromRequest for AuthUser {
             .expect("Decoder not found");
         let id = match decoder.decode(token) {
             Ok(decoded) => decoded,
-            _ => return Box::pin(ready(Err(ErrorUnauthorized("")))),
+            _ => return Box::pin(future::ready(Err(ErrorUnauthorized("")))),
         };
 
         let pool = req
@@ -37,7 +40,7 @@ impl FromRequest for AuthUser {
             .clone();
 
         Box::pin(async move {
-            let user = User::complete_by_id(&pool, id)
+            let user = users::complete_by_id(&pool, id)
                 .await
                 .map_err(|_| ErrorUnauthorized(""))?;
 

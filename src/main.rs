@@ -1,4 +1,5 @@
-mod db;
+mod shared;
+
 mod error;
 mod extractors;
 mod models;
@@ -12,7 +13,7 @@ use actix_web::{
     web::Data,
     App, HttpServer,
 };
-use db::PoolOptions;
+use crate::shared::db::PoolOptions;
 use services::auth::{AuthDecoder, AuthEncoder, RefreshDecoder};
 use thiserror::Error;
 

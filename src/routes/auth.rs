@@ -7,13 +7,11 @@ use serde::Deserialize;
 use validator::Validate;
 
 use crate::{
-    db::Pool,
     error::http::{code::HttpCode, json::JsonResponse},
-    models::{
-        login::LoginResponse,
-        user::{self, CreateReq, User},
-    },
+    models::login::LoginResponse,
     services::auth::{encoder::AuthEncoder, RefreshDecoder},
+    shared::db::models::users,
+    shared::db::Pool,
     traits::catch_http::CatchHttp,
 };
 
@@ -41,28 +39,27 @@ async fn login(
 ) -> actix_web::Result<impl Responder> {
     let LoginReq { username, password } = req.0;
 
-    let found = User::by_username(pool.get_ref(), &username)
+    let found = users::by_username(pool.get_ref(), &username)
         .await
         .map_err(|_| LoginInvalid)?;
 
     let verified =
         bcrypt::verify(password, &found.password).map_err(|_| HttpCode::internal_error())?;
 
-    match verified {
-        false => Err(LoginInvalid.into()),
-        true => {
-            let tokens = encoder
-                .generate_tokens(found.id)
-                .map_err(|_| HttpCode::internal_error())?;
+    if verified {
+        let tokens = encoder
+            .generate_tokens(found.id)
+            .map_err(|_| HttpCode::internal_error())?;
 
-            let response = LoginResponse {
-                user: found.into(),
-                refresh_token: tokens.refresh_token,
-                token: tokens.token,
-            };
+        let response = LoginResponse {
+            user: found.into(),
+            refresh_token: tokens.refresh_token,
+            token: tokens.token,
+        };
 
-            Ok(HttpResponse::Ok().json(response))
-        }
+        Ok(HttpResponse::Ok().json(response))
+    } else {
+        Err(LoginInvalid.into())
     }
 }
 
@@ -70,15 +67,15 @@ async fn login(
 async fn register(
     pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
-    req: Json<user::CreateReq>,
+    req: Json<users::CreateReq>,
 ) -> actix_web::Result<impl Responder> {
     req.validate()
         .map_err(|reason| JsonResponse::body(reason))?;
 
-    let id = User::create(pool.get_ref(), &req.0).await.catch_http()?;
+    let id = users::create(pool.get_ref(), &req.0).await.catch_http()?;
 
-    let CreateReq { name, username, .. } = req.into_inner();
-    let user_res = user::Response { id, name, username };
+    let users::CreateReq { name, username, .. } = req.into_inner();
+    let user_res = users::Response { id, name, username };
 
     let tokens = encoder
         .generate_tokens(id)

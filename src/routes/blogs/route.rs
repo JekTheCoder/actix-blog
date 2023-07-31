@@ -7,33 +7,32 @@ use tokio::join;
 use uuid::Uuid;
 use validator::Validate;
 
-use super::{
-    blog::{Blog, CreateReq},
-    blog_response::BlogResponse,
-};
+use super::blog_response::BlogResponse;
 use crate::{
-    db::Pool,
     extractors::{auth::AuthUser, partial_query::PartialQuery},
     models::select_slice::SelectSlice,
-    routes::blogs::comments::comment::Comment,
+    shared::db::{
+        models::{blogs, comments},
+        Pool,
+    },
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
 
 #[post("/")]
 async fn create_one(
     pool: Data<Pool>,
-    req: Json<CreateReq>,
+    req: Json<blogs::CreateReq>,
     user: AuthUser,
 ) -> actix_web::Result<impl Responder> {
     req.validate().catch_http()?;
-    Blog::create(pool.get_ref(), &req, user.into_inner().id)
+    blogs::create(pool.get_ref(), &req, user.into_inner().id)
         .await
         .into_response()
 }
 
 #[get("/")]
 async fn get_all(pool: Data<Pool>, slice: PartialQuery<SelectSlice>) -> impl Responder {
-    Blog::get_all(pool.get_ref(), slice.into_inner())
+    blogs::get_all(pool.get_ref(), slice.into_inner())
         .await
         .json_result()
 }
@@ -41,8 +40,8 @@ async fn get_all(pool: Data<Pool>, slice: PartialQuery<SelectSlice>) -> impl Res
 #[get("/{blog_id}/")]
 async fn get_one(pool: Data<Pool>, id: Path<Uuid>) -> actix_web::Result<impl Responder> {
     let (blog, comments) = join!(
-        Blog::by_id(pool.get_ref(), id.clone()),
-        Comment::by_blog(
+        blogs::by_id(pool.get_ref(), id.clone()),
+        comments::by_blog(
             pool.get_ref(),
             id.into_inner(),
             SelectSlice {

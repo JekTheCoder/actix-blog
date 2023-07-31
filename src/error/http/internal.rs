@@ -1,4 +1,4 @@
-use actix_web::{ResponseError, http::StatusCode};
+use actix_web::{http::StatusCode, ResponseError};
 use thiserror::Error;
 
 #[derive(Debug, Error)]

@@ -1,7 +1,7 @@
 use serde::Serialize;
 use uuid::Uuid;
 
-use super::comments::comment::Comment;
+use crate::shared::db::models::comments::Comment;
 
 #[derive(Serialize)]
 pub struct BlogResponse {
@@ -9,6 +9,5 @@ pub struct BlogResponse {
     pub admin_id: Uuid,
     pub title: String,
     pub content: String,
-    pub comments: Vec<Comment>
+    pub comments: Vec<Comment>,
 }
-
