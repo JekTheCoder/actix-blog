@@ -29,8 +29,8 @@ impl TokenDecoder {
         }
     }
 
-    pub fn decode(&self, token: &str) -> Result<uuid::Uuid, jsonwebtoken::errors::Error> {
-        decode::<Claims>(token, &self.key, &self.validation).map(|claims| claims.claims.id)
+    pub fn decode(&self, token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
+        decode::<Claims>(token, &self.key, &self.validation).map(|claims| claims.claims)
     }
 }
 

@@ -1,12 +1,13 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use sqlx::{query, query_as};
 use uuid::Uuid;
-use validator::Validate;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    models::select_slice::SelectSlice,
-    shared::db::{Pool, QueryResult},
+    shared::{
+        db::{Pool, QueryResult},
+        models::select_slice::SelectSlice,
+    },
 };
 
 #[derive(Serialize)]

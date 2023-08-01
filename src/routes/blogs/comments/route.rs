@@ -1,7 +1,9 @@
 use crate::{
-    extractors::{auth::AuthUser, partial_query::PartialQuery},
-    models::select_slice::SelectSlice,
-    shared::db::{models::comments, Pool},
+    shared::{
+        db::{models::comments, Pool},
+        extractors::{auth::AuthUser, partial_query::PartialQuery},
+        models::select_slice::SelectSlice,
+    },
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
 use actix_web::{

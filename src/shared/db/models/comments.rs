@@ -5,8 +5,10 @@ use validator::Validate;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    models::select_slice::SelectSlice,
-    shared::db::{Pool, QueryResult},
+    shared::{
+        db::{Pool, QueryResult},
+        models::select_slice::SelectSlice,
+    },
 };
 
 #[derive(Deserialize, Validate)]

@@ -1,8 +1,6 @@
 mod shared;
 
 mod error;
-mod extractors;
-mod models;
 mod routes;
 mod services;
 mod traits;

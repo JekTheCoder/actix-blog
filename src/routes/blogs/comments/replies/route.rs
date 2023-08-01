@@ -8,10 +8,12 @@ use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
-    extractors::{auth::AuthUser, partial_query::PartialQuery},
-    models::select_slice::SelectSlice,
     routes::blogs::comments::create_comment::CreateComment,
-    shared::db::{models::replies, Pool},
+    shared::{
+        db::{models::replies, Pool},
+        extractors::{auth::AuthUser, partial_query::PartialQuery},
+        models::select_slice::SelectSlice,
+    },
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
 

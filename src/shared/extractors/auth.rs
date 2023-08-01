@@ -29,7 +29,7 @@ impl FromRequest for AuthUser {
         let decoder = req
             .app_data::<Data<AuthDecoder>>()
             .expect("Decoder not found");
-        let id = match decoder.decode(token) {
+        let claims = match decoder.decode(token) {
             Ok(decoded) => decoded,
             _ => return Box::pin(future::ready(Err(ErrorUnauthorized("")))),
         };
@@ -40,7 +40,7 @@ impl FromRequest for AuthUser {
             .clone();
 
         Box::pin(async move {
-            let user = users::complete_by_id(&pool, id)
+            let user = users::complete_by_id(&pool, claims.id)
                 .await
                 .map_err(|_| ErrorUnauthorized(""))?;
 

@@ -1,7 +1,6 @@
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    models::insert_return::IdReturn,
-    shared::db::Pool,
+    shared::{db::Pool, models::insert_return::IdReturn},
 };
 use serde::{Deserialize, Serialize};
 use sqlx::query_as;

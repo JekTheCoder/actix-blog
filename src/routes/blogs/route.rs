@@ -9,11 +9,13 @@ use validator::Validate;
 
 use super::blog_response::BlogResponse;
 use crate::{
-    extractors::{auth::AuthUser, partial_query::PartialQuery},
-    models::select_slice::SelectSlice,
-    shared::db::{
-        models::{blogs, comments},
-        Pool,
+    shared::{
+        db::{
+            models::{blogs, comments},
+            Pool,
+        },
+        extractors::{auth::AuthUser, partial_query::PartialQuery},
+        models::select_slice::SelectSlice,
     },
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
 };
