@@ -20,7 +20,7 @@ pub struct CreateComment {
 #[derive(Serialize)]
 pub struct Comment {
     pub id: Uuid,
-    pub user_id: Uuid,
+    pub agent_id: Uuid,
     pub blog_id: Uuid,
     pub content: String,
 }
@@ -32,7 +32,7 @@ pub async fn by_blog<'a>(
 ) -> Result<Vec<Comment>, SelectErr> {
     query_as!(
         Comment,
-        "SELECT id, user_id, blog_id, content FROM comments WHERE blog_id = $1 \
+        "SELECT id, agent_id, blog_id, content FROM comments WHERE blog_id = $1 \
             LIMIT $2 OFFSET $3",
         blog_id,
         limit,
@@ -46,12 +46,12 @@ pub async fn by_blog<'a>(
 pub async fn create<'a>(
     pool: &'a Pool,
     req: &'a CreateComment,
-    user_id: Uuid,
+    agent_id: Uuid,
     blog_id: Uuid,
 ) -> Result<QueryResult, InsertErr> {
     query!(
-        "INSERT INTO comments (user_id, blog_id, content) VALUES ($1, $2, $3)",
-        user_id,
+        "INSERT INTO comments (agent_id, blog_id, content) VALUES ($1, $2, $3)",
+        agent_id,
         blog_id,
         req.content
     )

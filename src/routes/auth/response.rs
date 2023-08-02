@@ -1,16 +1,16 @@
 use serde::Serialize;
 
-use crate::{services::auth::tokens::Tokens, shared::db::models::users};
+use crate::{services::auth::tokens::Tokens, shared::db::models::agents};
 
 #[derive(Serialize)]
 pub struct LoginResponse {
-    pub user: users::Response,
+    pub user: agents::AgentResponse,
     pub token: String,
     pub refresh_token: String,
 }
 
 impl LoginResponse {
-    pub fn new(user: users::Response, tokens: Tokens) -> Self {
+    pub fn new(user: agents::AgentResponse, tokens: Tokens) -> Self {
         Self {
             user,
             token: tokens.token,

@@ -9,11 +9,9 @@ use validator::Validate;
 
 #[derive(Serialize, Debug)]
 pub struct User {
-    pub username: String,
-    pub password: String,
-    pub name: String,
-    pub email: Option<String>,
     pub id: Uuid,
+    pub agent_id: Uuid,
+    pub email: Option<String>,
 }
 
 #[derive(Deserialize, Validate)]
@@ -30,26 +28,13 @@ pub struct CreateReq {
 
 #[derive(Debug, Serialize)]
 pub struct Response {
-    pub username: String,
-    pub name: String,
     pub id: Uuid,
 }
 
 impl From<User> for Response {
     fn from(value: User) -> Self {
-        Self {
-            username: value.username,
-            name: value.name,
-            id: value.id,
-        }
+        Self { id: value.id }
     }
-}
-
-pub async fn by_username(pool: &Pool, username: &str) -> Result<User, SelectErr> {
-    query_as!(User, "SELECT * FROM users WHERE username = $1", username)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| e.into())
 }
 
 pub async fn create(pool: &Pool, req: &CreateReq) -> Result<Uuid, InsertErr> {
@@ -63,7 +48,11 @@ pub async fn create(pool: &Pool, req: &CreateReq) -> Result<Uuid, InsertErr> {
 
     query_as!(
         IdReturn,
-        "INSERT INTO users(username, password, name, email) VALUES($1, $2, $3, $4) RETURNING id",
+        r#"WITH agents_created AS (
+        INSERT INTO agents (username, password, name) VALUES ($1, $2, $3) RETURNING id
+        )
+        INSERT INTO users (agent_id, email) VALUES ((SELECT id FROM agents_created), $4) RETURNING id;
+        "#,
         username,
         password,
         name,
@@ -76,14 +65,10 @@ pub async fn create(pool: &Pool, req: &CreateReq) -> Result<Uuid, InsertErr> {
 }
 
 pub async fn by_id(pool: &Pool, id: Uuid) -> Result<Response, SelectErr> {
-    query_as!(
-        Response,
-        "SELECT username, name, id FROM users WHERE id = $1",
-        id
-    )
-    .fetch_one(pool)
-    .await
-    .map_err(|e| e.into())
+    query_as!(Response, "SELECT id FROM users WHERE id = $1", id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| e.into())
 }
 
 pub async fn complete_by_id(pool: &Pool, id: Uuid) -> Result<User, SelectErr> {

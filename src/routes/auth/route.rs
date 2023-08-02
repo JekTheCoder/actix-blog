@@ -11,7 +11,7 @@ use crate::{
     error::http::{code::HttpCode, json::JsonResponse},
     services::auth::{claims::InnerClaims, encoder::AuthEncoder, RefreshDecoder},
     shared::db::models::users,
-    shared::db::Pool,
+    shared::db::{models::agents, Pool},
     traits::catch_http::CatchHttp,
 };
 
@@ -39,7 +39,7 @@ async fn login(
 ) -> actix_web::Result<impl Responder> {
     let LoginReq { username, password } = req.0;
 
-    let found = users::by_username(pool.get_ref(), &username)
+    let found = agents::by_username(pool.get_ref(), &username)
         .await
         .map_err(|_| LoginInvalid)?;
 
@@ -73,15 +73,19 @@ async fn register(
         .map_err(|reason| JsonResponse::body(reason))?;
 
     let id = users::create(pool.get_ref(), &req.0).await.catch_http()?;
-
-    let users::CreateReq { name, username, .. } = req.into_inner();
-    let user_res = users::Response { id, name, username };
+    let users::CreateReq { name, username, .. } = req.0;
+    let agent_response = agents::AgentResponse {
+        id,
+        r#type: agents::AgentType::User,
+        name,
+        username,
+    };
 
     let tokens = encoder
         .generate_tokens(InnerClaims::user_claims(id))
         .map_err(|_| HttpCode::internal_error())?;
 
-    Ok(HttpResponse::Created().json(LoginResponse::new(user_res, tokens)))
+    Ok(HttpResponse::Created().json(LoginResponse::new(agent_response, tokens)))
 }
 
 #[derive(Debug, Deserialize)]
