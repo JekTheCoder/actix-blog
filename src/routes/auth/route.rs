@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use actix_web::{
     post,
     web::{scope, Data, Json, ServiceConfig},
@@ -10,8 +12,8 @@ use super::response::LoginResponse;
 use crate::{
     error::http::{code::HttpCode, json::JsonResponse},
     services::auth::{claims::InnerClaims, encoder::AuthEncoder, RefreshDecoder},
-    shared::db::models::users,
     shared::db::{models::agents, Pool},
+    shared::{db::models::users, extractors::valid_json::ValidJson},
     traits::catch_http::CatchHttp,
 };
 
@@ -67,13 +69,13 @@ async fn login(
 async fn register(
     pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
-    req: Json<users::CreateReq>,
+    req: ValidJson<users::CreateReq>,
 ) -> actix_web::Result<impl Responder> {
-    req.validate()
-        .map_err(|reason| JsonResponse::body(reason))?;
+    // req.validate()
+    //     .map_err(|reason| JsonResponse::body(reason))?;
 
-    let id = users::create(pool.get_ref(), &req.0).await.catch_http()?;
-    let users::CreateReq { name, username, .. } = req.0;
+    let id = users::create(pool.get_ref(), req.as_ref()).await.catch_http()?;
+    let users::CreateReq { name, username, .. } = req.into_inner();
     let agent_response = agents::AgentResponse {
         id,
         r#type: agents::AgentType::User,

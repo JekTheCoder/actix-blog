@@ -6,7 +6,7 @@ use crate::{
         models::users::{self, User},
         Pool,
     },
-    utils::{future::Future, http::bearer},
+    utils::{future::DynFuture, http::bearer},
 };
 use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 
@@ -17,7 +17,7 @@ pub struct AuthUser {
 
 impl FromRequest for AuthUser {
     type Error = actix_web::Error;
-    type Future = Future<Result<Self, Self::Error>>;
+    type Future = DynFuture<Result<Self, Self::Error>>;
 
     fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
         let token = bearer(req);
