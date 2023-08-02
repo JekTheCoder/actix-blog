@@ -1,16 +1,13 @@
-use std::ops::Deref;
-
 use actix_web::{
     post,
     web::{scope, Data, Json, ServiceConfig},
     HttpResponse, Responder, ResponseError,
 };
 use serde::Deserialize;
-use validator::Validate;
 
 use super::response::LoginResponse;
 use crate::{
-    error::http::{code::HttpCode, json::JsonResponse},
+    error::http::code::HttpCode,
     services::auth::{claims::InnerClaims, encoder::AuthEncoder, RefreshDecoder},
     shared::db::{models::agents, Pool},
     shared::{db::models::users, extractors::valid_json::ValidJson},
@@ -74,7 +71,9 @@ async fn register(
     // req.validate()
     //     .map_err(|reason| JsonResponse::body(reason))?;
 
-    let id = users::create(pool.get_ref(), req.as_ref()).await.catch_http()?;
+    let id = users::create(pool.get_ref(), req.as_ref())
+        .await
+        .catch_http()?;
     let users::CreateReq { name, username, .. } = req.into_inner();
     let agent_response = agents::AgentResponse {
         id,

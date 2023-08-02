@@ -53,8 +53,4 @@ impl AuthUser {
     pub fn into_inner(self) -> User {
         self.user
     }
-
-    pub fn get_ref(&self) -> &User {
-        &self.user
-    }
 }

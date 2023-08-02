@@ -1,7 +1,6 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use sqlx::{query, query_as};
 use uuid::Uuid;
-use validator::Validate;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
@@ -27,24 +26,17 @@ pub struct BlogPreview {
     pub content: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize, Validate)]
-pub struct CreateReq {
-    #[validate(length(min = 1))]
-    pub title: String,
-    #[validate(length(min = 1))]
-    pub content: String,
-}
-
 pub async fn create(
     pool: &Pool,
-    req: &CreateReq,
+    title: &str,
+    content: &str,
     admin_id: Uuid,
 ) -> Result<QueryResult, InsertErr> {
     query!(
         "INSERT INTO blogs(admin_id, title, content) VALUES($1, $2, $3)",
         admin_id,
-        req.title,
-        req.content
+        title,
+        content
     )
     .execute(pool)
     .await
