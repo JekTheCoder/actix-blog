@@ -1,18 +1,18 @@
 use crate::{
+    services::auth::claims::Claims,
     shared::{
         db::{models::comments, Pool},
-        extractors::{auth::AuthUser, partial_query::PartialQuery},
+        extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
-    traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
+    traits::{into_response::IntoResponse, json_result::JsonResult},
 };
 use actix_web::{
     get, post,
-    web::{scope, Data, Json, Path, ServiceConfig},
+    web::{scope, Data, Path, ServiceConfig},
     Responder,
 };
 use uuid::Uuid;
-use validator::Validate;
 
 use super::replies;
 
@@ -31,15 +31,13 @@ pub async fn get_all(
 pub async fn create(
     pool: Data<Pool>,
     blog_id: Path<Uuid>,
-    user: AuthUser,
-    req: Json<comments::CreateComment>,
+    claims: Claims,
+    req: ValidJson<comments::CreateComment>,
 ) -> actix_web::Result<impl Responder> {
-    req.validate().catch_http()?;
-
     comments::create(
         pool.get_ref(),
-        &req,
-        user.into_inner().id,
+        req.as_ref(),
+        claims.id,
         blog_id.into_inner(),
     )
     .await
