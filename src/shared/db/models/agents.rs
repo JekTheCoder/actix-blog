@@ -16,7 +16,6 @@ pub struct Agent {
 
 #[derive(sqlx::Type)]
 #[sqlx(type_name = "agent_kind", rename_all = "lowercase")]
-#[derive(Serialize)]
 pub enum AgentType {
     User,
     Admin,
@@ -49,5 +48,17 @@ impl From<Agent> for AgentResponse {
             name: value.name,
             r#type: value.r#type,
         }
+    }
+}
+
+impl Serialize for AgentType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_u8(match self {
+            AgentType::User => 0,
+            AgentType::Admin => 1,
+        })
     }
 }
