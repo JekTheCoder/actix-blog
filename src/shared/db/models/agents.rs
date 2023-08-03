@@ -14,7 +14,7 @@ pub struct Agent {
     pub r#type: AgentType,
 }
 
-#[derive(sqlx::Type)]
+#[derive(sqlx::Type, Clone)]
 #[sqlx(type_name = "agent_kind", rename_all = "lowercase")]
 pub enum AgentType {
     User,

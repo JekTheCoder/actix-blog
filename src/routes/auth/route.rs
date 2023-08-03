@@ -47,7 +47,10 @@ async fn login(
 
     if verified {
         let tokens = encoder
-            .generate_tokens(InnerClaims::user_claims(found.id))
+            .generate_tokens(InnerClaims {
+                id: found.id,
+                role: found.r#type.clone().into(),
+            })
             .map_err(|_| HttpCode::internal_error())?;
 
         let response = LoginResponse {
