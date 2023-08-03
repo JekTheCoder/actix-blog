@@ -1,6 +1,6 @@
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    shared::{db::Pool, models::insert_return::IdReturn},
+    shared::{db::Pool, models::insert_return::IdMaybe},
 };
 use serde::{Deserialize, Serialize};
 use sqlx::query_as;
@@ -46,22 +46,23 @@ pub async fn create(pool: &Pool, req: &CreateReq) -> Result<Uuid, InsertErr> {
     } = req;
     let password = bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| InsertErr::Unknown)?;
 
-    query_as!(
-        IdReturn,
-        r#"WITH agents_created AS (
-        INSERT INTO agents (username, password, name) VALUES ($1, $2, $3) RETURNING id
-        )
-        INSERT INTO users (agent_id, email) VALUES ((SELECT id FROM agents_created), $4) RETURNING id;
-        "#,
+    // selecting from a function returns a nullable value, even if we know that it is not null. 
+    // We need to handle this.
+    let result = query_as!(
+        IdMaybe,
+        "SELECT insert_user($1, $2, $3, $4) AS id",
         username,
         password,
         name,
         email.as_ref(),
     )
     .fetch_one(pool)
-    .await
-    .map_err(|e| e.into())
-    .map(|id| id.id)
+    .await;
+
+    match result {
+        Ok(IdMaybe { id }) => id.ok_or_else(|| InsertErr::Unknown),
+        Err(e) => Err(e.into()),
+    }
 }
 
 pub async fn by_id(pool: &Pool, id: Uuid) -> Result<Response, SelectErr> {
