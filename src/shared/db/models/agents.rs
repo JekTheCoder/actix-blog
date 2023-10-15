@@ -37,7 +37,7 @@ pub struct AgentResponse {
     pub id: Uuid,
     pub username: String,
     pub name: String,
-    pub r#type: AgentType,
+    pub kind: AgentType,
 }
 
 impl From<Agent> for AgentResponse {
@@ -46,7 +46,7 @@ impl From<Agent> for AgentResponse {
             id: value.id,
             username: value.username,
             name: value.name,
-            r#type: value.r#type,
+            kind: value.r#type,
         }
     }
 }

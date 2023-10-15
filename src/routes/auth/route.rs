@@ -80,7 +80,7 @@ async fn register(
     let users::CreateReq { name, username, .. } = req.into_inner();
     let agent_response = agents::AgentResponse {
         id,
-        r#type: agents::AgentType::User,
+        kind: agents::AgentType::User,
         name,
         username,
     };
