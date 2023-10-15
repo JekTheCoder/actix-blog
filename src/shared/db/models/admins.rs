@@ -10,7 +10,7 @@ pub struct AdminMin {
 pub async fn by_agent_id(agent_id: Uuid, pool: &Pool) -> Result<AdminMin, SelectErr> {
     query_as!(
         AdminMin,
-        "SELECT id FROM admins WHERE agent_id = $1",
+        "SELECT id FROM admins WHERE account_id = $1",
         agent_id
     )
     .fetch_one(pool)

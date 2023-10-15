@@ -24,7 +24,7 @@ pub enum AgentType {
 pub async fn by_username(pool: &Pool, username: &str) -> Result<Agent, SelectErr> {
     query_as!(
         Agent,
-        r#"SELECT id, username, password, name, type AS "type: _" FROM agents WHERE username = $1;"#,
+        r#"SELECT id, username, password, name, kind AS "type: _" FROM accounts WHERE username = $1;"#,
         username
     )
     .fetch_one(pool)

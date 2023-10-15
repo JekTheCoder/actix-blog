@@ -10,7 +10,7 @@ use validator::Validate;
 #[derive(Serialize, Debug)]
 pub struct User {
     pub id: Uuid,
-    pub agent_id: Uuid,
+    pub account_id: Uuid,
     pub email: Option<String>,
 }
 
