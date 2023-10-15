@@ -13,7 +13,7 @@ use crate::{
 #[derive(Serialize)]
 pub struct Reply {
     pub id: Uuid,
-    pub agent_id: Uuid,
+    pub account_id: Uuid,
     pub comment_id: Uuid,
     pub parent_id: Option<Uuid>,
     pub content: String,
@@ -27,7 +27,7 @@ pub async fn get_many_by_parent(
 ) -> Result<Vec<Reply>, SelectErr> {
     query_as!(
         Reply,
-        "SELECT id, agent_id, comment_id, parent_id, content FROM replies \
+        "SELECT id, account_id, comment_id, parent_id, content FROM replies \
                 WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4",
         comment_id,
         parent_id,
@@ -46,7 +46,7 @@ pub async fn get_many(
 ) -> Result<Vec<Reply>, SelectErr> {
     query_as!(
         Reply,
-        "SELECT id, agent_id, comment_id, parent_id, content FROM replies \
+        "SELECT id, account_id, comment_id, parent_id, content FROM replies \
                 WHERE comment_id = $1 LIMIT $2 OFFSET $3",
         comment_id,
         limit,
@@ -60,15 +60,15 @@ pub async fn get_many(
 pub async fn create(
     pool: &Pool,
     content: &str,
-    agent_id: Uuid,
+    account_id: Uuid,
     comment_id: Uuid,
     parent_id: Option<Uuid>,
 ) -> Result<QueryResult, InsertErr> {
     query!(
-        "INSERT INTO replies (content, agent_id, comment_id, parent_id) \
+        "INSERT INTO replies (content, account_id, comment_id, parent_id) \
             VALUES ($1, $2, $3, $4)",
         content,
-        agent_id,
+        account_id,
         comment_id,
         parent_id,
     )
