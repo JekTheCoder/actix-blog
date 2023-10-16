@@ -49,7 +49,7 @@ async fn login(
         let tokens = encoder
             .generate_tokens(InnerClaims {
                 id: found.id,
-                role: found.r#type.clone().into(),
+                role: found.kind.clone().into(),
             })
             .map_err(|_| HttpCode::internal_error())?;
 

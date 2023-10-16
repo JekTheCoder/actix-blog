@@ -5,31 +5,35 @@ use uuid::Uuid;
 use crate::{error::sqlx::select::SelectErr, shared::db::Pool};
 
 // Common info of an user or an admin
-pub struct Agent {
+#[derive(sqlx::FromRow, Clone, Debug)]
+pub struct Account {
     pub id: Uuid,
     pub username: String,
     pub password: String,
 
     pub name: String,
-    pub r#type: AgentType,
+    pub kind: AgentType,
 }
 
-#[derive(sqlx::Type, Clone)]
-#[sqlx(type_name = "agent_kind", rename_all = "lowercase")]
+#[derive(sqlx::Type, Clone, Debug)]
+#[sqlx(type_name = "account_kind", rename_all = "lowercase")]
 pub enum AgentType {
     User,
     Admin,
 }
 
-pub async fn by_username(pool: &Pool, username: &str) -> Result<Agent, SelectErr> {
+pub async fn by_username(pool: &Pool, username: &str) -> Result<Account, SelectErr> {
     query_as!(
-        Agent,
-        r#"SELECT id, username, password, name, kind AS "type: _" FROM accounts WHERE username = $1;"#,
+        Account,
+        r#"SELECT id, username, password, name, kind AS "kind: _" FROM accounts WHERE username = $1;"#,
         username
     )
     .fetch_one(pool)
     .await
-    .map_err(|e| e.into())
+    .map_err(|e| {
+            dbg!(&e);
+e.into()
+        })
 }
 
 #[derive(Serialize)]
@@ -40,13 +44,13 @@ pub struct AgentResponse {
     pub kind: AgentType,
 }
 
-impl From<Agent> for AgentResponse {
-    fn from(value: Agent) -> Self {
+impl From<Account> for AgentResponse {
+    fn from(value: Account) -> Self {
         Self {
             id: value.id,
             username: value.username,
             name: value.name,
-            kind: value.r#type,
+            kind: value.kind,
         }
     }
 }
