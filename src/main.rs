@@ -13,6 +13,7 @@ use actix_web::{
 };
 use crate::shared::db::PoolOptions;
 use services::auth::{AuthDecoder, AuthEncoder, RefreshDecoder};
+use actix_cors::Cors;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -28,6 +29,8 @@ async fn main() -> Result<(), InitError> {
     dotenvy::dotenv()?;
 
     let database = dotenvy::var("DATABASE_URL").expect("DATABASE could not load");
+    let host = dotenvy::var("HOST").expect("HOST could not load");
+    let cors_host = dotenvy::var("CORS_HOST").expect("CORS_HOST could not load");
 
     let pool = PoolOptions::new()
         .max_connections(10)
@@ -40,7 +43,13 @@ async fn main() -> Result<(), InitError> {
     let refresh_decoder = RefreshDecoder::default();
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin(&cors_host)
+            .allow_any_method()
+            .allow_any_header();
+
         App::new()
+            .wrap(cors)
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(encoder.clone()))
             .app_data(Data::new(auth_decoder.clone()))
@@ -48,7 +57,7 @@ async fn main() -> Result<(), InitError> {
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(host)?
     .run()
     .await
     .map_err(|err| InitError::Io(err))
