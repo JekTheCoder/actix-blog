@@ -30,10 +30,7 @@ pub async fn by_username(pool: &Pool, username: &str) -> Result<Account, SelectE
     )
     .fetch_one(pool)
     .await
-    .map_err(|e| {
-            dbg!(&e);
-e.into()
-        })
+    .map_err(|e| e.into())
 }
 
 #[derive(Serialize)]

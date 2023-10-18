@@ -48,14 +48,18 @@ async fn main() -> Result<(), InitError> {
             .allow_any_method()
             .allow_any_header();
 
-        App::new()
+        let app = App::new()
             .wrap(cors)
             .app_data(Data::new(pool.clone()))
             .app_data(Data::new(encoder.clone()))
             .app_data(Data::new(auth_decoder.clone()))
             .app_data(Data::new(refresh_decoder.clone()))
             .configure(routes::router)
-            .wrap(NormalizePath::new(TrailingSlash::Always))
+            .wrap(NormalizePath::new(TrailingSlash::Always));
+
+        println!("Blazining initialized!!");
+
+        app
     })
     .bind(host)?
     .run()
