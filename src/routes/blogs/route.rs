@@ -1,46 +1,23 @@
 use actix_web::{
-    error::ErrorUnauthorized,
-    get, post,
+    get,
     web::{scope, Data, Path, ServiceConfig},
     HttpResponse, Responder,
 };
 use tokio::join;
 use uuid::Uuid;
 
-use super::{blog_request::BlogCreateReq, blog_response::BlogResponse};
+use super::{blog_response::BlogResponse, create_one::create_one};
 use crate::{
-    services::auth::claims::{Claims, Role},
     shared::{
         db::{
-            models::{admins, blogs, comments},
+            models::{blogs, comments},
             Pool,
         },
-        extractors::{partial_query::PartialQuery, valid_json::ValidJson},
+        extractors::partial_query::PartialQuery,
         models::select_slice::SelectSlice,
     },
-    traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
+    traits::json_result::JsonResult,
 };
-
-#[post("/")]
-async fn create_one(
-    pool: Data<Pool>,
-    req: ValidJson<BlogCreateReq>,
-    claims: Claims,
-) -> actix_web::Result<impl Responder> {
-    if claims.role != Role::Admin {
-        return Err(ErrorUnauthorized("Not an admin"));
-    }
-
-    let admin = admins::by_agent_id(claims.id, pool.as_ref())
-        .await
-        .catch_http()?;
-
-    let BlogCreateReq { title, content } = req.as_ref();
-
-    blogs::create(pool.get_ref(), title, content, admin.id)
-        .await
-        .into_response()
-}
 
 #[get("/")]
 async fn get_all(pool: Data<Pool>, slice: PartialQuery<SelectSlice>) -> impl Responder {

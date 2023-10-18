@@ -42,6 +42,7 @@ async fn main() -> Result<(), InitError> {
     let auth_decoder = AuthDecoder::default();
     let refresh_decoder = RefreshDecoder::default();
 
+    println!("Host: {}", &host);
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin(&cors_host)

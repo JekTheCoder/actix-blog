@@ -16,6 +16,7 @@ pub struct Blog {
     pub admin_id: Uuid,
     pub title: String,
     pub content: String,
+    pub html: String
 }
 
 #[derive(Serialize)]
@@ -28,15 +29,17 @@ pub struct BlogPreview {
 
 pub async fn create(
     pool: &Pool,
+    admin_id: Uuid,
     title: &str,
     content: &str,
-    admin_id: Uuid,
+    html: &str
 ) -> Result<QueryResult, InsertErr> {
     query!(
-        "INSERT INTO blogs(admin_id, title, content) VALUES($1, $2, $3)",
+        "INSERT INTO blogs(admin_id, title, content, html) VALUES($1, $2, $3, $4)",
         admin_id,
         title,
-        content
+        content,
+        html
     )
     .execute(pool)
     .await
@@ -46,7 +49,7 @@ pub async fn create(
 pub async fn by_id(pool: &Pool, id: Uuid) -> Result<Blog, SelectErr> {
     query_as!(
         Blog,
-        "SELECT id, title, content, admin_id FROM blogs WHERE id = $1",
+        "SELECT id, title, content, html, admin_id FROM blogs WHERE id = $1",
         id
     )
     .fetch_one(pool)
