@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::{services::auth::tokens::Tokens, shared::db::models::agents};
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LoginResponse {
     pub user: agents::AgentResponse,
     pub token: String,
