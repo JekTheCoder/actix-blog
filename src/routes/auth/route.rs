@@ -93,6 +93,7 @@ async fn register(
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RefreshReq {
     pub refresh_token: String,
 }
