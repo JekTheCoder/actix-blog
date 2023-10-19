@@ -44,9 +44,8 @@ async fn get_one(pool: Data<Pool>, id: Path<Uuid>) -> actix_web::Result<impl Res
 
     let blog = BlogResponse {
         comments,
-        admin_id: blog.admin_id,
         id: blog.id,
-        content: blog.content,
+        content: blog.html,
         title: blog.title,
     };
 

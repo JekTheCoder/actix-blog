@@ -19,12 +19,18 @@ pub struct Blog {
     pub html: String
 }
 
+pub struct BlogById {
+    pub id: Uuid,
+    pub title: String,
+    pub html: String
+}
+
 #[derive(Serialize)]
 pub struct BlogPreview {
     pub id: Uuid,
     pub admin_id: Uuid,
     pub title: String,
-    pub content: Option<String>,
+    pub html: Option<String>,
 }
 
 pub async fn create(
@@ -46,10 +52,10 @@ pub async fn create(
     .map_err(|e| e.into())
 }
 
-pub async fn by_id(pool: &Pool, id: Uuid) -> Result<Blog, SelectErr> {
+pub async fn by_id(pool: &Pool, id: Uuid) -> Result<BlogById, SelectErr> {
     query_as!(
-        Blog,
-        "SELECT id, title, content, html, admin_id FROM blogs WHERE id = $1",
+        BlogById,
+        "SELECT id, title, html FROM blogs WHERE id = $1",
         id
     )
     .fetch_one(pool)
@@ -62,7 +68,7 @@ pub async fn get_all(pool: &Pool, slice: SelectSlice) -> Result<Vec<BlogPreview>
 
     query_as!(
         BlogPreview,
-        "SELECT id, title, SUBSTRING(content, 0, 200) as content, admin_id FROM blogs \
+        "SELECT id, title, SUBSTRING(html, 0, 200) as html, admin_id FROM blogs \
                 LIMIT $1 OFFSET $2",
         limit,
         offset
