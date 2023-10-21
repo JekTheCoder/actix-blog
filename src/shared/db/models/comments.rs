@@ -25,22 +25,37 @@ pub struct Comment {
     pub content: String,
 }
 
+pub struct CommentJoinUser {
+    pub id: Uuid,
+    pub blog_id: Uuid,
+    pub content: String,
+    pub account_id: Uuid,
+    pub account_name: String,
+    pub account_username: String,
+}
+
 pub async fn by_blog<'a>(
     pool: &'a Pool,
     blog_id: Uuid,
     SelectSlice { limit, offset }: SelectSlice,
-) -> Result<Vec<Comment>, SelectErr> {
-    query_as!(
-        Comment,
-        "SELECT id, account_id, blog_id, content FROM comments WHERE blog_id = $1 \
-            LIMIT $2 OFFSET $3",
+) -> Result<Vec<CommentJoinUser>, SelectErr> {
+    let data = query_as!(
+        CommentJoinUser,
+        r#"SELECT 
+            c.id, c.blog_id, c.content, 
+            a.id as account_id, a.name as account_name, a.username as account_username
+            FROM comments c 
+            JOIN accounts a on c.account_id = a.id 
+            WHERE blog_id = $1 
+            LIMIT $2 OFFSET $3"#,
         blog_id,
         limit,
         offset
     )
     .fetch_all(pool)
-    .await
-    .map_err(|e| e.into())
+    .await;
+
+    data.map_err(|e| e.into())
 }
 
 pub async fn create<'a>(

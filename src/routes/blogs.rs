@@ -1,5 +1,5 @@
-pub mod blog_response;
-mod blog_request;
+pub mod response;
+mod request;
 mod create_one;
 
 mod comments;

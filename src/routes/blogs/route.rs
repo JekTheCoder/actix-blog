@@ -6,7 +6,7 @@ use actix_web::{
 use tokio::join;
 use uuid::Uuid;
 
-use super::{blog_response::BlogResponse, create_one::create_one};
+use super::{create_one::create_one, response::BlogResponse};
 use crate::{
     shared::{
         db::{
@@ -43,7 +43,7 @@ async fn get_one(pool: Data<Pool>, id: Path<Uuid>) -> actix_web::Result<impl Res
     let comments = comments?;
 
     let blog = BlogResponse {
-        comments,
+        comments: comments.into_iter().map(Into::into).collect(),
         id: blog.id,
         content: blog.html,
         title: blog.title,

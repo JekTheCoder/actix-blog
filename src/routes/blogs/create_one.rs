@@ -12,7 +12,7 @@ use crate::{
     traits::{catch_http::CatchHttp, into_response::IntoResponse},
 };
 
-use super::blog_request::BlogCreateReq;
+use super::request::BlogCreateReq;
 
 #[post("/")]
 pub async fn create_one(

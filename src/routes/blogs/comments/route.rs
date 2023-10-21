@@ -1,12 +1,18 @@
 use crate::{
     services::auth::claims::Claims,
     shared::{
-        db::{models::comments, Pool},
+        db::{
+            models::comments::{self, CommentJoinUser},
+            Pool,
+        },
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
     traits::{into_response::IntoResponse, json_result::JsonResult},
 };
+
+use super::response::CommentByBlog;
+
 use actix_web::{
     get, post,
     web::{scope, Data, Path, ServiceConfig},
@@ -24,6 +30,12 @@ pub async fn get_all(
 ) -> impl Responder {
     comments::by_blog(pool.get_ref(), blog_id.into_inner(), slice.into_inner())
         .await
+        .map(|comments| {
+            comments
+                .into_iter()
+                .map(<CommentByBlog as From<CommentJoinUser>>::from)
+                .collect::<Vec<_>>()
+        })
         .json_result()
 }
 
