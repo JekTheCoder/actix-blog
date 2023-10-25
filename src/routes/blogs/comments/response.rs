@@ -10,6 +10,7 @@ pub struct CommentByBlog {
     pub blog_id: Uuid,
     pub content: String,
     pub account: AccountByComment,
+    pub has_replies: bool,
 }
 
 #[derive(Serialize)]
@@ -25,6 +26,7 @@ impl From<CommentJoinUser> for CommentByBlog {
             id: comment.id,
             blog_id: comment.blog_id,
             content: comment.content,
+            has_replies: comment.has_replies,
             account: AccountByComment {
                 id: comment.account_id,
                 name: comment.account_name,

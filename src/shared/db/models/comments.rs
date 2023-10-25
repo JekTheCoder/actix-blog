@@ -32,6 +32,7 @@ pub struct CommentJoinUser {
     pub account_id: Uuid,
     pub account_name: String,
     pub account_username: String,
+    pub has_replies: bool,
 }
 
 pub async fn by_blog<'a>(
@@ -43,7 +44,8 @@ pub async fn by_blog<'a>(
         CommentJoinUser,
         r#"SELECT 
             c.id, c.blog_id, c.content, 
-            a.id as account_id, a.name as account_name, a.username as account_username
+            a.id as account_id, a.name as account_name, a.username as account_username, 
+            (SELECT COUNT(*) > 0 FROM replies r WHERE r.comment_id = c.id AND r.parent_id IS NULL LIMIT 1) as "has_replies!"
             FROM comments c 
             JOIN accounts a on c.account_id = a.id 
             WHERE blog_id = $1 

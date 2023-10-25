@@ -11,12 +11,14 @@ use crate::{
 };
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Reply {
     pub id: Uuid,
     pub account_id: Uuid,
     pub comment_id: Uuid,
     pub parent_id: Option<Uuid>,
     pub content: String,
+    pub has_replies: bool,
 }
 
 pub async fn get_many_by_parent(
@@ -27,8 +29,10 @@ pub async fn get_many_by_parent(
 ) -> Result<Vec<Reply>, SelectErr> {
     query_as!(
         Reply,
-        "SELECT id, account_id, comment_id, parent_id, content FROM replies \
-                WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4",
+        r#"SELECT id, account_id, comment_id, parent_id, content,
+            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as "has_replies!"
+            FROM replies ro
+            WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4"#,
         comment_id,
         parent_id,
         limit,
@@ -46,8 +50,10 @@ pub async fn get_many(
 ) -> Result<Vec<Reply>, SelectErr> {
     query_as!(
         Reply,
-        "SELECT id, account_id, comment_id, parent_id, content FROM replies \
-                WHERE comment_id = $1 LIMIT $2 OFFSET $3",
+        r#"SELECT id, account_id, comment_id, parent_id, content,
+            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as "has_replies!"
+            FROM replies ro
+            WHERE comment_id = $1 AND parent_id IS NULL LIMIT $2 OFFSET $3"#,
         comment_id,
         limit,
         offset,
