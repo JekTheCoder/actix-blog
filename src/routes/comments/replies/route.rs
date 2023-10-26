@@ -27,11 +27,12 @@ pub struct ParentUuid {
 #[get("/")]
 pub async fn get_all(
     pool: Data<Pool>,
-    path: Path<(Uuid, Uuid)>,
+    path: Path<Uuid>,
     parent_id: Query<ParentUuid>,
     slice: PartialQuery<SelectSlice>,
 ) -> impl Responder {
-    let (_blog_id, comment_id) = path.into_inner();
+    let comment_id = path.into_inner();
+
     let res = match parent_id.into_inner().parent_id {
         Some(parent_id) => {
             replies::get_many_by_parent(pool.get_ref(), comment_id, parent_id, slice.into_inner())
