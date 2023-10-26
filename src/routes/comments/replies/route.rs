@@ -1,21 +1,22 @@
 use actix_web::{
     get, post,
-    web::{scope, Data, Json, Path, Query, ServiceConfig},
+    web::{scope, Data, Path, Query, ServiceConfig},
     Responder,
 };
 use serde::Deserialize;
 use uuid::Uuid;
-use validator::Validate;
 
 use crate::{
-    routes::blogs::comments::create_comment::CreateComment,
     services::auth::claims::Claims,
     shared::{
-        db::{models::replies, Pool},
-        extractors::partial_query::PartialQuery,
+        db::{
+            models::{comments::CreateComment, replies},
+            Pool,
+        },
+        extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
-    traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
+    traits::{into_response::IntoResponse, json_result::JsonResult},
 };
 
 #[derive(Debug, Deserialize)]
@@ -45,17 +46,16 @@ pub async fn get_all(
 #[post("/")]
 pub async fn create(
     pool: Data<Pool>,
-    path: Path<(Uuid, Uuid)>,
+    path: Path<Uuid>,
     Claims { id, .. }: Claims,
-    req: Json<CreateComment>,
+    req: ValidJson<CreateComment>,
     parent_id: Query<ParentUuid>,
 ) -> actix_web::Result<impl Responder> {
-    req.validate().catch_http()?;
-    let (_blog_id, comment_id) = path.into_inner();
+    let comment_id = path.into_inner();
 
     replies::create(
         pool.get_ref(),
-        &req.content,
+        &req.into_inner().content,
         id,
         comment_id,
         parent_id.parent_id,

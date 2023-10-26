@@ -20,8 +20,6 @@ use actix_web::{
 };
 use uuid::Uuid;
 
-use super::replies;
-
 #[get("/")]
 pub async fn get_all(
     pool: Data<Pool>,
@@ -61,6 +59,5 @@ pub fn router(cfg: &mut ServiceConfig) {
         scope("/{blog_id}/comments")
             .service(get_all)
             .service(create)
-            .configure(replies::router),
     );
 }

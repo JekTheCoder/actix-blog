@@ -48,9 +48,3 @@ impl FromRequest for AuthUser {
         })
     }
 }
-
-impl AuthUser {
-    pub fn into_inner(self) -> Account {
-        self.user
-    }
-}

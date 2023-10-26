@@ -71,10 +71,3 @@ pub async fn by_id(pool: &Pool, id: Uuid) -> Result<Response, SelectErr> {
         .await
         .map_err(|e| e.into())
 }
-
-pub async fn complete_by_id(pool: &Pool, id: Uuid) -> Result<User, SelectErr> {
-    query_as!(User, "SELECT * FROM users WHERE id = $1", id)
-        .fetch_one(pool)
-        .await
-        .map_err(|e| e.into())
-}

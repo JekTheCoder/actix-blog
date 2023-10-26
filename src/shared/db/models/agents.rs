@@ -2,7 +2,7 @@ use serde::Serialize;
 use sqlx::query_as;
 use uuid::Uuid;
 
-use crate::{error::sqlx::select::SelectErr, shared::{db::Pool, models::insert_return::IdReturn}};
+use crate::{error::sqlx::select::SelectErr, shared::db::Pool};
 
 // Common info of an user or an admin
 #[derive(sqlx::FromRow, Clone, Debug)]
@@ -27,6 +27,17 @@ pub async fn by_username(pool: &Pool, username: &str) -> Result<Account, SelectE
         Account,
         r#"SELECT id, username, password, name, kind AS "kind: _" FROM accounts WHERE username = $1;"#,
         username
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|e| e.into())
+}
+
+pub async fn by_id(pool: &Pool, id: Uuid) -> Result<Account, SelectErr> {
+    query_as!(
+        Account,
+        r#"SELECT id, username, password, name, kind AS "kind: _" FROM accounts WHERE id = $1;"#,
+        id
     )
     .fetch_one(pool)
     .await

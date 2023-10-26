@@ -1,4 +1,3 @@
-pub mod replies;
 pub mod response;
 
 mod create_comment;

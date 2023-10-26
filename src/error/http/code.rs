@@ -19,10 +19,6 @@ impl Responder for HttpCode {
 }
 
 impl HttpCode {
-    pub fn bad_request() -> Self {
-        Self(StatusCode::BAD_REQUEST)
-    }
-
     pub fn internal_error() -> Self {
         Self(StatusCode::INTERNAL_SERVER_ERROR)
     }
