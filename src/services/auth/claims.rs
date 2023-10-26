@@ -92,7 +92,7 @@ impl FromRequest for Claims {
     }
 }
 
-fn claimns_from_req(
+pub fn claimns_from_req(
     req: &actix_web::HttpRequest,
 ) -> Result<Claims, <Claims as FromRequest>::Error> {
     let token = bearer(req).ok_or_else(|| ErrorUnauthorized(""))?;

@@ -3,7 +3,7 @@ use std::future;
 use crate::{
     services::auth::AuthDecoder,
     shared::db::{
-        models::users::{self, User},
+        models::agents::{self, Account},
         Pool,
     },
     utils::{future::DynFuture, http::bearer},
@@ -12,7 +12,7 @@ use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 
 #[derive(Debug)]
 pub struct AuthUser {
-    pub user: User,
+    pub user: Account,
 }
 
 impl FromRequest for AuthUser {
@@ -40,7 +40,7 @@ impl FromRequest for AuthUser {
             .clone();
 
         Box::pin(async move {
-            let user = users::complete_by_id(&pool, claims.id)
+            let user = agents::by_id(&pool, claims.id)
                 .await
                 .map_err(|_| ErrorUnauthorized(""))?;
 
@@ -50,7 +50,7 @@ impl FromRequest for AuthUser {
 }
 
 impl AuthUser {
-    pub fn into_inner(self) -> User {
+    pub fn into_inner(self) -> Account {
         self.user
     }
 }

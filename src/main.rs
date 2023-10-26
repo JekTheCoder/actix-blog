@@ -6,14 +6,14 @@ mod services;
 mod traits;
 mod utils;
 
+use crate::shared::db::PoolOptions;
+use actix_cors::Cors;
 use actix_web::{
     middleware::{NormalizePath, TrailingSlash},
     web::Data,
     App, HttpServer,
 };
-use crate::shared::db::PoolOptions;
 use services::auth::{AuthDecoder, AuthEncoder, RefreshDecoder};
-use actix_cors::Cors;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -24,8 +24,11 @@ enum InitError {
     Env(#[from] dotenvy::Error),
 }
 
-#[actix_web::main]
-async fn main() -> Result<(), InitError> {
+fn main() -> Result<(), InitError> {
+    <::actix_web::rt::System>::new().block_on(run())
+}
+
+async fn run() -> Result<(), InitError> {
     dotenvy::dotenv()?;
 
     let database = dotenvy::var("DATABASE_URL").expect("DATABASE could not load");
@@ -43,6 +46,7 @@ async fn main() -> Result<(), InitError> {
     let refresh_decoder = RefreshDecoder::default();
 
     println!("Host: {}", &host);
+
     HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin(&cors_host)
@@ -59,7 +63,6 @@ async fn main() -> Result<(), InitError> {
             .wrap(NormalizePath::new(TrailingSlash::Always));
 
         println!("Blazining initialized!!");
-
         app
     })
     .bind(host)?

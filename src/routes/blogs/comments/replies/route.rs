@@ -9,9 +9,10 @@ use validator::Validate;
 
 use crate::{
     routes::blogs::comments::create_comment::CreateComment,
+    services::auth::claims::Claims,
     shared::{
         db::{models::replies, Pool},
-        extractors::{auth::AuthUser, partial_query::PartialQuery},
+        extractors::partial_query::PartialQuery,
         models::select_slice::SelectSlice,
     },
     traits::{catch_http::CatchHttp, into_response::IntoResponse, json_result::JsonResult},
@@ -45,7 +46,7 @@ pub async fn get_all(
 pub async fn create(
     pool: Data<Pool>,
     path: Path<(Uuid, Uuid)>,
-    user: AuthUser,
+    Claims { id, .. }: Claims,
     req: Json<CreateComment>,
     parent_id: Query<ParentUuid>,
 ) -> actix_web::Result<impl Responder> {
@@ -55,7 +56,7 @@ pub async fn create(
     replies::create(
         pool.get_ref(),
         &req.content,
-        user.into_inner().id,
+        id,
         comment_id,
         parent_id.parent_id,
     )
