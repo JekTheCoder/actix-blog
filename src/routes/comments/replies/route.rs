@@ -25,6 +25,7 @@ use crate::{
 use super::response::ReplyByComment;
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ParentUuid {
     pub parent_id: Option<Uuid>,
 }
