@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 
 use crate::modules::auth::{
-    error::jwt_encode_error::JwtEncodeError, models::claims::InnerClaims, Claims, Tokens,
+    error::jwt_encode_error::JwtEncodeError, Claims, Tokens, ClaimsData,
 };
 
 #[derive(Clone)]
@@ -35,7 +35,7 @@ impl AuthEncoder {
         &self,
         key: &EncodingKey,
         duration: Duration,
-        inner: InnerClaims,
+        inner: ClaimsData,
     ) -> Result<String, JwtEncodeError> {
         let exp = Utc::now()
             .checked_add_signed(duration)
@@ -46,15 +46,15 @@ impl AuthEncoder {
         encode(&self.header, &claimns, key).map_err(|_| JwtEncodeError)
     }
 
-    pub fn auth(&self, inner: InnerClaims) -> Result<String, JwtEncodeError> {
+    pub fn auth(&self, inner: ClaimsData) -> Result<String, JwtEncodeError> {
         self.encode(&self.auth_key, Duration::minutes(5), inner)
     }
 
-    pub fn refresh(&self, inner: InnerClaims) -> Result<String, JwtEncodeError> {
+    pub fn refresh(&self, inner: ClaimsData) -> Result<String, JwtEncodeError> {
         self.encode(&self.refresh_key, Duration::weeks(60), inner)
     }
 
-    pub fn generate_tokens(&self, inner: InnerClaims) -> Result<Tokens, JwtEncodeError> {
+    pub fn generate_tokens(&self, inner: ClaimsData) -> Result<Tokens, JwtEncodeError> {
         let auth_token = self.auth(inner.clone())?;
         let refresh_token = self.refresh(inner)?;
 

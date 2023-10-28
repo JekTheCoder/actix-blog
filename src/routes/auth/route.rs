@@ -8,7 +8,7 @@ use serde::Deserialize;
 use super::response::LoginResponse;
 use crate::{
     error::http::code::HttpCode,
-    modules::auth::{InnerClaims, AuthEncoder, RefreshDecoder, Role},
+    modules::auth::{ClaimsData, AuthEncoder, RefreshDecoder, Role},
     shared::db::{models::agents, Pool},
     shared::{db::models::users, extractors::valid_json::ValidJson},
     traits::catch_http::CatchHttp,
@@ -47,7 +47,7 @@ async fn login(
 
     if verified {
         let tokens = encoder
-            .generate_tokens(InnerClaims {
+            .generate_tokens(ClaimsData {
                 id: found.id,
                 role: found.kind.clone().into(),
             })
@@ -86,7 +86,7 @@ async fn register(
     };
 
     let tokens = encoder
-        .generate_tokens(InnerClaims::user_claims(id))
+        .generate_tokens(ClaimsData::user_claims(id))
         .map_err(|_| HttpCode::internal_error())?;
 
     Ok(HttpResponse::Created().json(LoginResponse::new(agent_response, tokens)))

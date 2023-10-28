@@ -9,9 +9,12 @@ pub use services::auth_decoder::AuthDecoder;
 pub use services::refresh_decoder::RefreshDecoder;
 pub use services::auth_encoder::AuthEncoder;
 
-pub use models::claims::{Claims, InnerClaims};
-pub use models::role::Role;
-pub use models::tokens::Tokens;
+pub use models::{
+    claims::Claims,
+    claims_data::ClaimsData,
+    role::Role,
+    tokens::Tokens,
+};
 
 pub fn configure(app: &mut ServiceConfig) {
     app.app_data(Data::new(AuthDecoder::default()))

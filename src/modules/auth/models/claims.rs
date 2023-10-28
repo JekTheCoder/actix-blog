@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::modules::auth::{utils::bearer, services::auth_decoder::AuthDecoder};
 
-use super::role::Role;
+use super::{role::Role, claims_data::ClaimsData};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -15,29 +15,14 @@ pub struct Claims {
 }
 
 impl Claims {
-    pub fn new(InnerClaims { id, role }: InnerClaims, exp: usize) -> Self {
+    pub fn new(ClaimsData { id, role }: ClaimsData, exp: usize) -> Self {
         Self { exp, id, role }
     }
 
-    pub const fn inner(self) -> InnerClaims {
-        InnerClaims {
+    pub const fn inner(self) -> ClaimsData {
+        ClaimsData {
             id: self.id,
             role: self.role,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct InnerClaims {
-    pub id: uuid::Uuid,
-    pub role: Role,
-}
-
-impl InnerClaims {
-    pub const fn user_claims(id: uuid::Uuid) -> Self {
-        Self {
-            id,
-            role: Role::User,
         }
     }
 }
