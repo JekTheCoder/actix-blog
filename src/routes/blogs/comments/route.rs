@@ -8,7 +8,7 @@ use crate::{
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
-    traits::{into_response::IntoResponse, json_result::JsonResult},
+    traits::{json_result::JsonResult, created_reponse::CreatedReponse},
 };
 
 use super::response::CommentByBlog;
@@ -51,13 +51,13 @@ pub async fn create(
         blog_id.into_inner(),
     )
     .await
-    .into_response()
+    .created_response()
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/{blog_id}/comments")
             .service(get_all)
-            .service(create)
+            .service(create),
     );
 }

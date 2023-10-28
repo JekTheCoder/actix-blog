@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
-use sqlx::{query, query_as};
+use sqlx::query_as;
 use uuid::Uuid;
 use validator::Validate;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
     shared::{
-        db::{Pool, QueryResult},
-        models::select_slice::SelectSlice,
+        db::Pool,
+        models::{insert_return::IdSelect, select_slice::SelectSlice},
     },
 };
 
@@ -65,14 +65,15 @@ pub async fn create<'a>(
     req: &'a CreateComment,
     agent_id: Uuid,
     blog_id: Uuid,
-) -> Result<QueryResult, InsertErr> {
-    query!(
-        "INSERT INTO comments (account_id, blog_id, content) VALUES ($1, $2, $3)",
+) -> Result<IdSelect, InsertErr> {
+    query_as!(
+        IdSelect,
+        "INSERT INTO comments (account_id, blog_id, content) VALUES ($1, $2, $3) RETURNING id",
         agent_id,
         blog_id,
         req.content
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await
     .map_err(|e| e.into())
 }

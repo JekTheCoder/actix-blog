@@ -19,7 +19,7 @@ use crate::{
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
-    traits::{into_response::IntoResponse, json_result::JsonResult},
+    traits::{created_reponse::CreatedReponse, json_result::JsonResult},
 };
 
 use super::response::ReplyByComment;
@@ -52,7 +52,8 @@ pub async fn get_all(
             .into_iter()
             .map(<ReplyByComment as From<ReplyJoinAccount>>::from)
             .collect::<Vec<_>>()
-    }).json_result()
+    })
+    .json_result()
 }
 
 #[post("/")]
@@ -73,7 +74,7 @@ pub async fn create(
         parent_id.parent_id,
     )
     .await
-    .into_response()
+    .created_response()
 }
 
 pub fn router(cfg: &mut ServiceConfig) {

@@ -6,7 +6,7 @@ use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
     shared::{
         db::{Pool, QueryResult},
-        models::select_slice::SelectSlice,
+        models::{insert_return::IdSelect, select_slice::SelectSlice},
     },
 };
 
@@ -78,16 +78,17 @@ pub async fn create(
     account_id: Uuid,
     comment_id: Uuid,
     parent_id: Option<Uuid>,
-) -> Result<QueryResult, InsertErr> {
-    query!(
+) -> Result<IdSelect, InsertErr> {
+    query_as!(
+        IdSelect,
         "INSERT INTO replies (content, account_id, comment_id, parent_id) \
-            VALUES ($1, $2, $3, $4)",
+            VALUES ($1, $2, $3, $4) RETURNING id",
         content,
         account_id,
         comment_id,
         parent_id,
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await
     .map_err(|e| e.into())
 }
