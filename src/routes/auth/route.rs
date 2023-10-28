@@ -8,7 +8,7 @@ use serde::Deserialize;
 use super::response::LoginResponse;
 use crate::{
     error::http::code::HttpCode,
-    services::auth::{claims::InnerClaims, encoder::AuthEncoder, RefreshDecoder},
+    modules::auth::{InnerClaims, AuthEncoder, RefreshDecoder, Role},
     shared::db::{models::agents, Pool},
     shared::{db::models::users, extractors::valid_json::ValidJson},
     traits::catch_http::CatchHttp,
@@ -80,7 +80,7 @@ async fn register(
     let users::CreateReq { name, username, .. } = req.into_inner();
     let agent_response = agents::AgentResponse {
         id,
-        kind: agents::AgentType::User,
+        kind: Role::User,
         name,
         username,
     };

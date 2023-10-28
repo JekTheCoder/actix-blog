@@ -1,13 +1,13 @@
 use std::future;
 
 use crate::{
-    services::auth::AuthDecoder,
     shared::db::{
         models::agents::{self, Account},
         Pool,
     },
     utils::{future::DynFuture, http::bearer},
 };
+use crate::modules::auth::AuthDecoder;
 use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 
 #[derive(Debug)]

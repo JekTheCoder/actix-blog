@@ -6,6 +6,8 @@ mod services;
 mod traits;
 mod utils;
 
+mod modules;
+
 use crate::shared::db::PoolOptions;
 use actix_cors::Cors;
 use actix_web::{
@@ -13,7 +15,6 @@ use actix_web::{
     web::Data,
     App, HttpServer,
 };
-use services::auth::{AuthDecoder, AuthEncoder, RefreshDecoder};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -41,10 +42,6 @@ async fn run() -> Result<(), InitError> {
         .await
         .expect("Pg pool not conected");
 
-    let encoder = AuthEncoder::default();
-    let auth_decoder = AuthDecoder::default();
-    let refresh_decoder = RefreshDecoder::default();
-
     println!("Host: {}", &host);
 
     HttpServer::new(move || {
@@ -56,9 +53,7 @@ async fn run() -> Result<(), InitError> {
         let app = App::new()
             .wrap(cors)
             .app_data(Data::new(pool.clone()))
-            .app_data(Data::new(encoder.clone()))
-            .app_data(Data::new(auth_decoder.clone()))
-            .app_data(Data::new(refresh_decoder.clone()))
+            .configure(modules::auth::configure)
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always));
 

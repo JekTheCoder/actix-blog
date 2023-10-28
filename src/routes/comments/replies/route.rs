@@ -7,7 +7,6 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    services::auth::claims::Claims,
     shared::{
         db::{
             models::{
@@ -21,6 +20,8 @@ use crate::{
     },
     traits::{created_reponse::CreatedReponse, json_result::JsonResult},
 };
+
+use crate::modules::auth::Claims;
 
 use super::response::ReplyByComment;
 

@@ -1,11 +1,11 @@
 use serde::Serialize;
-use sqlx::{query, query_as};
+use sqlx::query_as;
 use uuid::Uuid;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
     shared::{
-        db::{Pool, QueryResult},
+        db::Pool,
         models::{insert_return::IdSelect, select_slice::SelectSlice},
     },
 };

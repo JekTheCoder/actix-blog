@@ -2,7 +2,7 @@ use serde::Serialize;
 use sqlx::query_as;
 use uuid::Uuid;
 
-use crate::{error::sqlx::select::SelectErr, shared::db::Pool};
+use crate::{error::sqlx::select::SelectErr, modules::auth::Role, shared::db::Pool};
 
 // Common info of an user or an admin
 #[derive(sqlx::FromRow, Clone, Debug)]
@@ -12,14 +12,7 @@ pub struct Account {
     pub password: String,
 
     pub name: String,
-    pub kind: AgentType,
-}
-
-#[derive(sqlx::Type, Clone, Debug)]
-#[sqlx(type_name = "account_kind", rename_all = "lowercase")]
-pub enum AgentType {
-    User,
-    Admin,
+    pub kind: Role,
 }
 
 pub async fn by_username(pool: &Pool, username: &str) -> Result<Account, SelectErr> {
@@ -49,7 +42,7 @@ pub struct AgentResponse {
     pub id: Uuid,
     pub username: String,
     pub name: String,
-    pub kind: AgentType,
+    pub kind: Role,
 }
 
 impl From<Account> for AgentResponse {
@@ -60,17 +53,5 @@ impl From<Account> for AgentResponse {
             name: value.name,
             kind: value.kind,
         }
-    }
-}
-
-impl Serialize for AgentType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_u8(match self {
-            AgentType::User => 0,
-            AgentType::Admin => 1,
-        })
     }
 }

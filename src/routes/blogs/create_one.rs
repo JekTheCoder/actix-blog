@@ -1,7 +1,7 @@
 use actix_web::{error::ErrorUnauthorized, post, web::Data, Responder};
 
 use crate::{
-    services::auth::claims::{Claims, Role},
+    modules::auth::{Claims, Role},
     shared::{
         db::{
             models::{admins, blogs},

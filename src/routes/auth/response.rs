@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{services::auth::tokens::Tokens, shared::db::models::agents};
+use crate::{shared::db::models::agents, modules::auth::Tokens};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

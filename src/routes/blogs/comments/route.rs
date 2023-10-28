@@ -1,5 +1,5 @@
 use crate::{
-    services::auth::claims::Claims,
+    modules::auth::Claims,
     shared::{
         db::{
             models::comments::{self, CommentJoinUser},
