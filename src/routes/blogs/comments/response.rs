@@ -1,7 +1,9 @@
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::shared::db::models::comments::CommentJoinUser;
+use crate::shared::{
+    db::models::comments::CommentJoinUser, models::response::public_account::PublicAccount,
+};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -9,15 +11,8 @@ pub struct CommentByBlog {
     pub id: Uuid,
     pub blog_id: Uuid,
     pub content: String,
-    pub account: AccountByComment,
+    pub account: PublicAccount,
     pub has_replies: bool,
-}
-
-#[derive(Serialize)]
-pub struct AccountByComment {
-    pub id: Uuid,
-    pub name: String,
-    pub username: String,
 }
 
 impl From<CommentJoinUser> for CommentByBlog {
@@ -27,7 +22,7 @@ impl From<CommentJoinUser> for CommentByBlog {
             blog_id: comment.blog_id,
             content: comment.content,
             has_replies: comment.has_replies,
-            account: AccountByComment {
+            account: PublicAccount {
                 id: comment.account_id,
                 name: comment.account_name,
                 username: comment.account_username,

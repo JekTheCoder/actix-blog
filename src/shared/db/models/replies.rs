@@ -12,13 +12,16 @@ use crate::{
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Reply {
+pub struct ReplyJoinAccount {
     pub id: Uuid,
-    pub account_id: Uuid,
     pub comment_id: Uuid,
     pub parent_id: Option<Uuid>,
     pub content: String,
     pub has_replies: bool,
+
+    pub account_id: Uuid,
+    pub account_name: String,
+    pub account_username: String,
 }
 
 pub async fn get_many_by_parent(
@@ -26,12 +29,15 @@ pub async fn get_many_by_parent(
     comment_id: Uuid,
     parent_id: Uuid,
     SelectSlice { limit, offset }: SelectSlice,
-) -> Result<Vec<Reply>, SelectErr> {
+) -> Result<Vec<ReplyJoinAccount>, SelectErr> {
     query_as!(
-        Reply,
-        r#"SELECT id, account_id, comment_id, parent_id, content,
+        ReplyJoinAccount,
+        r#"SELECT 
+            ro.id, ro.comment_id, ro.parent_id, ro.content,
+            a.id as account_id, a.name as account_name, a.username as account_username, 
             (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as "has_replies!"
             FROM replies ro
+            JOIN accounts a on ro.account_id = a.id 
             WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4"#,
         comment_id,
         parent_id,
@@ -47,12 +53,15 @@ pub async fn get_many(
     pool: &Pool,
     comment_id: Uuid,
     SelectSlice { limit, offset }: SelectSlice,
-) -> Result<Vec<Reply>, SelectErr> {
+) -> Result<Vec<ReplyJoinAccount>, SelectErr> {
     query_as!(
-        Reply,
-        r#"SELECT id, account_id, comment_id, parent_id, content,
+        ReplyJoinAccount,
+        r#"SELECT 
+            ro.id, ro.comment_id, ro.parent_id, ro.content,
+            a.id as account_id, a.name as account_name, a.username as account_username, 
             (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as "has_replies!"
             FROM replies ro
+            JOIN accounts a on ro.account_id = a.id 
             WHERE comment_id = $1 AND parent_id IS NULL LIMIT $2 OFFSET $3"#,
         comment_id,
         limit,

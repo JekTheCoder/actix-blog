@@ -10,7 +10,10 @@ use crate::{
     services::auth::claims::Claims,
     shared::{
         db::{
-            models::{comments::CreateComment, replies},
+            models::{
+                comments::CreateComment,
+                replies::{self, ReplyJoinAccount},
+            },
             Pool,
         },
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
@@ -18,6 +21,8 @@ use crate::{
     },
     traits::{into_response::IntoResponse, json_result::JsonResult},
 };
+
+use super::response::ReplyByComment;
 
 #[derive(Debug, Deserialize)]
 pub struct ParentUuid {
@@ -41,7 +46,12 @@ pub async fn get_all(
         None => replies::get_many(pool.get_ref(), comment_id, slice.into_inner()).await,
     };
 
-    res.json_result()
+    res.map(|replies| {
+        replies
+            .into_iter()
+            .map(<ReplyByComment as From<ReplyJoinAccount>>::from)
+            .collect::<Vec<_>>()
+    }).json_result()
 }
 
 #[post("/")]
