@@ -27,10 +27,6 @@ impl HttpCode {
         Self(StatusCode::CONFLICT)
     }
 
-    pub fn unauthorized() -> Self {
-        Self(StatusCode::UNAUTHORIZED)
-    }
-
     pub fn not_found() -> Self {
         Self(StatusCode::NOT_FOUND)
     }

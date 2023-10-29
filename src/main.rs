@@ -2,11 +2,11 @@ mod shared;
 
 mod error;
 mod routes;
-mod services;
 mod traits;
 mod utils;
 
 mod actix;
+mod sqlx;
 mod modules;
 
 use actix_cors::Cors;
