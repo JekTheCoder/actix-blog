@@ -5,12 +5,9 @@ use actix_web::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    modules::{
-        auth::{AuthEncoder, ClaimsData},
-        db::Pool,
-    },
-    shared::db::models::agents,
+use crate::modules::{
+    auth::{AuthEncoder, ClaimsData},
+    db::Pool, account,
 };
 
 #[derive(Clone, Debug, Deserialize)]
@@ -22,7 +19,7 @@ pub struct Request {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub user: agents::AgentResponse,
+    pub user: account::AccountResponse,
     pub token: String,
     pub refresh_token: String,
 }
@@ -55,7 +52,7 @@ pub async fn endpoint(
 ) -> Result<impl Responder, Error> {
     let Request { username, password } = req.0;
 
-    let found = agents::by_username(pool.get_ref(), &username)
+    let found = account::by_username(pool.get_ref(), &username)
         .await
         .map_err(|_| Error::BadRequest)?;
 

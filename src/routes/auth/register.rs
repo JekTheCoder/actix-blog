@@ -4,10 +4,10 @@ use crate::{
     modules::{
         auth::{AuthEncoder, ClaimsData, Role},
         db::Pool,
-        user,
+        user, account,
     },
     shared::{
-        db::models::agents, extractors::valid_json::ValidJson, models::insert_return::IdSelect,
+        extractors::valid_json::ValidJson, models::insert_return::IdSelect,
     },
 };
 
@@ -41,7 +41,7 @@ pub async fn endpoint(
         .map_err(|_| Error::Database)?;
 
     let user::CreateRequest { name, username, .. } = req;
-    let agent_response = agents::AgentResponse {
+    let agent_response = account::AccountResponse {
         id,
         kind: Role::User,
         name,

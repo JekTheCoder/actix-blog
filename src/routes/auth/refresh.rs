@@ -5,48 +5,57 @@ use actix_web::{
 };
 use serde::Deserialize;
 
-use crate::{
-    error::http::code::HttpCode,
-    modules::auth::{AuthEncoder, RefreshDecoder},
-};
+use crate::modules::auth::{AuthEncoder, RefreshDecoder};
 
 #[derive(Debug, thiserror::Error)]
-#[error("username or password invalid")]
-struct LoginInvalid;
+enum Error {
+    #[error("invalid claims")]
+    ClaimsDecode,
+    #[error("internal error")]
+    HostTime,
+    #[error("claims expired")]
+    Expired,
+    #[error("internal error")]
+    Tokens,
+}
 
-impl ResponseError for LoginInvalid {
+impl ResponseError for Error {
     fn status_code(&self) -> actix_web::http::StatusCode {
-        actix_web::http::StatusCode::BAD_REQUEST
+        match self {
+            Error::Expired => actix_web::http::StatusCode::BAD_REQUEST,
+            _ => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+        }
     }
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RefreshRequest {
+pub struct Request {
     pub refresh_token: String,
 }
 
 #[post("/refresh/")]
-async fn refresh(
-    req: Json<RefreshRequest>,
+async fn endpoint(
+    req: Json<Request>,
     decoder: Data<RefreshDecoder>,
     encoder: Data<AuthEncoder>,
-) -> actix_web::Result<impl Responder> {
+) -> Result<impl Responder, Error> {
     let claims = decoder
         .decode(&req.refresh_token)
-        .map_err(|_| HttpCode::unauthorized())?;
+        .map_err(|_| Error::ClaimsDecode)?;
 
     let now: usize = match chrono::Utc::now().timestamp_millis().try_into() {
         Ok(time) => time,
-        Err(_) => return Err(HttpCode::unauthorized().into()),
+        Err(_) => return Err(Error::HostTime),
     };
+
     if now > claims.exp {
-        return Err(HttpCode::unauthorized().into());
+        return Err(Error::Expired);
     }
 
     let tokens = encoder
         .generate_tokens(claims.inner())
-        .map_err(|_| HttpCode::internal_error())?;
+        .map_err(|_| Error::Tokens)?;
 
     Ok(HttpResponse::Ok().json(tokens))
 }
