@@ -1,8 +1,8 @@
-use uuid::Uuid;
 use serde::Serialize;
+use uuid::Uuid;
 
-use crate::shared::{
-    db::models::replies::ReplyJoinAccount, models::response::public_account::PublicAccount,
+use crate::{
+    modules::reply::ReplyJoinAccount, shared::models::response::public_account::PublicAccount,
 };
 
 #[derive(Serialize)]
