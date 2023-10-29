@@ -7,14 +7,9 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
+    modules::{comment::CreateComment, db::Pool},
     shared::{
-        db::{
-            models::{
-                comments::CreateComment,
-                replies::{self, ReplyJoinAccount},
-            },
-            Pool,
-        },
+        db::models::replies,
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
@@ -51,8 +46,8 @@ pub async fn get_all(
     res.map(|replies| {
         replies
             .into_iter()
-            .map(<ReplyByComment as From<ReplyJoinAccount>>::from)
-            .collect::<Vec<_>>()
+            .map(Into::into)
+            .collect::<Vec<ReplyByComment>>()
     })
     .json_result()
 }

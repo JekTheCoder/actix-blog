@@ -1,5 +1,5 @@
+use crate::modules::db::Pool;
 use crate::modules::user;
-use crate::shared::db::Pool;
 use crate::traits::json_result::JsonResult;
 use actix_web::web::Data;
 use actix_web::{

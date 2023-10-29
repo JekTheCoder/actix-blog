@@ -1,9 +1,7 @@
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::shared::{
-    db::models::comments::CommentJoinUser, models::response::public_account::PublicAccount,
-};
+use crate::{shared::models::response::public_account::PublicAccount, modules::comment::CommentJoinUser};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

@@ -22,3 +22,13 @@ pub fn void_insert_response(result: Result<QueryResult, sqlx::Error>) -> HttpRes
         },
     }
 }
+
+pub fn insert_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResponse {
+    match result {
+        Ok(body) => HttpResponse::Created().json(body),
+        Err(e) => match e {
+            sqlx::Error::Database(_) => HttpResponse::Conflict().finish(),
+            _ => HttpResponse::InternalServerError().finish(),
+        },
+    }
+}

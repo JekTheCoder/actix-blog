@@ -6,13 +6,7 @@ use actix_web::{
 use tokio::join;
 use uuid::Uuid;
 
-use crate::{
-    modules::blog,
-    shared::{
-        db::{models::comments, Pool},
-        models::select_slice::SelectSlice,
-    },
-};
+use crate::{modules::{blog, db::Pool, comment}, shared::models::select_slice::SelectSlice};
 
 use super::comments::response::CommentByBlog;
 
@@ -42,7 +36,7 @@ impl ResponseError for Error {
 pub async fn endpoint(pool: Data<Pool>, id: Path<Uuid>) -> Result<impl Responder, Error> {
     let (blog, comments) = join!(
         blog::by_id(pool.get_ref(), id.clone()),
-        comments::by_blog(
+        comment::by_blog(
             pool.get_ref(),
             id.into_inner(),
             SelectSlice {
