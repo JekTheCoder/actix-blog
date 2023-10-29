@@ -1,14 +1,11 @@
 use crate::{
-    modules::auth::Claims,
+    modules::{auth::Claims, db::Pool},
     shared::{
-        db::{
-            models::comments::{self, CommentJoinUser},
-            Pool,
-        },
+        db::models::comments::{self, CommentJoinUser},
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
     },
-    traits::{json_result::JsonResult, created_reponse::CreatedReponse},
+    traits::{created_reponse::CreatedReponse, json_result::JsonResult},
 };
 
 use super::response::CommentByBlog;

@@ -8,8 +8,8 @@ use serde::Deserialize;
 use super::response::LoginResponse;
 use crate::{
     error::http::code::HttpCode,
-    modules::auth::{ClaimsData, AuthEncoder, RefreshDecoder, Role},
-    shared::db::{models::agents, Pool},
+    modules::{auth::{AuthEncoder, ClaimsData, RefreshDecoder, Role}, db::Pool},
+    shared::db::models::agents,
     shared::{db::models::users, extractors::valid_json::ValidJson},
     traits::catch_http::CatchHttp,
 };

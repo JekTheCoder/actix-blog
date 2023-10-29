@@ -1,11 +1,11 @@
-use std::future::{Ready, ready};
+use std::future::{ready, Ready};
 
-use actix_web::{FromRequest, error::ErrorUnauthorized, web::Data};
+use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 use serde::{Deserialize, Serialize};
 
-use crate::modules::auth::{utils::bearer, services::auth_decoder::AuthDecoder};
+use crate::modules::auth::{services::auth_decoder::AuthDecoder, utils::bearer};
 
-use super::{role::Role, claims_data::ClaimsData};
+use super::{claims_data::ClaimsData, role::Role};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -25,6 +25,18 @@ impl Claims {
             role: self.role,
         }
     }
+
+    pub fn from_req(
+        req: &actix_web::HttpRequest,
+    ) -> Result<Claims, <Claims as FromRequest>::Error> {
+        let token = bearer(req).ok_or_else(|| ErrorUnauthorized(""))?;
+
+        let decoder = req
+            .app_data::<Data<AuthDecoder>>()
+            .expect("Decoder not found");
+
+        decoder.decode(token).map_err(|_| ErrorUnauthorized(""))
+    }
 }
 
 impl FromRequest for Claims {
@@ -32,18 +44,6 @@ impl FromRequest for Claims {
     type Future = Ready<Result<Self, Self::Error>>;
 
     fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
-        ready(claimns_from_req(req))
+        ready(Claims::from_req(req))
     }
-}
-
-pub fn claimns_from_req(
-    req: &actix_web::HttpRequest,
-) -> Result<Claims, <Claims as FromRequest>::Error> {
-    let token = bearer(req).ok_or_else(|| ErrorUnauthorized(""))?;
-
-    let decoder = req
-        .app_data::<Data<AuthDecoder>>()
-        .expect("Decoder not found");
-
-    decoder.decode(token).map_err(|_| ErrorUnauthorized(""))
 }

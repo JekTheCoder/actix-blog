@@ -4,10 +4,8 @@ use uuid::Uuid;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    shared::{
-        db::{Pool, QueryResult},
-        models::select_slice::SelectSlice,
-    },
+    modules::db::{Pool, QueryResult},
+    shared::models::select_slice::SelectSlice,
 };
 
 #[derive(Serialize)]
@@ -16,13 +14,13 @@ pub struct Blog {
     pub admin_id: Uuid,
     pub title: String,
     pub content: String,
-    pub html: String
+    pub html: String,
 }
 
 pub struct BlogById {
     pub id: Uuid,
     pub title: String,
-    pub html: String
+    pub html: String,
 }
 
 #[derive(Serialize)]
@@ -38,7 +36,7 @@ pub async fn create(
     admin_id: Uuid,
     title: &str,
     content: &str,
-    html: &str
+    html: &str,
 ) -> Result<QueryResult, InsertErr> {
     query!(
         "INSERT INTO blogs(admin_id, title, content, html) VALUES($1, $2, $3, $4)",

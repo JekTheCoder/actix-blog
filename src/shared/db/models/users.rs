@@ -1,6 +1,7 @@
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    shared::{db::Pool, models::insert_return::IdMaybe},
+    modules::db::Pool,
+    shared::models::insert_return::IdMaybe,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::query_as;
@@ -46,7 +47,7 @@ pub async fn create(pool: &Pool, req: &CreateReq) -> Result<Uuid, InsertErr> {
     } = req;
     let password = bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| InsertErr::Unknown)?;
 
-    // selecting from a function returns a nullable value, even if we know that it is not null. 
+    // selecting from a function returns a nullable value, even if we know that it is not null.
     // We need to handle this.
     let result = query_as!(
         IdMaybe,

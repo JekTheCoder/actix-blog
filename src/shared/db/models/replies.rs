@@ -4,10 +4,8 @@ use uuid::Uuid;
 
 use crate::{
     error::sqlx::{insert::InsertErr, select::SelectErr},
-    shared::{
-        db::Pool,
-        models::{insert_return::IdSelect, select_slice::SelectSlice},
-    },
+    modules::db::Pool,
+    shared::models::{insert_return::IdSelect, select_slice::SelectSlice},
 };
 
 #[derive(Serialize)]

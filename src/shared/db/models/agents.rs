@@ -2,7 +2,7 @@ use serde::Serialize;
 use sqlx::query_as;
 use uuid::Uuid;
 
-use crate::{error::sqlx::select::SelectErr, modules::auth::Role, shared::db::Pool};
+use crate::{error::sqlx::select::SelectErr, modules::auth::Role, modules::db::Pool};
 
 // Common info of an user or an admin
 #[derive(sqlx::FromRow, Clone, Debug)]

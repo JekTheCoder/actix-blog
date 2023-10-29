@@ -6,16 +6,17 @@ mod services;
 mod traits;
 mod utils;
 
+mod actix;
 mod modules;
 
-use crate::shared::db::PoolOptions;
 use actix_cors::Cors;
 use actix_web::{
     middleware::{NormalizePath, TrailingSlash},
-    web::Data,
     App, HttpServer,
 };
 use thiserror::Error;
+
+use crate::{actix::AppConfigurable, modules::db::DbConfig};
 
 #[derive(Debug, Error)]
 enum InitError {
@@ -32,16 +33,10 @@ fn main() -> Result<(), InitError> {
 async fn run() -> Result<(), InitError> {
     dotenvy::dotenv()?;
 
-    let database = dotenvy::var("DATABASE_URL").expect("DATABASE could not load");
     let host = dotenvy::var("HOST").expect("HOST could not load");
     let cors_host = dotenvy::var("CORS_HOST").expect("CORS_HOST could not load");
 
-    let pool = PoolOptions::new()
-        .max_connections(10)
-        .connect(&database)
-        .await
-        .expect("Pg pool not conected");
-
+    let db_config = DbConfig::new().await;
     println!("Host: {}", &host);
 
     HttpServer::new(move || {
@@ -52,12 +47,12 @@ async fn run() -> Result<(), InitError> {
 
         let app = App::new()
             .wrap(cors)
-            .app_data(Data::new(pool.clone()))
+            .use_config(db_config.clone())
             .configure(modules::auth::configure)
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always));
 
-        println!("Blazining initialized!!");
+        println!("󱓞󱓞 ¡Blazingly fazt! 󱓞󱓞");
         app
     })
     .bind(host)?
