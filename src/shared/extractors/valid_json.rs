@@ -39,8 +39,9 @@ where
     T: Validate + DeserializeOwned,
 {
     let json = json.await?;
-    match json.validate() {
-        Ok(_) => Ok(ValidJson(json.into_inner())),
+    let value = json.into_inner();
+    match value.validate() {
+        Ok(_) => Ok(ValidJson(value)),
         Err(e) => Err(actix_web::error::ErrorBadRequest(e)),
     }
 }

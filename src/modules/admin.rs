@@ -3,7 +3,7 @@ pub use admin_id::AdminId;
 mod admin_id {
     use std::future;
 
-    use actix_web::{http::StatusCode, FromRequest, ResponseError};
+    use actix_web::{http::StatusCode, FromRequest, ResponseError, web::Data};
     use uuid::Uuid;
 
     use crate::{
@@ -56,7 +56,7 @@ mod admin_id {
             }
 
             let pool = req
-                .app_data::<crate::modules::db::Pool>()
+                .app_data::<Data<Pool>>()
                 .expect("Pool not found")
                 .clone();
 
