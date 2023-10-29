@@ -1,5 +1,5 @@
-pub use models::{CreateRequest, PublicUser, User};
 pub use db::{by_id, create};
+pub use models::{CreateRequest, PublicUser, User};
 
 mod models {
     use serde::{Deserialize, Serialize};
@@ -39,16 +39,16 @@ mod models {
 
 mod db {
     use crate::{
-        error::sqlx::{insert::InsertErr, select::SelectErr},
+        error::sqlx::select::SelectErr,
         modules::{db::Pool, user::models::PublicUser},
-        shared::models::insert_return::IdMaybe,
+        shared::models::insert_return::IdSelect,
     };
     use sqlx::query_as;
     use uuid::Uuid;
 
     use super::models::CreateRequest;
 
-    pub async fn create(pool: &Pool, req: &CreateRequest) -> Result<Uuid, InsertErr> {
+    pub async fn create(pool: &Pool, req: &CreateRequest) -> Result<IdSelect, sqlx::Error> {
         let CreateRequest {
             username,
             name,
@@ -56,23 +56,16 @@ mod db {
             password,
         } = req;
 
-        // selecting from a function returns a nullable value, even if we know that it is not null.
-        // We need to handle this.
-        let result = query_as!(
-            IdMaybe,
-            "SELECT insert_user($1, $2, $3, $4) AS id",
+        query_as!(
+            IdSelect,
+            r#"SELECT insert_user($1, $2, $3, $4) AS "id!" "#,
             username,
             password,
             name,
             email.as_ref(),
         )
         .fetch_one(pool)
-        .await;
-
-        match result {
-            Ok(IdMaybe { id }) => id.ok_or_else(|| InsertErr::Unknown),
-            Err(e) => Err(e.into()),
-        }
+        .await
     }
 
     pub async fn by_id(pool: &Pool, id: Uuid) -> Result<PublicUser, SelectErr> {
