@@ -37,6 +37,7 @@ async fn run() -> Result<(), InitError> {
     let cors_host = dotenvy::var("CORS_HOST").expect("CORS_HOST could not load");
 
     let db_config = DbConfig::new().await;
+
     println!("Host: {}", &host);
 
     HttpServer::new(move || {

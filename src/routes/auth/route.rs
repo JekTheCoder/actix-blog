@@ -1,24 +1,22 @@
 use actix_web::{
     post,
-    web::{scope, Data, Json, ServiceConfig},
+    web::{Data, Json},
     HttpResponse, Responder, ResponseError,
 };
 use serde::Deserialize;
 
 use super::response::LoginResponse;
+use crate::modules::user;
 use crate::{
     error::http::code::HttpCode,
-    modules::{auth::{AuthEncoder, ClaimsData, RefreshDecoder, Role}, db::Pool},
+    modules::{
+        auth::{AuthEncoder, ClaimsData, RefreshDecoder, Role},
+        db::Pool,
+    },
     shared::db::models::agents,
-    shared::{db::models::users, extractors::valid_json::ValidJson},
+    shared::extractors::valid_json::ValidJson,
     traits::catch_http::CatchHttp,
 };
-
-#[derive(Clone, Debug, Deserialize)]
-struct LoginReq {
-    username: String,
-    password: String,
-}
 
 #[derive(Debug, thiserror::Error)]
 #[error("username or password invalid")]
@@ -30,54 +28,20 @@ impl ResponseError for LoginInvalid {
     }
 }
 
-#[post("/login/")]
-async fn login(
-    pool: Data<Pool>,
-    encoder: Data<AuthEncoder>,
-    req: Json<LoginReq>,
-) -> actix_web::Result<impl Responder> {
-    let LoginReq { username, password } = req.0;
-
-    let found = agents::by_username(pool.get_ref(), &username)
-        .await
-        .map_err(|_| LoginInvalid)?;
-
-    let verified =
-        bcrypt::verify(password, &found.password).map_err(|_| HttpCode::internal_error())?;
-
-    if verified {
-        let tokens = encoder
-            .generate_tokens(ClaimsData {
-                id: found.id,
-                role: found.kind.clone().into(),
-            })
-            .map_err(|_| HttpCode::internal_error())?;
-
-        let response = LoginResponse {
-            user: found.into(),
-            refresh_token: tokens.refresh_token,
-            token: tokens.token,
-        };
-
-        Ok(HttpResponse::Ok().json(response))
-    } else {
-        Err(LoginInvalid.into())
-    }
-}
-
 #[post("/register/")]
 async fn register(
     pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
-    req: ValidJson<users::CreateReq>,
+    req: ValidJson<user::CreateRequest>,
 ) -> actix_web::Result<impl Responder> {
-    // req.validate()
-    //     .map_err(|reason| JsonResponse::body(reason))?;
+    let mut req = req.into_inner();
+    let password = bcrypt::hash(req.password, bcrypt::DEFAULT_COST).unwrap();
 
-    let id = users::create(pool.get_ref(), req.as_ref())
-        .await
-        .catch_http()?;
-    let users::CreateReq { name, username, .. } = req.into_inner();
+    req.password = password;
+
+    let id = user::create(pool.get_ref(), &req).await.catch_http()?;
+
+    let user::CreateRequest { name, username, .. } = req;
     let agent_response = agents::AgentResponse {
         id,
         kind: Role::User,
@@ -94,13 +58,13 @@ async fn register(
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RefreshReq {
+pub struct RefreshRequest {
     pub refresh_token: String,
 }
 
 #[post("/refresh/")]
 async fn refresh(
-    req: Json<RefreshReq>,
+    req: Json<RefreshRequest>,
     decoder: Data<RefreshDecoder>,
     encoder: Data<AuthEncoder>,
 ) -> actix_web::Result<impl Responder> {
@@ -121,13 +85,4 @@ async fn refresh(
         .map_err(|_| HttpCode::internal_error())?;
 
     Ok(HttpResponse::Ok().json(tokens))
-}
-
-pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(
-        scope("/auth")
-            .service(login)
-            .service(register)
-            .service(refresh),
-    );
 }
