@@ -1,10 +1,15 @@
+mod sub_categories;
+
 use actix_web::{
     get,
     web::{scope, Data, ServiceConfig},
     Responder,
 };
 
-use crate::{modules::{category::get_all_categories, db::Pool}, sqlx::select_response};
+use crate::{
+    modules::{category::get_all_categories, db::Pool},
+    sqlx::select_response,
+};
 
 #[get("/")]
 async fn get_all(pool: Data<Pool>) -> impl Responder {
@@ -13,5 +18,9 @@ async fn get_all(pool: Data<Pool>) -> impl Responder {
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("/categories").service(get_all));
+    cfg.service(
+        scope("/categories")
+            .service(get_all)
+            .configure(sub_categories::router),
+    );
 }

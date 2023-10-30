@@ -1,5 +1,6 @@
 pub use db::{
-    get_all_categories, get_all_sub_categories, get_all_tags, link_sub_categories, link_tags,
+    get_all_categories, get_all_sub_categories, get_all_sub_categories_by_category, get_all_tags,
+    link_sub_categories, link_tags,
 };
 pub use models::{Category, SubCategory, Tag};
 
@@ -66,6 +67,19 @@ mod db {
         query_as!(SubCategory, "SELECT * FROM sub_categories")
             .fetch_all(pool)
             .await
+    }
+
+    pub async fn get_all_sub_categories_by_category(
+        pool: &Pool,
+        category_id: uuid::Uuid,
+    ) -> Result<Vec<SubCategory>, sqlx::Error> {
+        query_as!(
+            SubCategory,
+            "SELECT * FROM sub_categories WHERE category_id = $1",
+            category_id
+        )
+        .fetch_all(pool)
+        .await
     }
 
     pub async fn link_tags(
