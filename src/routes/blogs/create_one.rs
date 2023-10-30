@@ -4,9 +4,10 @@ use crate::{
     modules::{
         admin::AdminId,
         blog::{self, BlogParse},
+        category,
         db::Pool,
     },
-    shared::extractors::valid_json::ValidJson,
+    shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
 
 use serde::Deserialize;
@@ -16,6 +17,9 @@ use validator::Validate;
 pub struct Request {
     #[validate(length(min = 1))]
     pub content: String,
+
+    #[validate(length(min = 1))]
+    pub categories: Vec<uuid::Uuid>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -53,18 +57,22 @@ pub async fn endpoint(
     req: ValidJson<Request>,
     AdminId { id }: AdminId,
 ) -> Result<impl Responder, Error> {
-    let Request { content } = req.as_ref();
+    let Request {
+        content,
+        categories,
+    } = req.into_inner();
 
     let BlogParse {
         title,
         content: html_content,
-    } = blog::parse(content)?;
+    } = blog::parse(&content)?;
 
-    let result = blog::create(pool.get_ref(), id, &title, content, &html_content).await?;
+    let result = blog::create(pool.get_ref(), id, &title, &content, &html_content).await?;
+    let blog_id = match result {
+        Some(IdSelect { id }) => id,
+        None => return Err(Error::Conflict),
+    };
 
-    if result.rows_affected() == 0 {
-        return Err(Error::Conflict);
-    }
-
+    category::link_sub_categories(pool.get_ref(), categories, blog_id).await?;
     Ok(HttpResponse::Created().finish())
 }

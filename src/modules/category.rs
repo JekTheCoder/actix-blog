@@ -1,4 +1,4 @@
-pub use db::get_all_categories;
+pub use db::{get_all_categories, link_sub_categories};
 pub use models::{Category, SubCategory, Tag};
 
 mod models {
@@ -25,8 +25,8 @@ mod models {
 }
 
 mod db {
-    use crate::modules::db::Pool;
-    use sqlx::query_as;
+    use crate::modules::db::{Driver, Pool, QueryResult};
+    use sqlx::{query_as, QueryBuilder};
 
     use crate::modules::category::models::Category;
 
@@ -34,5 +34,22 @@ mod db {
         query_as!(Category, "SELECT * FROM categories")
             .fetch_all(pool)
             .await
+    }
+
+    pub async fn link_sub_categories(
+        pool: &Pool,
+        sub_categories: Vec<uuid::Uuid>,
+        blog_id: uuid::Uuid,
+    ) -> Result<QueryResult, sqlx::Error> {
+        let mut query_builder = QueryBuilder::<'_, Driver>::new(
+            "INSERT INTO sub_categories_blogs (blog_id, sub_category_id) ",
+        );
+
+        query_builder.push_values(sub_categories, |mut query, sub_category| {
+            query.push_bind(blog_id).push_bind(sub_category);
+        });
+
+        let query = query_builder.build();
+        query.execute(pool).await
     }
 }

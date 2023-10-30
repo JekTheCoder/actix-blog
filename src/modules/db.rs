@@ -6,6 +6,7 @@ use crate::actix::AppConfig;
 pub type Pool = PgPool;
 pub type QueryResult = <Postgres as Database>::QueryResult;
 pub type PoolOptions = PgPoolOptions;
+pub type Driver = Postgres;
 
 #[derive(Clone)]
 pub struct DbConfig(Pool);
