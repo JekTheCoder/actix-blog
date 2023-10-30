@@ -3,6 +3,7 @@ mod blogs;
 mod categories;
 mod comments;
 pub mod users;
+mod tags;
 
 use actix_web::web::ServiceConfig;
 

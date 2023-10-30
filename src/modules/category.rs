@@ -1,4 +1,4 @@
-pub use db::{get_all_categories, link_sub_categories, link_tags};
+pub use db::{get_all_categories, get_all_tags, link_sub_categories, link_tags};
 pub use models::{Category, SubCategory, Tag};
 
 mod models {
@@ -16,6 +16,7 @@ mod models {
         pub category_id: uuid::Uuid,
     }
 
+    #[derive(Serialize, Debug)]
     pub struct Tag {
         pub id: uuid::Uuid,
         pub name: String,
@@ -29,6 +30,8 @@ mod db {
     use sqlx::{query_as, QueryBuilder};
 
     use crate::modules::category::models::Category;
+
+    use super::Tag;
 
     pub async fn get_all_categories(pool: &Pool) -> Result<Vec<Category>, sqlx::Error> {
         query_as!(Category, "SELECT * FROM categories")
@@ -67,5 +70,11 @@ mod db {
 
         let query = query_builder.build();
         query.execute(pool).await
+    }
+
+    pub async fn get_all_tags(pool: &Pool) -> Result<Vec<Tag>, sqlx::Error> {
+        query_as!(Tag, "SELECT * FROM tags", category_id)
+            .fetch_all(pool)
+            .await
     }
 }
