@@ -7,7 +7,7 @@ use crate::{
         category,
         db::Pool,
     },
-    shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
+    shared::extractors::valid_json::ValidJson,
 };
 
 use serde::Deserialize;
@@ -20,6 +20,8 @@ pub struct Request {
 
     #[validate(length(min = 1))]
     pub categories: Vec<uuid::Uuid>,
+    #[validate(length(min = 1))]
+    pub tags: Vec<uuid::Uuid>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -60,6 +62,7 @@ pub async fn endpoint(
     let Request {
         content,
         categories,
+        tags,
     } = req.into_inner();
 
     let BlogParse {
@@ -69,10 +72,17 @@ pub async fn endpoint(
 
     let result = blog::create(pool.get_ref(), id, &title, &content, &html_content).await?;
     let blog_id = match result {
-        Some(IdSelect { id }) => id,
+        Some(id) => id,
         None => return Err(Error::Conflict),
     };
 
-    category::link_sub_categories(pool.get_ref(), categories, blog_id).await?;
-    Ok(HttpResponse::Created().finish())
+    let (categories_result, tags_result) = tokio::join!(
+        category::link_sub_categories(pool.get_ref(), categories, blog_id.id),
+        category::link_tags(pool.get_ref(), tags, blog_id.id)
+    );
+
+    categories_result?;
+    tags_result?;
+
+    Ok(HttpResponse::Created().json(blog_id))
 }

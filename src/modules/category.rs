@@ -1,4 +1,4 @@
-pub use db::{get_all_categories, link_sub_categories};
+pub use db::{get_all_categories, link_sub_categories, link_tags};
 pub use models::{Category, SubCategory, Tag};
 
 mod models {
@@ -47,6 +47,22 @@ mod db {
 
         query_builder.push_values(sub_categories, |mut query, sub_category| {
             query.push_bind(blog_id).push_bind(sub_category);
+        });
+
+        let query = query_builder.build();
+        query.execute(pool).await
+    }
+
+    pub async fn link_tags(
+        pool: &Pool,
+        tags: Vec<uuid::Uuid>,
+        blog_id: uuid::Uuid,
+    ) -> Result<QueryResult, sqlx::Error> {
+        let mut query_builder =
+            QueryBuilder::<'_, Driver>::new("INSERT INTO tags_blogs (blog_id, tag_id) ");
+
+        query_builder.push_values(tags, |mut query, tag| {
+            query.push_bind(blog_id).push_bind(tag);
         });
 
         let query = query_builder.build();
