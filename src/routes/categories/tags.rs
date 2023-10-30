@@ -15,11 +15,11 @@ mod get_all {
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>, path: Path<uuid::Uuid>) -> impl Responder {
         let id = path.into_inner();
-        let result = category::get_sub_categories_by_category(pool.get_ref(), id).await;
+        let result = category::get_tags_by_category(pool.get_ref(), id).await;
         select_response(result)
     }
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("{id}/sub_categories").service(get_all::endpoint));
+    cfg.service(scope("/tags").service(get_all::endpoint));
 }

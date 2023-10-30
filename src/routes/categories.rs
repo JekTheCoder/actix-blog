@@ -1,4 +1,5 @@
 mod sub_categories;
+mod tags;
 
 use actix_web::{
     get,
@@ -21,6 +22,7 @@ pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/categories")
             .service(get_all)
-            .configure(sub_categories::router),
+            .configure(sub_categories::router)
+            .configure(tags::router),
     );
 }
