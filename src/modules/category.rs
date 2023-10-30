@@ -1,4 +1,6 @@
-pub use db::{get_all_categories, get_all_tags, link_sub_categories, link_tags};
+pub use db::{
+    get_all_categories, get_all_sub_categories, get_all_tags, link_sub_categories, link_tags,
+};
 pub use models::{Category, SubCategory, Tag};
 
 mod models {
@@ -10,6 +12,7 @@ mod models {
         pub name: String,
     }
 
+    #[derive(Serialize, Debug)]
     pub struct SubCategory {
         pub id: uuid::Uuid,
         pub name: String,
@@ -26,7 +29,10 @@ mod models {
 }
 
 mod db {
-    use crate::modules::db::{Driver, Pool, QueryResult};
+    use crate::modules::{
+        category::SubCategory,
+        db::{Driver, Pool, QueryResult},
+    };
     use sqlx::{query_as, QueryBuilder};
 
     use crate::modules::category::models::Category;
@@ -56,6 +62,12 @@ mod db {
         query.execute(pool).await
     }
 
+    pub async fn get_all_sub_categories(pool: &Pool) -> Result<Vec<SubCategory>, sqlx::Error> {
+        query_as!(SubCategory, "SELECT * FROM sub_categories")
+            .fetch_all(pool)
+            .await
+    }
+
     pub async fn link_tags(
         pool: &Pool,
         tags: Vec<uuid::Uuid>,
@@ -73,8 +85,6 @@ mod db {
     }
 
     pub async fn get_all_tags(pool: &Pool) -> Result<Vec<Tag>, sqlx::Error> {
-        query_as!(Tag, "SELECT * FROM tags", category_id)
-            .fetch_all(pool)
-            .await
+        query_as!(Tag, "SELECT * FROM tags").fetch_all(pool).await
     }
 }
