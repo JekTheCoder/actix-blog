@@ -6,8 +6,8 @@ mod traits;
 mod utils;
 
 mod actix;
-mod sqlx;
 mod modules;
+mod sqlx;
 
 use actix_cors::Cors;
 use actix_web::{
@@ -34,17 +34,27 @@ async fn run() -> Result<(), InitError> {
     dotenvy::dotenv()?;
 
     let host = dotenvy::var("HOST").expect("HOST could not load");
-    let cors_host = dotenvy::var("CORS_HOST").expect("CORS_HOST could not load");
+    let cors_hosts_ = dotenvy::var("CORS_HOSTS").expect("CORS_HOSTS could not load");
+
+    let cors_hosts =
+        serde_json::from_str::<Vec<String>>(&cors_hosts_).expect("could not parse CORS_HOSTS as JSON");
 
     let db_config = DbConfig::new().await;
 
     println!("Host: {}", &host);
 
     HttpServer::new(move || {
-        let cors = Cors::default()
-            .allowed_origin(&cors_host)
-            .allow_any_method()
-            .allow_any_header();
+        let cors = {
+            let mut cors = Cors::default()
+                .allow_any_method()
+                .allow_any_header();
+
+            for host in cors_hosts.iter() {
+                cors = cors.allowed_origin(host);
+            }
+
+            cors
+        };
 
         let app = App::new()
             .wrap(cors)
