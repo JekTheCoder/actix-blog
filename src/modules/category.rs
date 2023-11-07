@@ -1,6 +1,7 @@
 pub use db::{
     get_all_categories, get_all_sub_categories, get_all_tags, get_sub_categories_by_category,
     get_tags_by_category, link_sub_categories, link_tags,
+    create_category
 };
 pub use models::{Category, SubCategory, Tag};
 
@@ -30,9 +31,12 @@ mod models {
 }
 
 mod db {
-    use crate::modules::{
-        category::SubCategory,
-        db::{Driver, Pool, QueryResult},
+    use crate::{
+        modules::{
+            category::SubCategory,
+            db::{Driver, Pool, QueryResult},
+        },
+        shared::models::insert_return::IdSelect,
     };
     use sqlx::{query_as, QueryBuilder};
 
@@ -44,6 +48,16 @@ mod db {
         query_as!(Category, "SELECT * FROM categories")
             .fetch_all(pool)
             .await
+    }
+
+    pub async fn create_category(pool: &Pool, name: &str) -> Result<IdSelect, sqlx::Error> {
+        query_as!(
+            IdSelect,
+            "INSERT INTO categories (name) VALUES ($1) RETURNING id",
+            name
+        )
+        .fetch_one(pool)
+        .await
     }
 
     pub async fn link_sub_categories(

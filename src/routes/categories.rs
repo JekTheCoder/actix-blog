@@ -1,6 +1,8 @@
 mod sub_categories;
 mod tags;
 
+mod create_one;
+
 use actix_web::{
     get,
     web::{scope, Data, ServiceConfig},
@@ -18,10 +20,13 @@ async fn get_all(pool: Data<Pool>) -> impl Responder {
     select_response(result)
 }
 
+
+
 pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/categories")
             .service(get_all)
+            .service(create_one::endpoint)
             .configure(sub_categories::router)
             .configure(tags::router),
     );
