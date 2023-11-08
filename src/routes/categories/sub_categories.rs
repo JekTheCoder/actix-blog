@@ -20,6 +20,45 @@ mod get_all {
     }
 }
 
+mod create_one {
+    use actix_web::{
+        post,
+        web::{Data, Path},
+        Responder,
+    };
+
+    use crate::{
+        modules::{category, db::Pool},
+        shared::extractors::valid_json::ValidJson,
+        sqlx::insert_response,
+    };
+
+    #[derive(serde::Deserialize, validator::Validate)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Request {
+        #[validate(length(min = 1))]
+        name: String,
+    }
+
+    #[post("/")]
+    pub async fn endpoint(
+        pool: Data<Pool>,
+        req: ValidJson<Request>,
+        path: Path<uuid::Uuid>,
+    ) -> impl Responder {
+        let id = path.into_inner();
+        let Request { name } = req.into_inner();
+
+        let result = category::create_subcategory(pool.get_ref(), &name, id).await;
+
+        insert_response(result)
+    }
+}
+
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("{id}/sub_categories").service(get_all::endpoint));
+    cfg.service(
+        scope("{id}/sub_categories")
+            .service(get_all::endpoint)
+            .service(create_one::endpoint),
+    );
 }

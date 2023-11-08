@@ -1,7 +1,6 @@
 pub use db::{
-    get_all_categories, get_all_sub_categories, get_all_tags, get_sub_categories_by_category,
-    get_tags_by_category, link_sub_categories, link_tags,
-    create_category
+    create_category, create_subcategory, get_all_categories, get_all_sub_categories, get_all_tags,
+    get_sub_categories_by_category, get_tags_by_category, link_sub_categories, link_tags,
 };
 pub use models::{Category, SubCategory, Tag};
 
@@ -55,6 +54,21 @@ mod db {
             IdSelect,
             "INSERT INTO categories (name) VALUES ($1) RETURNING id",
             name
+        )
+        .fetch_one(pool)
+        .await
+    }
+
+    pub async fn create_subcategory(
+        pool: &Pool,
+        name: &str,
+        category_id: uuid::Uuid,
+    ) -> Result<IdSelect, sqlx::Error> {
+        query_as!(
+            IdSelect,
+            "INSERT INTO sub_categories (name, category_id) VALUES ($1, $2) RETURNING id",
+            name,
+            category_id
         )
         .fetch_one(pool)
         .await
