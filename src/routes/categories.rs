@@ -20,8 +20,6 @@ async fn get_all(pool: Data<Pool>) -> impl Responder {
     select_response(result)
 }
 
-
-
 pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/categories")

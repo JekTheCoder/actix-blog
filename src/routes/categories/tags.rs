@@ -58,7 +58,7 @@ mod create_one {
 
 pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
-        scope("/tags")
+        scope("{id}/tags")
             .service(get_all::endpoint)
             .service(create_one::endpoint),
     );
