@@ -16,5 +16,5 @@ mod get_all {
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("/sub_categories").service(get_all::endpoint));
+    cfg.service(scope("/sub-categories").service(get_all::endpoint));
 }

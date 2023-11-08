@@ -57,7 +57,7 @@ mod create_one {
 
 pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
-        scope("{id}/sub_categories")
+        scope("{id}/sub-categories")
             .service(get_all::endpoint)
             .service(create_one::endpoint),
     );
