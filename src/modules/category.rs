@@ -1,6 +1,7 @@
 pub use db::{
-    create_category, create_subcategory, get_all_categories, get_all_sub_categories, get_all_tags,
-    get_sub_categories_by_category, get_tags_by_category, link_sub_categories, link_tags, create_tag
+    create_category, create_subcategory, create_tag, delete_category, get_all_categories,
+    get_all_sub_categories, get_all_tags, get_sub_categories_by_category, get_tags_by_category,
+    link_sub_categories, link_tags,
 };
 pub use models::{Category, SubCategory, Tag};
 
@@ -37,7 +38,7 @@ mod db {
         },
         shared::models::insert_return::IdSelect,
     };
-    use sqlx::{query_as, QueryBuilder};
+    use sqlx::{query, query_as, QueryBuilder};
 
     use crate::modules::category::models::Category;
 
@@ -57,6 +58,13 @@ mod db {
         )
         .fetch_one(pool)
         .await
+    }
+
+    // DELETE
+    pub async fn delete_category(pool: &Pool, id: uuid::Uuid) -> Result<QueryResult, sqlx::Error> {
+        query!("DELETE FROM categories WHERE id = $1", id)
+            .execute(pool)
+            .await
     }
 
     pub async fn create_subcategory(

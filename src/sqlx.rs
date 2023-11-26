@@ -32,3 +32,13 @@ pub fn insert_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResp
         },
     }
 }
+
+pub fn deleted_response(result: Result<QueryResult, sqlx::Error>) -> HttpResponse {
+    match result {
+        Ok(_) => HttpResponse::NoContent().finish(),
+        Err(e) => match e {
+            sqlx::Error::Database(_) => HttpResponse::Conflict().finish(),
+            _ => HttpResponse::InternalServerError().finish(),
+        },
+    }
+}
