@@ -11,7 +11,7 @@ use actix_web::{
 use uuid::Uuid;
 
 use crate::{
-    modules::{category, db::Pool},
+    modules::{admin::IsAdminFactory, category, db::Pool},
     sqlx::{deleted_response, select_response},
 };
 
@@ -31,9 +31,10 @@ pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/categories")
             .service(get_all)
-            .service(delete_one)
-            .service(create_one::endpoint)
             .configure(sub_categories::router)
-            .configure(tags::router),
+            .configure(tags::router)
+            .wrap(IsAdminFactory)
+            .service(delete_one)
+            .service(create_one::endpoint),
     );
 }
