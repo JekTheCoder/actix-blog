@@ -21,7 +21,7 @@ async fn get_all(pool: Data<Pool>) -> impl Responder {
     select_response(result)
 }
 
-#[delete("/{id}/")]
+#[delete("/{id}/", wrap = "IsAdminFactory")]
 async fn delete_one(id: Path<Uuid>, pool: Data<Pool>) -> impl Responder {
     let result = category::delete_category(pool.as_ref(), id.into_inner()).await;
     deleted_response(result)
@@ -31,10 +31,8 @@ pub fn router(cfg: &mut ServiceConfig) {
     cfg.service(
         scope("/categories")
             .service(get_all)
-            .configure(sub_categories::router)
-            .configure(tags::router)
-            .wrap(IsAdminFactory)
             .service(delete_one)
-            .service(create_one::endpoint),
+            .configure(sub_categories::router)
+            .configure(tags::router),
     );
 }

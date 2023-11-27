@@ -1,4 +1,6 @@
-use actix_web::web::{scope, ServiceConfig};
+use actix_web::web::{self, scope, ServiceConfig};
+
+use crate::modules::admin::IsAdminFactory;
 
 mod get_all {
     use actix_web::{
@@ -22,7 +24,6 @@ mod get_all {
 
 mod create_one {
     use actix_web::{
-        post,
         web::{Data, Path},
         Responder,
     };
@@ -41,7 +42,6 @@ mod create_one {
         color: String,
     }
 
-    #[post("/")]
     pub async fn endpoint(
         pool: Data<Pool>,
         req: ValidJson<Request>,
@@ -57,9 +57,8 @@ mod create_one {
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(
-        scope("{id}/tags")
-            .service(get_all::endpoint)
-            .service(create_one::endpoint),
-    );
+    cfg.service(scope("{id}/tags").service(get_all::endpoint).route(
+        "/",
+        web::post().wrap(IsAdminFactory).to(create_one::endpoint),
+    ));
 }

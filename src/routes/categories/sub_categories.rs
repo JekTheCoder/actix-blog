@@ -28,7 +28,7 @@ mod create_one {
     };
 
     use crate::{
-        modules::{category, db::Pool},
+        modules::{admin::IsAdminFactory, category, db::Pool},
         shared::extractors::valid_json::ValidJson,
         sqlx::insert_response,
     };
@@ -40,7 +40,7 @@ mod create_one {
         name: String,
     }
 
-    #[post("/")]
+    #[post("/", wrap = "IsAdminFactory")]
     pub async fn endpoint(
         pool: Data<Pool>,
         req: ValidJson<Request>,
