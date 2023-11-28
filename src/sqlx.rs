@@ -13,16 +13,6 @@ pub fn select_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResp
     }
 }
 
-pub fn void_insert_response(result: Result<QueryResult, sqlx::Error>) -> HttpResponse {
-    match result {
-        Ok(_) => HttpResponse::Created().finish(),
-        Err(e) => match e {
-            sqlx::Error::Database(_) => HttpResponse::Conflict().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
-        },
-    }
-}
-
 pub fn insert_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResponse {
     match result {
         Ok(body) => HttpResponse::Created().json(body),
