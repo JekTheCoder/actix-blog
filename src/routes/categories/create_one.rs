@@ -1,7 +1,7 @@
 use actix_web::{post, web::Data, Responder};
 
 use crate::{
-    modules::{category, db::Pool},
+    modules::{category, db::Pool, admin::IsAdminFactory},
     shared::extractors::valid_json::ValidJson,
     sqlx::insert_response,
 };
@@ -12,7 +12,7 @@ pub struct Request {
     name: String,
 }
 
-#[post("/")]
+#[post("/", wrap = "IsAdminFactory")]
 pub async fn endpoint(pool: Data<Pool>, request: ValidJson<Request>) -> impl Responder {
     let Request { name } = request.into_inner();
     let response = category::create_category(pool.as_ref(), &name).await;

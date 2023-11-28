@@ -32,6 +32,7 @@ pub fn router(cfg: &mut ServiceConfig) {
         scope("/categories")
             .service(get_all)
             .service(delete_one)
+            .service(create_one::endpoint)
             .configure(sub_categories::router)
             .configure(tags::router),
     );
