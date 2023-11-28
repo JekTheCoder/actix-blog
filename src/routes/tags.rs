@@ -1,20 +1,21 @@
 use actix_web::web::{scope, ServiceConfig};
 
-mod get_all {
-    use actix_web::{get, web::Data, Responder};
+mod delete {
+    use actix_web::{delete, web::{Data, Path}, Responder};
+    use uuid::Uuid;
 
     use crate::{
-        modules::{category, db::Pool},
-        sqlx::select_response,
+        modules::{admin::IsAdminFactory, category, db::Pool},
+        sqlx::deleted_response,
     };
 
-    #[get("/")]
-    pub async fn endpoint(pool: Data<Pool>) -> impl Responder {
-        let result = category::get_all_tags(pool.get_ref()).await;
-        select_response(result)
+    #[delete("/{id}", wrap = "IsAdminFactory")]
+    pub async fn endpoint(pool: Data<Pool>, id: Path<Uuid>) -> impl Responder {
+        let result = category::delete_tag(pool.get_ref(), id.into_inner()).await;
+        deleted_response(result)
     }
 }
 
 pub fn router(cfg: &mut ServiceConfig) {
-    cfg.service(scope("/tags").service(get_all::endpoint));
+    cfg.service(scope("/tags").service(delete::endpoint));
 }

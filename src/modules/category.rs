@@ -1,7 +1,7 @@
 pub use db::{
-    create_category, create_subcategory, create_tag, delete_category, get_all_categories,
-    get_all_sub_categories, get_all_tags, get_sub_categories_by_category, get_tags_by_category,
-    link_sub_categories, link_tags,
+    create_category, create_subcategory, create_subcategory, create_tag, delete_category,
+    delete_subcategory, delete_tag, get_all_categories, get_all_sub_categories, get_all_tags,
+    get_sub_categories_by_category, get_tags_by_category, link_sub_categories, link_tags,
 };
 pub use models::{Category, SubCategory, Tag};
 
@@ -60,7 +60,6 @@ mod db {
         .await
     }
 
-    // DELETE
     pub async fn delete_category(pool: &Pool, id: uuid::Uuid) -> Result<QueryResult, sqlx::Error> {
         query!("DELETE FROM categories WHERE id = $1", id)
             .execute(pool)
@@ -82,6 +81,15 @@ mod db {
         .await
     }
 
+    pub async fn delete_subcategory(
+        pool: &Pool,
+        id: uuid::Uuid,
+    ) -> Result<QueryResult, sqlx::Error> {
+        query!("DELETE FROM sub_categories WHERE id = $1", id)
+            .execute(pool)
+            .await
+    }
+
     pub async fn create_tag(
         pool: &Pool,
         category_id: uuid::Uuid,
@@ -97,6 +105,12 @@ mod db {
         )
         .fetch_one(pool)
         .await
+    }
+
+    pub async fn delete_tag(pool: &Pool, id: uuid::Uuid) -> Result<QueryResult, sqlx::Error> {
+        query!("DELETE FROM tags WHERE id = $1", id)
+            .execute(pool)
+            .await
     }
 
     pub async fn link_sub_categories(
@@ -149,10 +163,6 @@ mod db {
 
         let query = query_builder.build();
         query.execute(pool).await
-    }
-
-    pub async fn get_all_tags(pool: &Pool) -> Result<Vec<Tag>, sqlx::Error> {
-        query_as!(Tag, "SELECT * FROM tags").fetch_all(pool).await
     }
 
     pub async fn get_tags_by_category(
