@@ -1,4 +1,5 @@
 use actix_web::{post, web::Data, HttpResponse, Responder, ResponseError};
+use uuid::Uuid;
 
 use crate::{
     modules::{
@@ -14,14 +15,15 @@ use serde::Deserialize;
 use validator::Validate;
 
 #[derive(Debug, Clone, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
 pub struct Request {
     #[validate(length(min = 1))]
     pub content: String,
 
+    pub category_id: Uuid,
     #[validate(length(min = 1))]
-    pub categories: Vec<uuid::Uuid>,
-    #[validate(length(min = 1))]
-    pub tags: Vec<uuid::Uuid>,
+    pub sub_categories: Vec<Uuid>,
+    pub tags: Vec<Uuid>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -61,7 +63,8 @@ pub async fn endpoint(
 ) -> Result<impl Responder, Error> {
     let Request {
         content,
-        categories,
+        category_id,
+        sub_categories,
         tags,
     } = req.into_inner();
 
@@ -70,19 +73,32 @@ pub async fn endpoint(
         content: html_content,
     } = blog::parse(&content)?;
 
-    let result = blog::create(pool.get_ref(), id, &title, &content, &html_content).await?;
+    let result = blog::create(
+        pool.get_ref(),
+        id,
+        &title,
+        &content,
+        &html_content,
+        category_id,
+    )
+    .await?;
+
     let blog_id = match result {
         Some(id) => id,
         None => return Err(Error::Conflict),
     };
 
-    let (categories_result, tags_result) = tokio::join!(
-        category::link_sub_categories(pool.get_ref(), categories, blog_id.id),
-        category::link_tags(pool.get_ref(), tags, blog_id.id)
-    );
+    if tags.is_empty() {
+        category::link_sub_categories(pool.get_ref(), sub_categories, blog_id.id).await?;
+    } else {
+        let (categories_result, tags_result) = tokio::join!(
+            category::link_sub_categories(pool.get_ref(), sub_categories, blog_id.id),
+            category::link_tags(pool.get_ref(), tags, blog_id.id)
+        );
 
-    categories_result?;
-    tags_result?;
+        categories_result?;
+        tags_result?;
+    }
 
     Ok(HttpResponse::Created().json(blog_id))
 }

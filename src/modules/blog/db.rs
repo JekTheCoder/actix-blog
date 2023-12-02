@@ -15,14 +15,16 @@ pub async fn create(
     title: &str,
     content: &str,
     html: &str,
+    category_id: Uuid,
 ) -> Result<Option<IdSelect>, sqlx::Error> {
     query_as!(
         IdSelect,
-        "INSERT INTO blogs(admin_id, title, content, html) VALUES($1, $2, $3, $4) RETURNING id",
+        "INSERT INTO blogs(admin_id, title, content, html, category_id) VALUES($1, $2, $3, $4, $5) RETURNING id",
         admin_id,
         title,
         content,
-        html
+        html,
+        category_id,
     )
     .fetch_optional(pool)
     .await
