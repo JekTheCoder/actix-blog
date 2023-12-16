@@ -1,4 +1,4 @@
-mod save;
+pub mod save;
 
 use std::future::{ready, Ready};
 
@@ -47,7 +47,7 @@ impl FromRequest for ImageManager {
     }
 }
 
-mod filename {
+pub mod filename {
     use std::{fmt::Display, path::Path};
 
     use super::ALLOWED_MIME_NAMES;

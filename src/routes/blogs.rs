@@ -1,6 +1,7 @@
 mod create_one;
 mod get_all;
 mod get_one;
+mod upload_images;
 
 mod comments;
 

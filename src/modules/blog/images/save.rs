@@ -7,7 +7,7 @@ use std::{
 use image::imageops::FilterType;
 use uuid::Uuid;
 
-use super::{ImageManager, BLOG_IMAGES_DIR};
+use super::{ImageManager, BLOG_IMAGES_DIR, filename::Filename};
 
 const IMAGE_HEIGHT: u32 = 9 * 50;
 const IMAGE_WIDTH: u32 = 16 * 50;
@@ -18,7 +18,7 @@ pub enum Error {
 }
 
 impl ImageManager {
-    pub fn save(&self, blog_id: Uuid, filename: &str, content: &[u8]) -> Result<(), Error> {
+    pub fn save(&self, blog_id: Uuid, filename: &Filename, content: &[u8]) -> Result<(), Error> {
         let blog_images_dir = create_path(self.images_dir.as_ref().as_ref(), blog_id);
 
         if create_dir_all(&blog_images_dir).is_err() {
