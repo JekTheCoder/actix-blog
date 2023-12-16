@@ -33,6 +33,7 @@ fn main() -> Result<(), InitError> {
 async fn run() -> Result<(), InitError> {
     dotenvy::dotenv()?;
 
+    let static_dir = dotenvy::var("STATIC_DIR").expect("could not load STATIC_DIR");
     let host = dotenvy::var("HOST").expect("HOST could not load");
     let cors_hosts_ = dotenvy::var("CORS_HOSTS").expect("CORS_HOSTS could not load");
 

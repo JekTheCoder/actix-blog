@@ -12,6 +12,7 @@ bcrypt = "0.14.0"
 chrono = { version = "0.4.24", features = ["serde", "clock"], default-features=false }
 dotenvy = "0.15.7"
 futures-util = "0.3.28"
+image = "0.24.7"
 jsonwebtoken = "8.3.0"
 pulldown-cmark = { version = "0.9.3", default-features = false, features = ["simd"] }
 serde = "1.0.159"
