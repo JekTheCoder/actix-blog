@@ -44,7 +44,7 @@ async fn endpoint(
         .decode(&req.refresh_token)
         .map_err(|_| Error::ClaimsDecode)?;
 
-    let now: usize = match chrono::Utc::now().timestamp_millis().try_into() {
+    let now: usize = match chrono::Utc::now().timestamp().try_into() {
         Ok(time) => time,
         Err(_) => return Err(Error::HostTime),
     };
