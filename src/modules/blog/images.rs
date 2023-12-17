@@ -1,3 +1,4 @@
+pub mod create_path;
 pub mod save;
 
 use std::future::{ready, Ready};
@@ -47,57 +48,62 @@ impl FromRequest for ImageManager {
     }
 }
 
-pub mod filename {
-    use std::{fmt::Display, path::Path};
+mod path {
+    use std::path::{Path, PathBuf};
 
+    use crate::modules::images;
+
+    use super::filename::Filename;
+
+    pub struct ImagePathBuf(images::ImagePathBuf);
+
+    impl ImagePathBuf {
+        pub fn create_ancestors(&self) -> std::io::Result<()> {
+            self.0.create_ancestors()
+        }
+    }
+
+    pub fn new(mut parent: PathBuf, filename: &Filename) -> ImagePathBuf {
+        let inner = images::ImagePathBuf::new(parent, filename.as_ref());
+        ImagePathBuf(inner)
+    }
+
+    impl AsRef<Path> for ImagePathBuf {
+        fn as_ref(&self) -> &Path {
+            self.0.as_ref()
+        }
+    }
+}
+
+pub mod filename {
     use super::ALLOWED_MIME_NAMES;
 
-    #[repr(transparent)]
+    use crate::modules::images;
+
     #[derive(Debug)]
-    pub struct Filename(str);
+    #[repr(transparent)]
+    pub struct Filename(images::Filename);
 
     impl Filename {
-        pub unsafe fn unchecked_from_str(str: &str) -> &Self {
-            &*(str as *const _ as *const Self)
+        pub fn new(filename: &str) -> Result<&Self, images::FilenameError> {
+            let (filename, ext) = images::Filename::new_with_extension(filename)?;
+
+            if !ALLOWED_MIME_NAMES.map(|mime| mime.as_str()).contains(&ext) {
+                return Err(images::FilenameError::InvalidExtension);
+            }
+
+            Ok(unsafe { Self::unchecked_from_inner(filename) })
         }
 
-        pub fn new(filename: &str) -> Result<&Self, Error> {
-            if filename.contains('/') {
-                return Err(Error::HasParent);
-            }
-
-            if !filename.rfind('.').is_some_and(|at| {
-                let ext = &filename[at + 1..];
-                ALLOWED_MIME_NAMES.iter().any(|mime| mime.as_str() == ext)
-            }) {
-                return Err(Error::InvalidExtension);
-            }
-
-            Ok(unsafe { Filename::unchecked_from_str(filename) })
+        const unsafe fn unchecked_from_inner(filename: &images::Filename) -> &Self {
+            &*(filename as *const _ as *const Self)
         }
     }
 
-    impl AsRef<Path> for Filename {
-        fn as_ref(&self) -> &Path {
-            Path::new(&self.0)
-        }
-    }
-
-    impl AsRef<str> for Filename {
-        fn as_ref(&self) -> &str {
+    impl AsRef<images::Filename> for Filename {
+        fn as_ref(&self) -> &images::Filename {
             &self.0
         }
-    }
-
-    impl Display for Filename {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            self.0.fmt(f)
-        }
-    }
-
-    pub enum Error {
-        HasParent,
-        InvalidExtension,
     }
 
     impl PartialEq<str> for Filename {
@@ -111,35 +117,15 @@ pub mod filename {
         use super::*;
 
         #[test]
-        fn can_cast_filename() {
-            let foo = "foo";
-            let filename = unsafe { Filename::unchecked_from_str(&foo) };
-
-            assert_eq!(filename, foo);
+        fn rejects_invalid_extension() {
+            let foo = "filename.not-a-valid-extension";
+            assert!(Filename::new(foo).is_err());
         }
 
         #[test]
-        fn validates_extension() {
-            let foo = "foo";
-            let filename = Filename::new(foo);
-
-            assert!(matches!(filename, Err(Error::InvalidExtension)));
-        }
-
-        #[test]
-        fn validates_extension_with_ending_dot() {
-            let foo = "foo.";
-            let filename = Filename::new(foo);
-
-            assert!(matches!(filename, Err(Error::InvalidExtension)));
-        }
-
-        #[test]
-        fn validates_parent() {
-            let foo = "foo/bar";
-            let filename = Filename::new(foo);
-
-            assert!(matches!(filename, Err(Error::HasParent)));
+        fn accepts_valid_extension() {
+            let foo = "filename.jpeg";
+            Filename::new(foo).unwrap();
         }
     }
 }

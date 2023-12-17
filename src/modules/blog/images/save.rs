@@ -7,7 +7,7 @@ use std::{
 use image::imageops::FilterType;
 use uuid::Uuid;
 
-use super::{ImageManager, BLOG_IMAGES_DIR, filename::Filename};
+use super::{ImageManager, BLOG_IMAGES_DIR, filename::Filename, path::ImagePathBuf};
 
 const IMAGE_HEIGHT: u32 = 9 * 50;
 const IMAGE_WIDTH: u32 = 16 * 50;
@@ -18,14 +18,11 @@ pub enum Error {
 }
 
 impl ImageManager {
-    pub fn save(&self, blog_id: Uuid, filename: &Filename, content: &[u8]) -> Result<(), Error> {
-        let blog_images_dir = create_path(self.images_dir.as_ref().as_ref(), blog_id);
-
-        if create_dir_all(&blog_images_dir).is_err() {
+    pub fn save(&self, image_path: ImagePathBuf, content: &[u8]) -> Result<(), Error> {
+        if image_path.create_ancestors().is_err() {
             return Err(Error::Save);
         }
 
-        let image_path = blog_images_dir.join(filename);
         let Ok(mut image) = image::load_from_memory(content) else {
             return Err(Error::Decode);
         };

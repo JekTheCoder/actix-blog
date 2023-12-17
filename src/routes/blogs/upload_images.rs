@@ -1,6 +1,4 @@
-use crate::modules::blog::{
-    self, Filename, ImageManager, ImageManagerError, ImageSaveError, ALLOWED_FILETYPES,
-};
+use crate::modules::blog::{self, Filename, ImageManager, ImageSaveError, ALLOWED_FILETYPES};
 use actix_multipart::Multipart;
 use actix_web::{dev::Payload, post, web::Path, HttpResponse, Responder, ResponseError};
 use futures_util::StreamExt;
@@ -40,13 +38,13 @@ pub async fn endpoint(
             return HttpResponse::BadRequest().body(format!("invalid filename: {}", filename));
         };
 
-        while let Some(result) = field.next().await {
-            let Ok(bytes) = result else {
-                return HttpResponse::InternalServerError().finish();
-            };
-
-            buffer.extend_from_slice(bytes.as_bytes());
-        }
+        // while let Some(result) = field.next().await {
+        //     let Ok(bytes) = result else {
+        //         return HttpResponse::InternalServerError().finish();
+        //     };
+        //
+        //     buffer.extend_from_slice(bytes.as_bytes());
+        // }
 
         if let Err(e) = image_manager.save(id, filename, buffer.as_ref()) {
             return match e {
