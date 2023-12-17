@@ -1,8 +1,7 @@
-use crate::modules::blog::{self, Filename, ImageManager, ImageSaveError, ALLOWED_FILETYPES};
+use crate::modules::blog::{Filename, ImageManager, ImageSaveError, ALLOWED_FILETYPES};
 use actix_multipart::Multipart;
-use actix_web::{dev::Payload, post, web::Path, HttpResponse, Responder, ResponseError};
+use actix_web::{post, web::Path, HttpResponse, Responder, ResponseError};
 use futures_util::StreamExt;
-use image::EncodableLayout;
 use uuid::Uuid;
 
 #[derive(Debug, serde::Serialize)]
