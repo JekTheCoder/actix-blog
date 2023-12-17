@@ -14,6 +14,6 @@ impl Deref for AuthDecoder {
 impl Default for AuthDecoder {
     fn default() -> Self {
         let secret = dotenvy::var("JWT_SECRET").expect("could not load token secret");
-        Self(TokenDecoder::new(&secret))
+        Self(TokenDecoder::new(secret))
     }
 }

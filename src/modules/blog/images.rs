@@ -69,7 +69,7 @@ mod path {
         }
     }
 
-    pub fn new(mut parent: PathBuf, filename: &Filename) -> ImagePathBuf {
+    pub fn new(parent: PathBuf, filename: &Filename) -> ImagePathBuf {
         let inner = images::ImagePathBuf::new(parent, filename.as_ref());
         ImagePathBuf(inner)
     }

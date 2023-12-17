@@ -62,7 +62,7 @@ pub async fn endpoint(
         let tokens = encoder
             .generate_tokens(ClaimsData {
                 id: found.id,
-                role: found.kind.clone().into(),
+                role: found.kind.clone(),
             })
             .map_err(|_| Error::Token)?;
 

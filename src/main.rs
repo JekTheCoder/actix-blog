@@ -72,5 +72,5 @@ async fn run() -> Result<(), InitError> {
     .bind(host)?
     .run()
     .await
-    .map_err(|err| InitError::Io(err))
+    .map_err(InitError::Io)
 }

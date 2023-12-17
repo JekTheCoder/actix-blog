@@ -35,7 +35,7 @@ impl ResponseError for Error {
 #[get("/{blog_id}/")]
 pub async fn endpoint(pool: Data<Pool>, id: Path<Uuid>) -> Result<impl Responder, Error> {
     let (blog, comments) = join!(
-        blog::by_id(pool.get_ref(), id.clone()),
+        blog::by_id(pool.get_ref(), *id),
         comment::by_blog(
             pool.get_ref(),
             id.into_inner(),

@@ -52,7 +52,6 @@ mod db {
     )
     .fetch_all(pool)
     .await
-    .map_err(|e| e.into())
     }
 
     pub async fn get_many(
@@ -95,6 +94,5 @@ mod db {
         )
         .fetch_one(pool)
         .await
-        .map_err(|e| e.into())
     }
 }

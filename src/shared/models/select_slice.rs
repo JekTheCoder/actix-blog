@@ -30,8 +30,8 @@ impl PartialDefault for SelectSlice {
         let Self::Partial { limit, offset } = partial;
 
         Self {
-            limit: limit.unwrap_or_else(|| 20),
-            offset: offset.unwrap_or_else(|| 0),
+            limit: limit.unwrap_or(20),
+            offset: offset.unwrap_or(0),
         }
     }
 }

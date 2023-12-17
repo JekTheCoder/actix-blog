@@ -1,6 +1,6 @@
 use actix_web::HttpRequest;
 
-pub fn bearer<'a>(req: &'a HttpRequest) -> Option<&'a str> {
+pub fn bearer(req: &HttpRequest) -> Option<&str> {
     let header = req.headers().get("Authorization")?;
     let header_content = header.to_str().ok()?;
 

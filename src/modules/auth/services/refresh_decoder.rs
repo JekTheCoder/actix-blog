@@ -14,6 +14,6 @@ impl Deref for RefreshDecoder {
 impl Default for RefreshDecoder {
     fn default() -> Self {
         let secret = dotenvy::var("JWT_REFRESH_SECRET").expect("could not load refresh secret");
-        Self(TokenDecoder::new(&secret))
+        Self(TokenDecoder::new(secret))
     }
 }

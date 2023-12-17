@@ -114,7 +114,7 @@ pub mod filename {
         #[test]
         fn can_cast_filename() {
             let foo = "foo";
-            let filename = unsafe { Filename::unchecked_from_str(&foo) };
+            let filename = unsafe { Filename::unchecked_from_str(foo) };
 
             assert_eq!(filename, foo);
         }

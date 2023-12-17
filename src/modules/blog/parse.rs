@@ -20,7 +20,7 @@ pub fn parse(markdown: &str) -> Result<BlogParse, Error> {
     let mut title = String::new();
     let mut content = String::new();
 
-    let mut parser = Parser::new(&markdown);
+    let mut parser = Parser::new(markdown);
 
     {
         let mut peekable = parser.by_ref().peekable();

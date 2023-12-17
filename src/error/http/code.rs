@@ -7,7 +7,7 @@ pub struct HttpCode(StatusCode);
 
 impl ResponseError for HttpCode {
     fn status_code(&self) -> StatusCode {
-        self.0.clone()
+        self.0
     }
 }
 
