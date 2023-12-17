@@ -16,7 +16,7 @@ use actix_web::{
 };
 use thiserror::Error;
 
-use crate::{actix::AppConfigurable, modules::db::DbConfig};
+use crate::{actix::AppConfigurable, modules::{db::DbConfig, images}};
 
 #[derive(Debug, Error)]
 enum InitError {
@@ -41,6 +41,7 @@ async fn run() -> Result<(), InitError> {
         serde_json::from_str::<Vec<String>>(&cors_hosts_).expect("could not parse CORS_HOSTS as JSON");
 
     let db_config = DbConfig::new().await;
+    let images_config = images::Config::new(static_dir.as_str());
 
     println!("Host: {}", &host);
 
@@ -60,6 +61,7 @@ async fn run() -> Result<(), InitError> {
         let app = App::new()
             .wrap(cors)
             .use_config(db_config.clone())
+            .use_config(images_config.clone())
             .configure(modules::auth::configure)
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always));
