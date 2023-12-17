@@ -8,4 +8,6 @@ pub use models::{Blog, BlogById, BlogPreview};
 
 pub use parse::{parse, BlogParse, Error as ParseError};
 
-pub use images::{filename::Filename, ImageManager, save::Error as ImageSaveError, ALLOWED_FILETYPES};
+pub use images::{
+    filename::Filename, save::Error as ImageSaveError, ImageManager, ALLOWED_FILETYPES,
+};
