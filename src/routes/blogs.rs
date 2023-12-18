@@ -15,6 +15,7 @@ pub fn router(cfg: &mut ServiceConfig) {
             .service(get_all::endpoint)
             .service(get_one::endpoint)
             .service(upload_images::endpoint)
+            .service(get_image::endpoint)
             .configure(comments::router)
             .configure(super::comments::router),
     );
