@@ -19,7 +19,7 @@ pub async fn endpoint(
     let mut buffer = vec![];
     while let Some(result) = multipart.next().await {
         let Ok(mut field) = result else {
-            return HttpResponse::InternalServerError().finish();
+            return HttpResponse::BadRequest().body("Could not read payload");
         };
 
         match field.content_type() {
@@ -40,7 +40,7 @@ pub async fn endpoint(
 
         while let Some(result) = field.next().await {
             let Ok(bytes) = result else {
-                return HttpResponse::InternalServerError().finish();
+                return HttpResponse::BadRequest().body("Could not read field");
             };
 
             buffer.extend_from_slice(bytes.as_bytes());
