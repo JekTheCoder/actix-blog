@@ -2,6 +2,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Blog {
     pub id: Uuid,
     pub admin_id: Uuid,
@@ -17,6 +18,7 @@ pub struct BlogById {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BlogPreview {
     pub id: Uuid,
     pub admin_id: Uuid,
