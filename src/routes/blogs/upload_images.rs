@@ -1,20 +1,18 @@
-use crate::modules::blog::{Filename, ImageManager, ImageSaveError, ALLOWED_FILETYPES};
 use actix_multipart::Multipart;
 use actix_web::{post, web::Path, HttpResponse};
 use futures_util::StreamExt;
 use image::EncodableLayout;
 use uuid::Uuid;
 
-#[derive(Debug, serde::Serialize)]
-struct InvalidFilenameError {
-    filename: String,
-}
+use crate::modules::blog::images::{
+    self, Filename, ImagePathFactory, ImageSaveError, ALLOWED_FILETYPES,
+};
 
-#[post("/{id}/public")]
+#[post("/{id}/public/")]
 pub async fn endpoint(
     path: Path<Uuid>,
     mut multipart: Multipart,
-    image_manager: ImageManager,
+    image_manager: ImagePathFactory,
 ) -> HttpResponse {
     let id = path.into_inner();
 
@@ -48,7 +46,7 @@ pub async fn endpoint(
             buffer.extend_from_slice(bytes.as_bytes());
         }
 
-        if let Err(e) = image_manager.save(image_path, buffer.as_ref()) {
+        if let Err(e) = images::save(image_path, buffer.as_ref()) {
             return match e {
                 ImageSaveError::Save => HttpResponse::InternalServerError().finish(),
                 ImageSaveError::Decode => HttpResponse::BadRequest().body("invalid image"),

@@ -1,14 +1,17 @@
-pub mod create_path;
-pub mod save;
+mod create_path;
+mod save;
 
-pub use manager::{Error as ImageManagerError, ImageManager};
+pub use path_factory::{Error as ImageManagerError, ImagePathFactory};
+pub use save::{save, Error as ImageSaveError};
+pub use filename::Filename;
 
 const BLOG_IMAGES_DIR: &str = "blogs";
 
 pub const ALLOWED_FILETYPES: [mime::Mime; 2] = [mime::IMAGE_PNG, mime::IMAGE_JPEG];
 const ALLOWED_MIME_NAMES: [mime::Name<'static>; 2] = [mime::PNG, mime::JPEG];
 
-mod manager {
+
+mod path_factory {
     use actix_web::{http::StatusCode, web::Data, FromRequest, ResponseError};
     use std::future::{ready, Ready};
 
@@ -18,19 +21,20 @@ mod manager {
     #[error("Internal error")]
     pub struct Error;
 
-    pub struct ImageManager {
+    pub struct ImagePathFactory {
         pub images_dir: Data<ImagesDir>,
     }
 
-    impl ImageManager {
+    impl ImagePathFactory {
         fn new_from_req(req: &actix_web::HttpRequest) -> Result<Self, Error> {
             let Some(images_dir) = req.app_data::<Data<ImagesDir>>() else {
                 return Err(Error);
             };
 
-            let image_manager = ImageManager {
+            let image_manager = ImagePathFactory {
                 images_dir: images_dir.clone(),
             };
+
             Ok(image_manager)
         }
     }
@@ -41,7 +45,7 @@ mod manager {
         }
     }
 
-    impl FromRequest for ImageManager {
+    impl FromRequest for ImagePathFactory {
         type Error = Error;
         type Future = Ready<Result<Self, Self::Error>>;
 

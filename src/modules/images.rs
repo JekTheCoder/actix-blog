@@ -46,18 +46,6 @@ pub mod filename {
             &*(str as *const _ as *const Self)
         }
 
-        pub fn new(filename: &str) -> Result<&Self, Error> {
-            if filename.contains('/') {
-                return Err(Error::HasParent);
-            }
-
-            if !filename.rfind('.').is_some_and(|at| at > filename.len()) {
-                return Err(Error::InvalidExtension);
-            }
-
-            Ok(unsafe { Filename::unchecked_from_str(filename) })
-        }
-
         pub fn new_with_extension(filename: &str) -> Result<(&Self, &str), Error> {
             if filename.contains('/') {
                 return Err(Error::HasParent);
@@ -122,25 +110,25 @@ pub mod filename {
         #[test]
         fn validates_extension() {
             let foo = "foo";
-            let filename = Filename::new(foo);
+            let result = Filename::new_with_extension(foo);
 
-            assert!(matches!(filename, Err(Error::InvalidExtension)));
+            assert!(matches!(result, Err(Error::InvalidExtension)));
         }
 
         #[test]
         fn validates_extension_with_ending_dot() {
             let foo = "foo.";
-            let filename = Filename::new(foo);
+            let result = Filename::new_with_extension(foo);
 
-            assert!(matches!(filename, Err(Error::InvalidExtension)));
+            assert!(matches!(result, Err(Error::InvalidExtension)));
         }
 
         #[test]
         fn validates_parent() {
             let foo = "foo/bar";
-            let filename = Filename::new(foo);
+            let result = Filename::new_with_extension(foo);
 
-            assert!(matches!(filename, Err(Error::HasParent)));
+            assert!(matches!(result, Err(Error::HasParent)));
         }
     }
 }

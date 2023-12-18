@@ -13,6 +13,7 @@ pub fn router(cfg: &mut ServiceConfig) {
             .service(create_one::endpoint)
             .service(get_all::endpoint)
             .service(get_one::endpoint)
+            .service(upload_images::endpoint)
             .configure(comments::router)
             .configure(super::comments::router),
     );

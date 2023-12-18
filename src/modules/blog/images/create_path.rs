@@ -8,10 +8,10 @@ use uuid::Uuid;
 use super::{
     filename::Filename,
     path::{new, ImagePathBuf},
-    ImageManager, BLOG_IMAGES_DIR,
+    ImagePathFactory, BLOG_IMAGES_DIR,
 };
 
-impl ImageManager {
+impl ImagePathFactory {
     pub fn create_path(&self, blog_id: Uuid, filename: &Filename) -> ImagePathBuf {
         let dir_path = create_dir_path(self.images_dir.as_ref().as_ref(), blog_id);
         new(dir_path, filename)
