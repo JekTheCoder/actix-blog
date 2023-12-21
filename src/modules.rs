@@ -8,3 +8,4 @@ pub mod comment;
 pub mod reply;
 pub mod category;
 pub mod images;
+pub mod server;
