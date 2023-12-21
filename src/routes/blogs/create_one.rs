@@ -71,6 +71,7 @@ pub async fn endpoint(
     let BlogParse {
         title,
         content: html_content,
+        images,
     } = blog::parse(&content)?;
 
     let result = blog::create(
