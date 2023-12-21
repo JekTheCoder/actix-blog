@@ -3,7 +3,7 @@ mod peek_take_until;
 
 use inclusive_take_until::InclusiveTakeUntil;
 use peek_take_until::PeekTakeUntil;
-use pulldown_cmark::{html::push_html, Event, HeadingLevel, LinkType, Parser, Tag};
+use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Parser, Tag};
 
 use crate::utils::vec_set::VecSet;
 
@@ -15,25 +15,36 @@ pub struct BlogParse {
     pub images: VecSet<String>,
 }
 
+/// Modifies the url of an image
+pub trait ImageUrlInjector {
+    fn inject(&self, url: &mut CowStr<'_>);
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Empty title")]
     EmptyTitle,
 }
 
-pub fn parse(markdown: &str) -> Result<BlogParse, Error> {
+fn mutate_item(item: &mut Event<'_>, images: &mut VecSet<String>, injector: &impl ImageUrlInjector) {
+    if let Event::Start(Tag::Image(LinkType::Inline, url, _)) = item {
+        if Filename::new(&url).is_err() {
+            return;
+        }
+
+        images.insert(url.to_string());
+        injector.inject(url);
+    }
+}
+
+pub fn parse(markdown: &str, injector: impl ImageUrlInjector) -> Result<BlogParse, Error> {
     let mut title = String::new();
     let mut content = String::new();
 
     let mut images = VecSet::default();
-    let mut parser = Parser::new(markdown).inspect(|item| {
-        if let Event::Start(Tag::Image(LinkType::Inline, url, _)) = item {
-            if Filename::new(&url).is_err() {
-                return;
-            }
-
-            images.insert(url.to_string());
-        }
+    let mut parser = Parser::new(markdown).map(|mut item| {
+        mutate_item(&mut item, &mut images, &injector);
+        item
     });
 
     {
@@ -69,6 +80,11 @@ pub fn parse(markdown: &str) -> Result<BlogParse, Error> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    struct NoopInjector;
+    impl ImageUrlInjector for NoopInjector {
+        fn inject(&self, _url: &mut CowStr<'_>) {}
+    }
 
     #[test]
     fn parses_pre_title() {
@@ -151,7 +167,7 @@ Hello
 
 ![bruda](./bruda.png)"#;
 
-        let BlogParse { images, .. } = parse(markdown).unwrap();
+        let BlogParse { images, .. } = parse(markdown, NoopInjector {}).unwrap();
 
         assert_eq!(images.into_inner(), vec!["image.png".to_string()]);
     }

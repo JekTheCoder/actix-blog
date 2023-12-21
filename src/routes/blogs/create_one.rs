@@ -4,7 +4,7 @@ use uuid::Uuid;
 use crate::{
     modules::{
         admin::AdminId,
-        blog::{self, BlogParse},
+        blog::{self, BlogParse, ImgHostInjectorFactory},
         category,
         db::Pool,
     },
@@ -60,6 +60,7 @@ pub async fn endpoint(
     pool: Data<Pool>,
     req: ValidJson<Request>,
     AdminId { id }: AdminId,
+    img_host_injector: ImgHostInjectorFactory,
 ) -> Result<impl Responder, Error> {
     let Request {
         content,
@@ -68,11 +69,13 @@ pub async fn endpoint(
         tags,
     } = req.into_inner();
 
+    let creating_id = Uuid::new_v4();
+
     let BlogParse {
         title,
         content: html_content,
         images,
-    } = blog::parse(&content)?;
+    } = blog::parse(&content, img_host_injector.create(creating_id))?;
 
     let result = blog::create(
         pool.get_ref(),
