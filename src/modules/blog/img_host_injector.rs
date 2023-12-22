@@ -3,7 +3,7 @@ use std::future::{ready, Ready};
 use actix_web::{web::Data, FromRequest, ResponseError};
 use uuid::Uuid;
 
-use super::{parse::ImageUrlInjector, BLOG_IMAGE_API};
+use super::parse::ImageUrlInjector;
 
 use crate::modules::server::ServerAddress;
 
@@ -52,7 +52,10 @@ impl FromRequest for ImgHostInjectorFactory {
 
 impl<'a> ImageUrlInjector for ImgHostInjector<'a> {
     fn inject(&self, url: &mut pulldown_cmark::CowStr<'_>) {
-        let modified = format!("{}/blogs/{}/{}/{}", self.server_address, self.blog_id, BLOG_IMAGE_API, url);
+        let modified = format!(
+            "{}/blogs/{}/public/{}",
+            self.server_address, self.blog_id, url
+        );
         *url = modified.into();
     }
 }

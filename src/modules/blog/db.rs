@@ -1,32 +1,33 @@
-use sqlx::query_as;
+use sqlx::{query, query_as};
 use uuid::Uuid;
 
 use crate::{
     modules::{
         blog::models::{BlogById, BlogPreview},
-        db::Pool,
+        db::{Pool, QueryResult},
     },
-    shared::models::{insert_return::IdSelect, select_slice::SelectSlice},
+    shared::models::select_slice::SelectSlice,
 };
 
 pub async fn create(
     pool: &Pool,
+    id: Uuid,
     admin_id: Uuid,
     title: &str,
     content: &str,
     html: &str,
     category_id: Uuid,
-) -> Result<Option<IdSelect>, sqlx::Error> {
-    query_as!(
-        IdSelect,
-        "INSERT INTO blogs(admin_id, title, content, html, category_id) VALUES($1, $2, $3, $4, $5) RETURNING id",
+) -> Result<QueryResult, sqlx::Error> {
+    query!(
+        "INSERT INTO blogs(id, admin_id, title, content, html, category_id) VALUES($1, $2, $3, $4, $5, $6)",
+        id,
         admin_id,
         title,
         content,
         html,
         category_id,
     )
-    .fetch_optional(pool)
+    .execute(pool)
     .await
 }
 

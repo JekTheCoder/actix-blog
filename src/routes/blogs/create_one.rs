@@ -8,7 +8,7 @@ use crate::{
         category,
         db::Pool,
     },
-    shared::extractors::valid_json::ValidJson,
+    shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
 
 use serde::Deserialize;
@@ -59,7 +59,7 @@ impl From<sqlx::Error> for Error {
 pub async fn endpoint(
     pool: Data<Pool>,
     req: ValidJson<Request>,
-    AdminId { id }: AdminId,
+    AdminId { id: admin_id }: AdminId,
     img_host_injector: ImgHostInjectorFactory,
 ) -> Result<impl Responder, Error> {
     let Request {
@@ -69,17 +69,18 @@ pub async fn endpoint(
         tags,
     } = req.into_inner();
 
-    let creating_id = Uuid::new_v4();
+    let id = Uuid::new_v4();
 
     let BlogParse {
         title,
         content: html_content,
-        images,
-    } = blog::parse(&content, img_host_injector.create(creating_id))?;
+        images: _, // TODO
+    } = blog::parse(&content, img_host_injector.create(id))?;
 
     let result = blog::create(
         pool.get_ref(),
         id,
+        admin_id,
         &title,
         &content,
         &html_content,
@@ -87,22 +88,21 @@ pub async fn endpoint(
     )
     .await?;
 
-    let blog_id = match result {
-        Some(id) => id,
-        None => return Err(Error::Conflict),
-    };
+    if result.rows_affected() != 1 {
+        return Err(Error::Conflict);
+    }
 
     if tags.is_empty() {
-        category::link_sub_categories(pool.get_ref(), sub_categories, blog_id.id).await?;
+        category::link_sub_categories(pool.get_ref(), sub_categories, id).await?;
     } else {
         let (categories_result, tags_result) = tokio::join!(
-            category::link_sub_categories(pool.get_ref(), sub_categories, blog_id.id),
-            category::link_tags(pool.get_ref(), tags, blog_id.id)
+            category::link_sub_categories(pool.get_ref(), sub_categories, id),
+            category::link_tags(pool.get_ref(), tags, id)
         );
 
         categories_result?;
         tags_result?;
     }
 
-    Ok(HttpResponse::Created().json(blog_id))
+    Ok(HttpResponse::Created().json(IdSelect { id }))
 }

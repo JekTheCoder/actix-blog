@@ -10,5 +10,3 @@ pub use models::{Blog, BlogById, BlogPreview};
 pub use parse::{parse, BlogParse, Error as ParseError};
 
 pub use img_host_injector::ImgHostInjectorFactory;
-
-const BLOG_IMAGE_API: &str = "/public";
