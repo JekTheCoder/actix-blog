@@ -1,10 +1,5 @@
+#[derive(Debug, Default)]
 pub struct VecSet<T: Eq>(Vec<T>);
-
-impl<T: Eq> Default for VecSet<T> {
-    fn default() -> Self {
-        Self(Vec::default())
-    }
-}
 
 impl<T> VecSet<T>
 where

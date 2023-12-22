@@ -1,14 +1,10 @@
-mod inclusive_take_until;
-mod peek_take_until;
-
-use inclusive_take_until::InclusiveTakeUntil;
-use peek_take_until::PeekTakeUntil;
 use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Parser, Tag};
 
 use crate::utils::vec_set::VecSet;
 
 use super::images::Filename;
 
+#[derive(Debug)]
 pub struct BlogParse {
     pub title: String,
     pub content: String,
@@ -20,13 +16,17 @@ pub trait ImageUrlInjector {
     fn inject(&self, url: &mut CowStr<'_>);
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error, PartialEq)]
 pub enum Error {
-    #[error("Empty title")]
-    EmptyTitle,
+    #[error("Invalid title")]
+    InvalidTitle,
 }
 
-fn mutate_item(item: &mut Event<'_>, images: &mut VecSet<String>, injector: &impl ImageUrlInjector) {
+fn mutate_item(
+    item: &mut Event<'_>,
+    images: &mut VecSet<String>,
+    injector: &impl ImageUrlInjector,
+) {
     if let Event::Start(Tag::Image(LinkType::Inline, url, _)) = item {
         if Filename::new(&url).is_err() {
             return;
@@ -38,37 +38,49 @@ fn mutate_item(item: &mut Event<'_>, images: &mut VecSet<String>, injector: &imp
 }
 
 pub fn parse(markdown: &str, injector: impl ImageUrlInjector) -> Result<BlogParse, Error> {
+    let mut parser = Parser::new(markdown);
     let mut title = String::new();
+
+    let first = parser.next();
+
+    if !matches!(
+        first,
+        Some(Event::Start(Tag::Heading(HeadingLevel::H1, ..)))
+    ) {
+        return Err(Error::InvalidTitle);
+    }
+
+    push_html(&mut title, first.into_iter());
+
+    // It should always emit a end of title
+    for event in parser.by_ref() {
+        match &event {
+            Event::End(Tag::Heading(HeadingLevel::H1, ..)) => {
+                push_html(&mut title, Some(event).into_iter());
+                break;
+            }
+            Event::Text(_) => {
+                push_html(&mut title, Some(event).into_iter());
+            }
+            _ => {
+                return Err(Error::InvalidTitle);
+            }
+        };
+    }
+
+    if title.is_empty() {
+        return Err(Error::InvalidTitle);
+    }
+
     let mut content = String::new();
 
     let mut images = VecSet::default();
-    let mut parser = Parser::new(markdown).map(|mut item| {
+    let parser = parser.map(|mut item| {
         mutate_item(&mut item, &mut images, &injector);
         item
     });
 
-    {
-        let mut peekable = parser.by_ref().peekable();
-
-        let until_title = InclusiveTakeUntil::new(&mut peekable, |item: &_| {
-            matches!(item, Event::Start(Tag::Heading(HeadingLevel::H1, ..)))
-        });
-
-        push_html(&mut content, until_title);
-
-        let until_title_end = PeekTakeUntil::new(&mut peekable, |item: &_| {
-            matches!(item, Event::End(Tag::Heading(HeadingLevel::H1, ..)))
-        });
-
-        push_html(&mut title, until_title_end);
-    }
-
-    content.push_str(&title);
     push_html(&mut content, parser);
-
-    if title.is_empty() {
-        return Err(Error::EmptyTitle);
-    }
 
     Ok(BlogParse {
         title,
@@ -87,84 +99,29 @@ mod test {
     }
 
     #[test]
-    fn parses_pre_title() {
-        let markdown = r#"PreTitle!!
-# Hello world"#;
+    fn validates_title_is_first() {
+        let markdown = r#"This is not a title
+# Hello guorld
+"#;
 
-        let mut content = String::new();
-        let mut parser = Parser::new(markdown);
+        let parsed = parse(markdown, NoopInjector {});
 
-        let mut peekable = parser.by_ref().peekable();
-        {
-            let content: &mut String = &mut content;
-            let parser = &mut peekable;
-            let until_title = PeekTakeUntil::new(parser, |item: &_| {
-                matches!(item, Event::Start(Tag::Heading(HeadingLevel::H1, ..)))
-            });
-
-            push_html(content, until_title);
-        };
-
-        assert_eq!(content, "<p>PreTitle!!</p>\n");
+        assert_eq!(parsed.unwrap_err(), Error::InvalidTitle);
     }
 
     #[test]
-    fn can_parse_title() {
-        let markdown = r#"PreTitle!!
-# Hello world"#;
+    fn validates_title_cointains_only_text() {
+        let markdown = "# Hello  ![world](image.png) peace";
+        let parsed = parse(markdown, NoopInjector {});
 
-        let mut pre_title = String::new();
-        let mut parser = Parser::new(markdown);
-
-        let mut peekable = parser.by_ref().peekable();
-        {
-            let content = &mut pre_title;
-            let parser = &mut peekable;
-            let until_title = PeekTakeUntil::new(parser, |item: &_| {
-                matches!(item, Event::Start(Tag::Heading(HeadingLevel::H1, ..)))
-            });
-
-            push_html(content, until_title);
-        };
-
-        let mut content = String::new();
-        push_html(&mut content, peekable);
-
-        assert_eq!(content, "<h1>Hello world</h1>\n");
-    }
-
-    #[test]
-    fn parses_until_title() {
-        let markdown = r#"# Hello world
-Foo bar"#;
-
-        let mut title = String::new();
-        let mut parser = Parser::new(markdown);
-
-        {
-            let content = &mut title;
-            let parser = &mut parser;
-            let until_title_end = InclusiveTakeUntil::new(parser, |item: &_| {
-                matches!(item, Event::End(Tag::Heading(HeadingLevel::H1, ..)))
-            });
-
-            push_html(content, until_title_end);
-        };
-
-        let mut content = String::new();
-        push_html(&mut content, parser);
-
-        assert_eq!(title, "<h1>Hello world</h1>");
-        assert_eq!(content, "\n<p>Foo bar</p>\n");
+        assert_eq!(parsed.unwrap_err(), Error::InvalidTitle);
     }
 
     #[test]
     fn collects_images() {
         let markdown = r#"# Hello guorld 
 ![image](image.png)
-
 Hello
-
 ![bruda](./bruda.png)"#;
 
         let BlogParse { images, .. } = parse(markdown, NoopInjector {}).unwrap();
