@@ -72,9 +72,11 @@ pub fn parse(markdown: &str, injector: impl ImageUrlInjector) -> Result<BlogPars
         return Err(Error::InvalidTitle);
     }
 
-    let mut content = String::new();
+    let preview = parse_preview(markdown);
 
+    let mut content = String::new();
     let mut images = VecSet::default();
+
     let parser = parser.map(|mut item| {
         mutate_item(&mut item, &mut images, &injector);
         item
@@ -87,6 +89,83 @@ pub fn parse(markdown: &str, injector: impl ImageUrlInjector) -> Result<BlogPars
         content,
         images,
     })
+}
+
+pub fn parse_preview(markdown: &str) -> Option<String> {
+    let (preview_start, _) = lines_indices::LinesIndices::new(markdown)
+        .find(|&(_, line)| Parser::new(line).take(40).all(|event| is_readable(&event)))?;
+
+    let mut preview = String::new();
+    let mut preview_iter = Parser::new(&markdown[preview_start..]).take(40);
+
+    let first = preview_iter.by_ref().next();
+
+    let rest = preview_iter.by_ref().take_while(|event| {
+        matches!(
+            event,
+            Event::Text(_)
+                | Event::Start(Tag::Strong | Tag::Emphasis | Tag::Link(_, _, _))
+                | Event::End(Tag::Strong | Tag::Emphasis | Tag::Paragraph | Tag::Link(_, _, _))
+        )
+    });
+
+    push_html(&mut preview, first.into_iter().chain(rest));
+
+    Some(preview)
+}
+
+fn is_readable(event: &Event<'_>) -> bool {
+    macro_rules! readable_tags {
+        () => {
+            Tag::Strong | Tag::Emphasis | Tag::Paragraph | Tag::Link(_, _, _)
+        };
+    }
+    matches!(
+        event,
+        Event::Text(_) | Event::Start(readable_tags!()) | Event::End(readable_tags!())
+    )
+}
+
+mod lines_indices {
+    pub struct LinesIndices<'a> {
+        str: &'a str,
+        last_index: usize,
+        char_indices: std::str::CharIndices<'a>,
+    }
+
+    impl<'a> LinesIndices<'a> {
+        pub fn new(str: &'a str) -> Self {
+            Self {
+                str,
+                last_index: 0,
+                char_indices: str.char_indices(),
+            }
+        }
+    }
+
+    impl<'a> Iterator for LinesIndices<'a> {
+        type Item = (usize, &'a str);
+
+        fn next(&mut self) -> Option<Self::Item> {
+            let (i, _) = self.char_indices.by_ref().find(|item| item.1 == '\n')?;
+            let current_index = self.last_index;
+            self.last_index = i + 1;
+
+            Some((current_index, &self.str[current_index..i]))
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn yields_indices() {
+            let mut lines = LinesIndices::new("hello\nworld\n");
+            assert_eq!(lines.next(), Some((0, "hello")));
+            assert_eq!(lines.next(), Some((6, "world")));
+        }
+    }
 }
 
 #[cfg(test)]
@@ -127,5 +206,17 @@ Hello
         let BlogParse { images, .. } = parse(markdown, NoopInjector {}).unwrap();
 
         assert_eq!(images.into_inner(), vec!["image.png".to_string()]);
+    }
+
+    #[test]
+    fn collects_preview() {
+        let markdown = r#"# Hello world
+
+how are you, my friends?
+
+![bruda](./bruda.png)"#;
+
+        let preview = parse_preview(markdown);
+        assert_eq!(preview.unwrap(), "<p>how are you, my friends?</p>\n");
     }
 }
