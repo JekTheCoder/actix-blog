@@ -17,15 +17,33 @@ pub async fn create(
     content: &str,
     html: &str,
     category_id: Uuid,
+    preview: &str,
+    main_image: Option<&str>,
+    images: &[String],
 ) -> Result<QueryResult, sqlx::Error> {
     query!(
-        "INSERT INTO blogs(id, admin_id, title, content, html, category_id) VALUES($1, $2, $3, $4, $5, $6)",
+        r#"INSERT INTO 
+blogs(
+    id,
+    admin_id,
+    title,
+    content,
+    html,
+    category_id,
+    preview,
+    main_image,
+    images
+) 
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
         id,
         admin_id,
         title,
         content,
         html,
         category_id,
+        preview,
+        main_image,
+        images
     )
     .execute(pool)
     .await

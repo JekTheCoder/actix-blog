@@ -37,7 +37,7 @@ fn mutate_item(
     }
 }
 
-pub fn parse(markdown: &str, injector: impl ImageUrlInjector) -> Result<BlogParse, Error> {
+pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogParse, Error> {
     let mut parser = Parser::new(markdown);
     let mut title = String::new();
 
@@ -78,7 +78,7 @@ pub fn parse(markdown: &str, injector: impl ImageUrlInjector) -> Result<BlogPars
     let mut images = VecSet::default();
 
     let parser = parser.map(|mut item| {
-        mutate_item(&mut item, &mut images, &injector);
+        mutate_item(&mut item, &mut images, injector);
         item
     });
 

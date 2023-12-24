@@ -1,12 +1,14 @@
 use actix_web::{post, web::Data, HttpResponse, Responder, ResponseError};
+use pulldown_cmark::CowStr;
 use uuid::Uuid;
 
 use crate::{
     modules::{
         admin::AdminId,
-        blog::{self, BlogParse, ImgHostInjectorFactory},
+        blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
         category,
         db::Pool,
+        images,
     },
     shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
@@ -24,6 +26,8 @@ pub struct Request {
     #[validate(length(min = 1))]
     pub sub_categories: Vec<Uuid>,
     pub tags: Vec<Uuid>,
+
+    pub preview: Option<String>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -34,6 +38,9 @@ pub enum Error {
     Conflict,
     #[error("Database error")]
     Database,
+
+    #[error("Can not infer preview")]
+    NoPreview,
 }
 
 impl ResponseError for Error {
@@ -42,6 +49,7 @@ impl ResponseError for Error {
             Self::Parse(_) => actix_web::http::StatusCode::BAD_REQUEST,
             Self::Conflict => actix_web::http::StatusCode::CONFLICT,
             Self::Database => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+            Self::NoPreview => actix_web::http::StatusCode::BAD_REQUEST,
         }
     }
 }
@@ -67,24 +75,47 @@ pub async fn endpoint(
         category_id,
         sub_categories,
         tags,
+        preview,
     } = req.into_inner();
 
     let id = Uuid::new_v4();
+    let injector = img_host_injector.create(id);
 
     let BlogParse {
         title,
         content: html_content,
-        images: _, // TODO
-    } = blog::parse(&content, img_host_injector.create(id))?;
+        images, // TODO
+    } = blog::parse(&content, &injector)?;
+
+    let preview = match preview {
+        Some(preview) => preview,
+        None => match parse_preview(&html_content) {
+            Some(preview) => preview,
+            None => {
+                return Err(Error::NoPreview);
+            }
+        },
+    };
+
+    let images = images.into_inner();
+    let main_image = images.first().map(|image| {
+        let mut cow = CowStr::Borrowed(image);
+        injector.inject(&mut cow);
+
+        cow.to_string()
+    });
 
     let result = blog::create(
         pool.get_ref(),
-        id,
+        idmut ,
         admin_id,
         &title,
         &content,
         &html_content,
         category_id,
+        &preview,
+        main_image.as_deref(),
+        &images,
     )
     .await?;
 
