@@ -107,7 +107,7 @@ pub async fn endpoint(
 
     let result = blog::create(
         pool.get_ref(),
-        idmut ,
+        id,
         admin_id,
         &title,
         &content,
