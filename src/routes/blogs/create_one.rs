@@ -8,7 +8,6 @@ use crate::{
         blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
         category,
         db::Pool,
-        images,
     },
     shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
@@ -89,7 +88,7 @@ pub async fn endpoint(
 
     let preview = match preview {
         Some(preview) => preview,
-        None => match parse_preview(&html_content) {
+        None => match parse_preview(&content) {
             Some(preview) => preview,
             None => {
                 return Err(Error::NoPreview);

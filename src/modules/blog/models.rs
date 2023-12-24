@@ -23,5 +23,6 @@ pub struct BlogPreview {
     pub id: Uuid,
     pub admin_id: Uuid,
     pub title: String,
-    pub html: Option<String>,
+    pub preview: String,
+    pub main_image: Option<String>,
 }

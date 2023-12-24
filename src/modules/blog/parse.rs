@@ -72,8 +72,6 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
         return Err(Error::InvalidTitle);
     }
 
-    let preview = parse_preview(markdown);
-
     let mut content = String::new();
     let mut images = VecSet::default();
 
@@ -183,7 +181,7 @@ mod test {
 # Hello guorld
 "#;
 
-        let parsed = parse(markdown, NoopInjector {});
+        let parsed = parse(markdown, &NoopInjector {});
 
         assert_eq!(parsed.unwrap_err(), Error::InvalidTitle);
     }
@@ -191,7 +189,7 @@ mod test {
     #[test]
     fn validates_title_cointains_only_text() {
         let markdown = "# Hello  ![world](image.png) peace";
-        let parsed = parse(markdown, NoopInjector {});
+        let parsed = parse(markdown, &NoopInjector {});
 
         assert_eq!(parsed.unwrap_err(), Error::InvalidTitle);
     }
@@ -203,18 +201,34 @@ mod test {
 Hello
 ![bruda](./bruda.png)"#;
 
-        let BlogParse { images, .. } = parse(markdown, NoopInjector {}).unwrap();
+        let BlogParse { images, .. } = parse(markdown, &NoopInjector {}).unwrap();
 
         assert_eq!(images.into_inner(), vec!["image.png".to_string()]);
     }
 
     #[test]
     fn collects_preview() {
-        let markdown = r#"# Hello world
+        let markdown = r#"# hello world
 
 how are you, my friends?
 
 ![bruda](./bruda.png)"#;
+
+        let preview = parse_preview(markdown);
+        assert_eq!(preview.unwrap(), "<p>how are you, my friends?</p>\n");
+    }
+
+    #[test]
+    fn should_get_preview() {
+        let markdown = r#"# Hello my brodas
+
+This is an interesting preview
+
+![image](wosi.png)
+
+## Hello my brodas
+
+This is more content"#;
 
         let preview = parse_preview(markdown);
         assert_eq!(preview.unwrap(), "<p>how are you, my friends?</p>\n");

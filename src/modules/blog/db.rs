@@ -64,7 +64,7 @@ pub async fn get_all(pool: &Pool, slice: SelectSlice) -> Result<Vec<BlogPreview>
 
     query_as!(
         BlogPreview,
-        "SELECT id, title, SUBSTRING(html, 0, 200) as html, admin_id FROM blogs \
+        "SELECT id, title, preview, main_image, admin_id FROM blogs \
                 LIMIT $1 OFFSET $2",
         limit,
         offset
