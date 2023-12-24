@@ -39,28 +39,27 @@ fn mutate_item(
 
 pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogParse, Error> {
     let mut parser = Parser::new(markdown);
-    let mut title = String::new();
+    let mut title_elements = vec![];
 
-    let first = parser.next();
+    let Some(first) = parser.next() else {
+        return Err(Error::InvalidTitle);
+    };
 
-    if !matches!(
-        first,
-        Some(Event::Start(Tag::Heading(HeadingLevel::H1, ..)))
-    ) {
+    if !matches!(first, Event::Start(Tag::Heading(HeadingLevel::H1, ..))) {
         return Err(Error::InvalidTitle);
     }
 
-    push_html(&mut title, first.into_iter());
+    title_elements.push(first);
 
     // It should always emit a end of title
     for event in parser.by_ref() {
         match &event {
             Event::End(Tag::Heading(HeadingLevel::H1, ..)) => {
-                push_html(&mut title, Some(event).into_iter());
+                title_elements.push(event);
                 break;
             }
             Event::Text(_) => {
-                push_html(&mut title, Some(event).into_iter());
+                title_elements.push(event);
             }
             _ => {
                 return Err(Error::InvalidTitle);
@@ -68,12 +67,22 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
         };
     }
 
+    let title = title_elements.iter().cloned().fold(String::new(), |mut title, event| {
+        if let Event::Text(text) = event {
+            title.push_str(&text);
+        }
+
+        title
+    });
+
     if title.is_empty() {
         return Err(Error::InvalidTitle);
     }
 
     let mut content = String::new();
     let mut images = VecSet::default();
+
+    push_html(&mut content, title_elements.into_iter());
 
     let parser = parser.map(|mut item| {
         mutate_item(&mut item, &mut images, injector);
@@ -231,6 +240,25 @@ This is an interesting preview
 This is more content"#;
 
         let preview = parse_preview(markdown);
-        assert_eq!(preview.unwrap(), "<p>how are you, my friends?</p>\n");
+        assert_eq!(preview.unwrap(), "<p>This is an interesting preview</p>\n");
+    }
+
+    #[test]
+    fn content_includes_title() {
+        let markdown = r#"# Hello my brodas
+
+This is an interesting preview"#;
+
+        let BlogParse { content, .. } = parse(markdown, &NoopInjector {}).unwrap();
+
+        assert_eq!(content, "<h1>Hello my brodas</h1>\n<p>This is an interesting preview</p>\n");
+    }
+
+    #[test]
+    fn can_get_a_clean_title() {
+        let markdown = "# Hello my brodas";
+        let BlogParse { title, .. } = parse(markdown, &NoopInjector {}).unwrap();
+
+        assert_eq!(title, "Hello my brodas");
     }
 }
