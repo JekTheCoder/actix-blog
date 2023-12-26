@@ -2,9 +2,8 @@ pub use db::{by_id, create};
 pub use models::{CreateRequest, PublicUser, User};
 
 mod models {
-    use serde::{Deserialize, Serialize};
+    use serde::Serialize;
     use uuid::Uuid;
-    use validator::Validate;
 
     #[derive(Serialize, Debug)]
     pub struct User {
@@ -13,15 +12,10 @@ mod models {
         pub email: Option<String>,
     }
 
-    #[derive(Deserialize, Validate)]
     pub struct CreateRequest {
-        #[validate(length(min = 1))]
         pub username: String,
-        #[validate(length(min = 1))]
         pub password: String,
-        #[validate(length(min = 1))]
         pub name: String,
-        #[validate(email(message = "email not valid"))]
         pub email: Option<String>,
     }
 
