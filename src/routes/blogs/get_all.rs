@@ -22,6 +22,11 @@ pub struct Request {
 pub async fn endpoint(pool: Data<Pool>, query: Query<Request>) -> impl Responder {
     let Request { search, slice } = query.into_inner();
 
-    let blogs = blog::get_all(pool.get_ref(), SelectSlice::from_flatten(slice).into()).await;
+    let blogs = blog::get_all(
+        pool.get_ref(),
+        SelectSlice::from_flatten(slice).into(),
+        search.as_deref().unwrap_or(""),
+    )
+    .await;
     select_response(blogs)
 }

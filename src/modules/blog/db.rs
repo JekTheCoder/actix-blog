@@ -56,13 +56,19 @@ pub async fn by_id(pool: &Pool, id: Uuid) -> Result<BlogById, sqlx::Error> {
     .await
 }
 
-pub async fn get_all(pool: &Pool, slice: Slice) -> Result<Vec<BlogPreview>, sqlx::Error> {
+pub async fn get_all(
+    pool: &Pool,
+    slice: Slice,
+    search: &str,
+) -> Result<Vec<BlogPreview>, sqlx::Error> {
     let Slice { limit, offset } = slice;
 
     query_as!(
         BlogPreview,
         "SELECT id, title, preview, main_image, admin_id FROM blogs \
-                LIMIT $1 OFFSET $2",
+                WHERE title ILIKE $1
+                LIMIT $2 OFFSET $3",
+        format!("%{}%", search),
         limit,
         offset
     )
