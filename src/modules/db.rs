@@ -8,6 +8,8 @@ pub type QueryResult = <Postgres as Database>::QueryResult;
 pub type PoolOptions = PgPoolOptions;
 pub type Driver = Postgres;
 
+pub use slice::Slice;
+
 #[derive(Clone)]
 pub struct DbConfig(Pool);
 
@@ -27,5 +29,25 @@ impl DbConfig {
 impl AppConfig for DbConfig {
     fn configure(self, config: &mut ServiceConfig) {
         config.app_data(Data::new(self.0));
+    }
+}
+
+mod slice {
+    use sqlx::postgres::types::Oid;
+
+    use crate::shared::models::select_slice::SelectSlice;
+
+    pub struct Slice {
+        pub limit: i64,
+        pub offset: i64,
+    }
+
+    impl From<SelectSlice> for Slice {
+        fn from(slice: SelectSlice) -> Self {
+            Self {
+                limit: slice.limit as i64,
+                offset: slice.offset as i64,
+            }
+        }
     }
 }

@@ -1,5 +1,5 @@
 use actix_web::{dev::Payload, web::Query, FromRequest, HttpRequest};
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Deserialize};
 use std::{
     fmt::Debug,
     future::{ready, Ready},
@@ -8,10 +8,10 @@ use std::{
 
 use crate::traits::partial_default::PartialDefault;
 
-#[derive(Debug)]
-pub struct PartialQuery<T: Debug + PartialDefault>(T);
+#[derive(Debug, Deserialize)]
+pub struct PartialQuery<T: PartialDefault>(T);
 
-impl<T: Debug> FromRequest for PartialQuery<T>
+impl<T> FromRequest for PartialQuery<T>
 where
     T: PartialDefault,
     T::Partial: DeserializeOwned,
@@ -33,20 +33,20 @@ where
     }
 }
 
-impl<T: Debug + PartialDefault> Deref for PartialQuery<T> {
+impl<T: PartialDefault> Deref for PartialQuery<T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<T: Debug + PartialDefault> DerefMut for PartialQuery<T> {
+impl<T: PartialDefault> DerefMut for PartialQuery<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T: Debug + PartialDefault> PartialQuery<T> {
+impl<T: PartialDefault> PartialQuery<T> {
     pub fn into_inner(self) -> T {
         self.0
     }

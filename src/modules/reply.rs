@@ -22,8 +22,8 @@ mod models {
 
 mod db {
     use crate::{
-        modules::db::Pool,
-        shared::models::{insert_return::IdSelect, select_slice::SelectSlice},
+        modules::db::{Pool, Slice},
+        shared::models::insert_return::IdSelect,
     };
     use sqlx::query_as;
     use uuid::Uuid;
@@ -34,7 +34,7 @@ mod db {
         pool: &Pool,
         comment_id: Uuid,
         parent_id: Uuid,
-        SelectSlice { limit, offset }: SelectSlice,
+        Slice { limit, offset }: Slice,
     ) -> Result<Vec<ReplyJoinAccount>, sqlx::Error> {
         query_as!(
         ReplyJoinAccount,
@@ -57,7 +57,7 @@ mod db {
     pub async fn get_many(
         pool: &Pool,
         comment_id: Uuid,
-        SelectSlice { limit, offset }: SelectSlice,
+        Slice { limit, offset }: Slice,
     ) -> Result<Vec<ReplyJoinAccount>, sqlx::Error> {
         query_as!(
         ReplyJoinAccount,

@@ -36,10 +36,10 @@ pub async fn get_all(
 
     let res = match parent_id.into_inner().parent_id {
         Some(parent_id) => {
-            reply::get_many_by_parent(pool.get_ref(), comment_id, parent_id, slice.into_inner())
+            reply::get_many_by_parent(pool.get_ref(), comment_id, parent_id, slice.into_inner().into())
                 .await
         }
-        None => reply::get_many(pool.get_ref(), comment_id, slice.into_inner()).await,
+        None => reply::get_many(pool.get_ref(), comment_id, slice.into_inner().into()).await,
     };
 
     let result = res.map(|replies| {

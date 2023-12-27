@@ -1,12 +1,9 @@
 use sqlx::{query, query_as};
 use uuid::Uuid;
 
-use crate::{
-    modules::{
-        blog::models::{BlogById, BlogPreview},
-        db::{Pool, QueryResult},
-    },
-    shared::models::select_slice::SelectSlice,
+use crate::modules::{
+    blog::models::{BlogById, BlogPreview},
+    db::{Pool, QueryResult, Slice},
 };
 
 pub async fn create(
@@ -59,8 +56,8 @@ pub async fn by_id(pool: &Pool, id: Uuid) -> Result<BlogById, sqlx::Error> {
     .await
 }
 
-pub async fn get_all(pool: &Pool, slice: SelectSlice) -> Result<Vec<BlogPreview>, sqlx::Error> {
-    let SelectSlice { limit, offset } = slice;
+pub async fn get_all(pool: &Pool, slice: Slice) -> Result<Vec<BlogPreview>, sqlx::Error> {
+    let Slice { limit, offset } = slice;
 
     query_as!(
         BlogPreview,

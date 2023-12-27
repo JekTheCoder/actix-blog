@@ -2,16 +2,18 @@ use serde::Deserialize;
 
 use crate::traits::partial_default::PartialDefault;
 
+use super::flatten_slice::FlattenSlice;
+
 #[derive(Debug, Deserialize)]
 pub struct PartialSlice {
-    limit: Option<i64>,
-    offset: Option<i64>,
+    pub limit: Option<u32>,
+    pub offset: Option<u32>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SelectSlice {
-    pub limit: i64,
-    pub offset: i64,
+    pub limit: u32,
+    pub offset: u32,
 }
 
 impl Default for SelectSlice {
@@ -32,6 +34,15 @@ impl PartialDefault for SelectSlice {
         Self {
             limit: limit.unwrap_or(20),
             offset: offset.unwrap_or(0),
+        }
+    }
+}
+
+impl SelectSlice {
+    pub const fn from_flatten(slice: FlattenSlice) -> Self {
+        Self {
+            limit: slice.limit,
+            offset: slice.offset,
         }
     }
 }

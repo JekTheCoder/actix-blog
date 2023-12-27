@@ -19,7 +19,7 @@ pub async fn endpoint(
     blog_id: Path<Uuid>,
     slice: PartialQuery<SelectSlice>,
 ) -> impl Responder {
-    let result = comment::by_blog(pool.get_ref(), blog_id.into_inner(), slice.into_inner())
+    let result = comment::by_blog(pool.get_ref(), blog_id.into_inner(), slice.into_inner().into())
         .await
         .map(|comments| {
             comments

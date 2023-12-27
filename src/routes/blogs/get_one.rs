@@ -42,7 +42,7 @@ pub async fn endpoint(pool: Data<Pool>, id: Path<Uuid>) -> Result<impl Responder
             SelectSlice {
                 limit: 20,
                 offset: 0
-            }
+            }.into()
         ),
     );
 

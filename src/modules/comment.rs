@@ -1,5 +1,5 @@
-pub use models::{CreateComment, Comment, CommentJoinUser};
 pub use db::{by_blog, create};
+pub use models::{Comment, CommentJoinUser, CreateComment};
 
 mod models {
     use serde::{Deserialize, Serialize};
@@ -36,8 +36,8 @@ mod db {
     use uuid::Uuid;
 
     use crate::{
-        modules::db::Pool,
-        shared::models::{insert_return::IdSelect, select_slice::SelectSlice},
+        modules::db::{Pool, Slice},
+        shared::models::insert_return::IdSelect,
     };
 
     use super::models::{CommentJoinUser, CreateComment};
@@ -45,7 +45,7 @@ mod db {
     pub async fn by_blog<'a>(
         pool: &'a Pool,
         blog_id: Uuid,
-        SelectSlice { limit, offset }: SelectSlice,
+        Slice { limit, offset }: Slice,
     ) -> Result<Vec<CommentJoinUser>, sqlx::Error> {
         query_as!(
         CommentJoinUser,
