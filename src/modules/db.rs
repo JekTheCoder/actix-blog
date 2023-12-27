@@ -33,7 +33,7 @@ impl AppConfig for DbConfig {
 }
 
 mod slice {
-    use sqlx::postgres::types::Oid;
+    
 
     use crate::shared::models::select_slice::SelectSlice;
 

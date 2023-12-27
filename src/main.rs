@@ -21,7 +21,7 @@ use crate::{
     modules::{db::DbConfig, images, server},
 };
 
-const DEFAULT_PROTOCOL: &'static str = "http";
+const DEFAULT_PROTOCOL: &str = "http";
 
 #[derive(Debug, Error)]
 enum InitError {

@@ -42,8 +42,8 @@ mod db {
 
     use super::models::{CommentJoinUser, CreateComment};
 
-    pub async fn by_blog<'a>(
-        pool: &'a Pool,
+    pub async fn by_blog(
+        pool: &Pool,
         blog_id: Uuid,
         Slice { limit, offset }: Slice,
     ) -> Result<Vec<CommentJoinUser>, sqlx::Error> {

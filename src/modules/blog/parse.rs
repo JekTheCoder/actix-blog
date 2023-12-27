@@ -28,7 +28,7 @@ fn mutate_item(
     injector: &impl ImageUrlInjector,
 ) {
     if let Event::Start(Tag::Image(LinkType::Inline, url, _)) = item {
-        if Filename::new(&url).is_err() {
+        if Filename::new(url).is_err() {
             return;
         }
 

@@ -49,7 +49,7 @@ mod tests {
     #[test]
     fn can_deserialize_as_standalone() {
         let query = "limit=10&offset=20";
-        let Query(FlattenSlice { limit, offset }) = Query::from_query(&query).unwrap();
+        let Query(FlattenSlice { limit, offset }) = Query::from_query(query).unwrap();
 
         assert_eq!(limit, 10);
         assert_eq!(offset, 20);
@@ -65,7 +65,7 @@ mod tests {
         }
 
         let query = "my_arg=2&limit=10&offset=20";
-        let Query(Extended { my_arg, slice }) = Query::from_query(&query).unwrap();
+        let Query(Extended { my_arg, slice }) = Query::from_query(query).unwrap();
 
         assert_eq!(my_arg, 2);
         assert_eq!(slice.limit, 10);
@@ -82,7 +82,7 @@ mod tests {
         }
 
         let query = "my_arg=2&offset=12";
-        let Query(Extended { my_arg, slice }) = Query::from_query(&query).unwrap();
+        let Query(Extended { my_arg, slice }) = Query::from_query(query).unwrap();
 
         assert_eq!(my_arg, 2);
         assert_eq!(slice.limit, 20);
