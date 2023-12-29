@@ -1,5 +1,5 @@
 pub use db::{by_id, create};
-pub use models::{CreateRequest, PublicUser, User};
+pub use models::{CreateRequest};
 
 mod models {
     use serde::Serialize;

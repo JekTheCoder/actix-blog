@@ -1,5 +1,5 @@
 pub use db::{by_blog, create};
-pub use models::{Comment, CommentJoinUser, CreateComment};
+pub use models::{CommentJoinUser, CreateComment};
 
 mod models {
     use serde::{Deserialize, Serialize};

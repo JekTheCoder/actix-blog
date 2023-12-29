@@ -1,7 +1,7 @@
 mod create_path;
 mod save;
 
-pub use path_factory::{Error as ImageManagerError, ImagePathFactory};
+pub use path_factory::{ImagePathFactory};
 pub use save::{save, Error as ImageSaveError};
 pub use filename::Filename;
 

@@ -1,5 +1,5 @@
 pub use db::by_username;
-pub use models::{Account, AccountResponse};
+pub use models::{AccountResponse};
 
 mod models {
     use serde::Serialize;

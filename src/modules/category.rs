@@ -3,7 +3,7 @@ pub use db::{
     delete_tag, get_all_categories, get_all_sub_categories, get_sub_categories_by_category,
     get_tags_by_category, link_sub_categories, link_tags,
 };
-pub use models::{Category, SubCategory, Tag};
+pub use models::{SubCategory, Tag};
 
 mod models {
     use serde::Serialize;
