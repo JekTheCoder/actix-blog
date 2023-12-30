@@ -1,5 +1,5 @@
 use actix_web::web::{Data, ServiceConfig};
-use sqlx::{postgres::PgPoolOptions, Database, PgPool, Postgres};
+use sqlx::{migrate, postgres::PgPoolOptions, Database, PgPool, Postgres};
 
 use crate::actix::AppConfig;
 
@@ -16,11 +16,17 @@ pub struct DbConfig(Pool);
 impl DbConfig {
     pub async fn new() -> Self {
         let database = dotenvy::var("DATABASE_URL").expect("DATABASE could not load");
+
         let pool = PoolOptions::new()
             .max_connections(10)
             .connect(&database)
             .await
             .expect("Pg pool not conected");
+
+        migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("could not run migrations");
 
         Self(pool)
     }
@@ -33,7 +39,6 @@ impl AppConfig for DbConfig {
 }
 
 mod slice {
-    
 
     use crate::shared::models::select_slice::SelectSlice;
 

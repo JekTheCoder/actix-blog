@@ -14,29 +14,20 @@ use actix_web::{
     middleware::{NormalizePath, TrailingSlash},
     App, HttpServer,
 };
-use thiserror::Error;
 
 use crate::{
     actix::AppConfigurable,
     modules::{db::DbConfig, images, server},
 };
 
-const DEFAULT_PROTOCOL: &str = "http";
-
-#[derive(Debug, Error)]
-enum InitError {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    Env(#[from] dotenvy::Error),
-}
-
-fn main() -> Result<(), InitError> {
+fn main() -> Result<(), std::io::Error> {
     <::actix_web::rt::System>::new().block_on(run())
 }
 
-async fn run() -> Result<(), InitError> {
-    dotenvy::dotenv()?;
+async fn run() -> Result<(), std::io::Error> {
+    if let Err(e) = dotenvy::dotenv() {
+        println!("Warning could not load .env file, skipping error: {e}");
+    };
 
     let static_dir = dotenvy::var("STATIC_DIR").expect("could not load STATIC_DIR");
     let host = dotenvy::var("HOST").expect("HOST could not load");
@@ -48,12 +39,8 @@ async fn run() -> Result<(), InitError> {
     let db_config = DbConfig::new().await;
     let images_config = images::Config::new(static_dir.as_str());
     let server_config = {
-        let protocol = dotenvy::var("PROTOCOL");
-        let protocol = protocol.as_deref().unwrap_or(DEFAULT_PROTOCOL);
-
-        let server_address = format!("{protocol}://{host}");
-
-        server::Config::new(&server_address)
+        let public_addr = dotenvy::var("PUBLIC_ADDR").expect("could not load PUBLIC_ADDR");
+        server::Config::new(&public_addr)
     };
 
     println!("Host: {}", &host);
@@ -79,10 +66,10 @@ async fn run() -> Result<(), InitError> {
             .wrap(NormalizePath::new(TrailingSlash::Always));
 
         println!("󱓞󱓞 ¡Blazingly fazt! 󱓞󱓞");
+
         app
     })
     .bind(host)?
     .run()
     .await
-    .map_err(InitError::Io)
 }
