@@ -11,8 +11,8 @@ services:
 
       PUBLIC_ADDR: ${PUBLIC_ADDR}
       HOST: 0.0.0.0:3000
-      CORS_HOSTS: ${CORS_HOSTS}
-      STATIC_DIR: ${STATIC_DIR}
+      CORS_HOSTS: "[]"
+      STATIC_DIR: "./static/"
     build:
       context: .
       dockerfile: Dockerfile
