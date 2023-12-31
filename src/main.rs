@@ -31,10 +31,6 @@ async fn run() -> Result<(), std::io::Error> {
 
     let static_dir = dotenvy::var("STATIC_DIR").expect("could not load STATIC_DIR");
     let host = dotenvy::var("HOST").expect("HOST could not load");
-    let cors_hosts_ = dotenvy::var("CORS_HOSTS").expect("CORS_HOSTS could not load");
-
-    let cors_hosts = serde_json::from_str::<Vec<String>>(&cors_hosts_)
-        .expect("could not parse CORS_HOSTS as JSON");
 
     let db_config = DbConfig::new().await;
     let images_config = images::Config::new(static_dir.as_str());
@@ -46,15 +42,10 @@ async fn run() -> Result<(), std::io::Error> {
     println!("Host: {}", &host);
 
     HttpServer::new(move || {
-        let cors = {
-            let mut cors = Cors::default().allow_any_method().allow_any_header();
-
-            for host in cors_hosts.iter() {
-                cors = cors.allowed_origin(host);
-            }
-
-            cors
-        };
+        let cors = Cors::default()
+            .allow_any_method()
+            .allow_any_header()
+            .allow_any_origin();
 
         let app = App::new()
             .wrap(cors)
