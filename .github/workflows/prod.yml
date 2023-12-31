@@ -87,6 +87,7 @@ jobs:
           export JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
 
           export PUBLIC_ADDR=${{ vars.PUBLIC_ADDR }}
+          export CORS_HOSTS=${{ vars.CORS_HOSTS }}
 
           docker-compose down
           docker-compose pull
