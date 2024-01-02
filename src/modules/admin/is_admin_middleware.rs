@@ -11,7 +11,7 @@ use futures_util::future::LocalBoxFuture;
 use uuid::Uuid;
 
 use crate::modules::auth::{Claims, Role};
-use crate::modules::db::Pool;
+use crate::persistence::db::Pool;
 
 use super::error::AdminError;
 

@@ -7,8 +7,8 @@ use crate::{
         admin::AdminId,
         blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
         category,
-        db::Pool,
     },
+    persistence::db::Pool,
     shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
 

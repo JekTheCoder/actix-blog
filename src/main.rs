@@ -5,9 +5,11 @@ mod routes;
 mod traits;
 mod utils;
 
-mod actix;
 mod modules;
 mod sqlx;
+
+mod app;
+mod persistence;
 
 use actix_cors::Cors;
 use actix_web::{
@@ -16,8 +18,9 @@ use actix_web::{
 };
 
 use crate::{
-    actix::AppConfigurable,
-    modules::{db::DbConfig, images, server},
+    app::AppConfigurable,
+    modules::{images, server},
+    persistence::db::DbConfig,
 };
 
 fn main() -> Result<(), std::io::Error> {

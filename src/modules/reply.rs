@@ -22,7 +22,7 @@ mod models {
 
 mod db {
     use crate::{
-        modules::db::{Pool, Slice},
+        persistence::db::{Pool, Slice},
         shared::models::insert_return::IdSelect,
     };
     use sqlx::query_as;

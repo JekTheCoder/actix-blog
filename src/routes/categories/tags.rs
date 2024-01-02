@@ -9,10 +9,7 @@ mod get_all {
         Responder,
     };
 
-    use crate::{
-        modules::{category, db::Pool},
-        sqlx::select_response,
-    };
+    use crate::{modules::category, persistence::db::Pool, sqlx::select_response};
 
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>, path: Path<uuid::Uuid>) -> impl Responder {
@@ -29,8 +26,7 @@ mod create_one {
     };
 
     use crate::{
-        modules::{category, db::Pool},
-        shared::extractors::valid_json::ValidJson,
+        modules::category, persistence::db::Pool, shared::extractors::valid_json::ValidJson,
         sqlx::insert_response,
     };
 

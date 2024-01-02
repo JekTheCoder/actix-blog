@@ -4,9 +4,9 @@ use crate::{
     modules::{
         account,
         auth::{AuthEncoder, ClaimsData, Role},
-        db::Pool,
         user,
     },
+    persistence::db::Pool,
     shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
 

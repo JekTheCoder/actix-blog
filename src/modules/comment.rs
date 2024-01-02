@@ -36,7 +36,7 @@ mod db {
     use uuid::Uuid;
 
     use crate::{
-        modules::db::{Pool, Slice},
+        persistence::db::{Pool, Slice},
         shared::models::insert_return::IdSelect,
     };
 

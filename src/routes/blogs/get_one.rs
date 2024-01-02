@@ -6,7 +6,11 @@ use actix_web::{
 use tokio::join;
 use uuid::Uuid;
 
-use crate::{modules::{blog, db::Pool, comment}, shared::models::select_slice::SelectSlice};
+use crate::{
+    modules::{blog, comment},
+    persistence::db::Pool,
+    shared::models::select_slice::SelectSlice,
+};
 
 use super::comments::response::CommentByBlog;
 
@@ -42,7 +46,8 @@ pub async fn endpoint(pool: Data<Pool>, id: Path<Uuid>) -> Result<impl Responder
             SelectSlice {
                 limit: 20,
                 offset: 0
-            }.into()
+            }
+            .into()
         ),
     );
 

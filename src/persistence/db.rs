@@ -1,7 +1,7 @@
 use actix_web::web::{Data, ServiceConfig};
 use sqlx::{migrate, postgres::PgPoolOptions, Database, PgPool, Postgres};
 
-use crate::actix::AppConfig;
+use crate::app::AppConfig;
 
 pub type Pool = PgPool;
 pub type QueryResult = <Postgres as Database>::QueryResult;

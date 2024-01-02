@@ -6,9 +6,10 @@ use actix_web::{
 use serde::{Deserialize, Serialize};
 
 use crate::modules::{
+    account,
     auth::{AuthEncoder, ClaimsData},
-    db::Pool, account,
 };
+use crate::persistence::db::Pool;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Request {

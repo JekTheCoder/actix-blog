@@ -1,5 +1,5 @@
 pub use db::by_username;
-pub use models::{AccountResponse};
+pub use models::AccountResponse;
 
 mod models {
     use serde::Serialize;
@@ -41,7 +41,7 @@ mod models {
 mod db {
     use sqlx::query_as;
 
-    use crate::modules::db::Pool;
+    use crate::persistence::db::Pool;
 
     use super::models::Account;
 

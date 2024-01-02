@@ -32,10 +32,8 @@ mod models {
 
 mod db {
     use crate::{
-        modules::{
-            category::SubCategory,
-            db::{Driver, Pool, QueryResult},
-        },
+        modules::category::SubCategory,
+        persistence::db::{Driver, Pool, QueryResult},
         shared::models::insert_return::IdSelect,
     };
     use sqlx::{query, query_as, QueryBuilder};

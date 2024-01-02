@@ -7,10 +7,7 @@ mod get_all {
         Responder,
     };
 
-    use crate::{
-        modules::{category, db::Pool},
-        sqlx::select_response,
-    };
+    use crate::{modules::category, persistence::db::Pool, sqlx::select_response};
 
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>, path: Path<uuid::Uuid>) -> impl Responder {
@@ -28,7 +25,8 @@ mod create_one {
     };
 
     use crate::{
-        modules::{admin::IsAdminFactory, category, db::Pool},
+        modules::{admin::IsAdminFactory, category},
+        persistence::db::Pool,
         shared::extractors::valid_json::ValidJson,
         sqlx::insert_response,
     };

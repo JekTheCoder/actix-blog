@@ -1,4 +1,4 @@
-use crate::modules::db::Pool;
+use crate::persistence::db::Pool;
 use crate::modules::user;
 use crate::traits::json_result::JsonResult;
 use actix_web::web::Data;

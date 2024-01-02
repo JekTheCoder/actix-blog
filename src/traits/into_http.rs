@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse, Responder};
 
-use crate::modules::db::QueryResult;
+use crate::persistence::db::QueryResult;
 
 pub trait IntoHttp {
     type Http: Responder;

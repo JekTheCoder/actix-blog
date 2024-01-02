@@ -7,7 +7,8 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    modules::{comment::CreateComment, db::Pool, reply},
+    modules::{comment::CreateComment, reply},
+    persistence::db::Pool,
     shared::{
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
         models::select_slice::SelectSlice,
@@ -36,8 +37,13 @@ pub async fn get_all(
 
     let res = match parent_id.into_inner().parent_id {
         Some(parent_id) => {
-            reply::get_many_by_parent(pool.get_ref(), comment_id, parent_id, slice.into_inner().into())
-                .await
+            reply::get_many_by_parent(
+                pool.get_ref(),
+                comment_id,
+                parent_id,
+                slice.into_inner().into(),
+            )
+            .await
         }
         None => reply::get_many(pool.get_ref(), comment_id, slice.into_inner().into()).await,
     };

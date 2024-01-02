@@ -1,5 +1,5 @@
 pub use db::{by_id, create};
-pub use models::{CreateRequest};
+pub use models::CreateRequest;
 
 mod models {
     use serde::Serialize;
@@ -33,8 +33,7 @@ mod models {
 
 mod db {
     use crate::{
-        error::sqlx::select::SelectErr,
-        modules::{db::Pool, user::models::PublicUser},
+        error::sqlx::select::SelectErr, modules::user::models::PublicUser, persistence::db::Pool,
         shared::models::insert_return::IdSelect,
     };
     use sqlx::query_as;

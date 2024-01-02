@@ -1,11 +1,16 @@
 use actix_web::web::{scope, ServiceConfig};
 
 mod delete {
-    use actix_web::{delete, web::{Data, Path}, Responder};
+    use actix_web::{
+        delete,
+        web::{Data, Path},
+        Responder,
+    };
     use uuid::Uuid;
 
     use crate::{
-        modules::{admin::IsAdminFactory, category, db::Pool},
+        modules::{admin::IsAdminFactory, category},
+        persistence::db::Pool,
         sqlx::deleted_response,
     };
 

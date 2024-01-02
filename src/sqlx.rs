@@ -1,7 +1,7 @@
 use actix_web::HttpResponse;
 use serde::Serialize;
 
-use crate::modules::db::QueryResult;
+use crate::persistence::db::QueryResult;
 
 pub fn select_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResponse {
     match result {

@@ -1,7 +1,8 @@
 use actix_web::{post, web::Data, Responder};
 
 use crate::{
-    modules::{category, db::Pool, admin::IsAdminFactory},
+    modules::{admin::IsAdminFactory, category},
+    persistence::db::Pool,
     shared::extractors::valid_json::ValidJson,
     sqlx::insert_response,
 };
