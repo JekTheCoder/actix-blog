@@ -1,7 +1,7 @@
 use sqlx::{query, query_as};
 use uuid::Uuid;
 
-use crate::modules::blog::models::{BlogById, BlogPreview};
+use crate::domain::blog::models::{BlogById, BlogPreview};
 use crate::persistence::db::{Pool, QueryResult, Slice};
 
 pub async fn create(

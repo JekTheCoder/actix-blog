@@ -5,7 +5,7 @@ mod models {
     use serde::Serialize;
     use uuid::Uuid;
 
-    use crate::modules::auth::Role;
+    use crate::domain::auth::Role;
 
     // Common info of an user or an admin
     #[derive(sqlx::FromRow, Clone, Debug)]

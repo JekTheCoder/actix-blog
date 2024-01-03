@@ -10,7 +10,7 @@ use actix_web::{
 use futures_util::future::LocalBoxFuture;
 use uuid::Uuid;
 
-use crate::modules::auth::{Claims, Role};
+use crate::domain::auth::{Claims, Role};
 use crate::persistence::db::Pool;
 
 use super::error::AdminError;

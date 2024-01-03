@@ -1,7 +1,7 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 
-use crate::modules::auth::{
+use crate::domain::auth::{
     error::jwt_encode_error::JwtEncodeError, Claims, Tokens, ClaimsData,
 };
 

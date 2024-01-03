@@ -15,7 +15,7 @@ mod path_factory {
     use actix_web::{http::StatusCode, web::Data, FromRequest, ResponseError};
     use std::future::{ready, Ready};
 
-    use crate::modules::images::ImagesDir;
+    use crate::domain::images::ImagesDir;
 
     #[derive(thiserror::Error, Debug)]
     #[error("Internal error")]
@@ -61,7 +61,7 @@ mod path_factory {
 mod path {
     use std::path::{Path, PathBuf};
 
-    use crate::modules::images;
+    use crate::domain::images;
 
     use super::filename::Filename;
 
@@ -88,7 +88,7 @@ mod path {
 pub mod filename {
     use super::ALLOWED_MIME_NAMES;
 
-    use crate::modules::images;
+    use crate::domain::images;
 
     #[derive(Debug)]
     #[repr(transparent)]

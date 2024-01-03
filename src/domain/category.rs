@@ -32,13 +32,13 @@ mod models {
 
 mod db {
     use crate::{
-        modules::category::SubCategory,
+        domain::category::SubCategory,
         persistence::db::{Driver, Pool, QueryResult},
         shared::models::insert_return::IdSelect,
     };
     use sqlx::{query, query_as, QueryBuilder};
 
-    use crate::modules::category::models::Category;
+    use crate::domain::category::models::Category;
 
     use super::Tag;
 

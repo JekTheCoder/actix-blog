@@ -1,10 +1,10 @@
-pub mod auth;
+mod auth;
 mod blogs;
 mod categories;
 mod comments;
 mod sub_categories;
 mod tags;
-pub mod users;
+mod users;
 
 use actix_web::web::ServiceConfig;
 

@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use super::parse::ImageUrlInjector;
 
-use crate::modules::server::ServerAddress;
+use crate::domain::server::ServerAddress;
 
 pub struct ImgHostInjectorFactory {
     server_address: Data<ServerAddress>,
