@@ -7,7 +7,9 @@ mod get_all {
         Responder,
     };
 
-    use crate::{domain::category, persistence::db::Pool, sqlx::select_response};
+    use crate::{
+        domain::category, persistence::db::Pool, server::shared::response::select_response,
+    };
 
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>, path: Path<uuid::Uuid>) -> impl Responder {
@@ -27,8 +29,7 @@ mod create_one {
     use crate::{
         domain::{admin::IsAdminFactory, category},
         persistence::db::Pool,
-        server::shared::query::ValidJson,
-        sqlx::insert_response,
+        server::shared::{query::ValidJson, response::insert_response},
     };
 
     #[derive(serde::Deserialize, validator::Validate)]

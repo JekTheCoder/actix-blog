@@ -11,7 +11,7 @@ mod delete {
     use crate::{
         domain::{admin::IsAdminFactory, category},
         persistence::db::Pool,
-        sqlx::deleted_response,
+        server::shared::response::deleted_response,
     };
 
     #[delete("/{id}/", wrap = "IsAdminFactory")]

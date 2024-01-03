@@ -7,11 +7,13 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    server::shared::query::QuerySlice,
     domain::{comment::CreateComment, reply},
     persistence::db::Pool,
-    server::shared::query::ValidJson,
-    sqlx::{insert_response, select_response},
+    server::shared::query::QuerySlice,
+    server::shared::{
+        query::ValidJson,
+        response::{insert_response, select_response},
+    },
 };
 
 use crate::server::auth::Claims;

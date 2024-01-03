@@ -3,8 +3,7 @@ use actix_web::{post, web::Data, Responder};
 use crate::{
     domain::{admin::IsAdminFactory, category},
     persistence::db::Pool,
-    server::shared::query::ValidJson,
-    sqlx::insert_response,
+    server::shared::{query::ValidJson, response::insert_response},
 };
 
 #[derive(serde::Deserialize, validator::Validate)]

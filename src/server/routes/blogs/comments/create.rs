@@ -1,6 +1,8 @@
 use crate::{
-    domain::comment, persistence::db::Pool, server::auth::Claims,
-    server::shared::query::ValidJson, sqlx::insert_response,
+    domain::comment,
+    persistence::db::Pool,
+    server::auth::Claims,
+    server::shared::{query::ValidJson, response::insert_response},
 };
 
 use actix_web::{

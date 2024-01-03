@@ -4,8 +4,6 @@ mod error;
 mod traits;
 mod utils;
 
-mod sqlx;
-
 mod server;
 mod domain;
 mod persistence;

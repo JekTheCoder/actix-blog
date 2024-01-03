@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::{
     domain::{admin::IsAdminFactory, category},
     persistence::db::Pool,
-    sqlx::{deleted_response, select_response},
+    server::shared::response::{deleted_response, select_response},
 };
 
 #[get("/")]

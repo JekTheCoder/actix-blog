@@ -3,7 +3,9 @@ use actix_web::web::{scope, ServiceConfig};
 mod get_all {
     use actix_web::{get, web::Data, Responder};
 
-    use crate::{domain::category, persistence::db::Pool, sqlx::select_response};
+    use crate::{
+        domain::category, persistence::db::Pool, server::shared::response::select_response,
+    };
 
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>) -> impl Responder {
@@ -21,9 +23,9 @@ mod delete {
     use uuid::Uuid;
 
     use crate::{
-        domain::{admin::IsAdminFactory, category, },
+        domain::{admin::IsAdminFactory, category},
         persistence::db::Pool,
-        sqlx::deleted_response,
+        server::shared::response::deleted_response,
     };
 
     #[delete("/{id}/", wrap = "IsAdminFactory")]
