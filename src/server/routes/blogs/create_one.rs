@@ -9,7 +9,8 @@ use crate::{
         category,
     },
     persistence::db::Pool,
-    shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
+    server::shared::query::ValidJson,
+    shared::models::insert_return::IdSelect,
 };
 
 use serde::Deserialize;

@@ -10,7 +10,7 @@ use crate::{
     server::shared::query::QuerySlice,
     domain::{comment::CreateComment, reply},
     persistence::db::Pool,
-    shared::extractors::valid_json::ValidJson,
+    server::shared::query::ValidJson,
     sqlx::{insert_response, select_response},
 };
 

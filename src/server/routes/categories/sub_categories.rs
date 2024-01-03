@@ -27,7 +27,7 @@ mod create_one {
     use crate::{
         domain::{admin::IsAdminFactory, category},
         persistence::db::Pool,
-        shared::extractors::valid_json::ValidJson,
+        server::shared::query::ValidJson,
         sqlx::insert_response,
     };
 

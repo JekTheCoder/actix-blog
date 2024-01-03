@@ -26,7 +26,7 @@ mod create_one {
     };
 
     use crate::{
-        domain::category, persistence::db::Pool, shared::extractors::valid_json::ValidJson,
+        domain::category, persistence::db::Pool, server::shared::query::ValidJson,
         sqlx::insert_response,
     };
 

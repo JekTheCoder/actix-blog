@@ -3,8 +3,11 @@ use actix_web::{http::StatusCode, post, web::Data, HttpResponse, Responder, Resp
 use crate::{
     domain::{account, user},
     persistence::db::Pool,
-    server::auth::{AuthEncoder, ClaimsData, Role},
-    shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
+    server::{
+        auth::{AuthEncoder, ClaimsData, Role},
+        shared::query::ValidJson,
+    },
+    shared::models::insert_return::IdSelect,
 };
 
 use serde::Deserialize;
