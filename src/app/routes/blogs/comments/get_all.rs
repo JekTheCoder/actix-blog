@@ -1,15 +1,12 @@
 use crate::{
-    domain::comment,
-    persistence::db::Pool,
-    shared::{extractors::partial_query::PartialQuery, models::select_slice::SelectSlice},
-    sqlx::select_response,
+    app::shared::query::QuerySlice, domain::comment, persistence::db::Pool, sqlx::select_response,
 };
 
 use super::response::CommentByBlog;
 
 use actix_web::{
     get,
-    web::{Data, Path},
+    web::{Data, Path, Query},
     Responder,
 };
 use uuid::Uuid;
@@ -18,7 +15,7 @@ use uuid::Uuid;
 pub async fn endpoint(
     pool: Data<Pool>,
     blog_id: Path<Uuid>,
-    slice: PartialQuery<SelectSlice>,
+    slice: Query<QuerySlice>,
 ) -> impl Responder {
     let result = comment::by_blog(
         pool.get_ref(),

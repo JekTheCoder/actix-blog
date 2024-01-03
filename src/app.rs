@@ -1,5 +1,6 @@
 mod app_config;
 mod routes;
+pub mod shared;
 
 pub use app_config::{AppConfig, AppConfigurable};
 pub use server::run;

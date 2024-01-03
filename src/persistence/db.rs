@@ -39,16 +39,15 @@ impl AppConfig for DbConfig {
 }
 
 mod slice {
-
-    use crate::shared::models::select_slice::SelectSlice;
+    use crate::app::shared::query::QuerySlice;
 
     pub struct Slice {
         pub limit: i64,
         pub offset: i64,
     }
 
-    impl From<SelectSlice> for Slice {
-        fn from(slice: SelectSlice) -> Self {
+    impl From<QuerySlice> for Slice {
+        fn from(slice: QuerySlice) -> Self {
             Self {
                 limit: slice.limit as i64,
                 offset: slice.offset as i64,

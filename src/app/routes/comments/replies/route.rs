@@ -7,12 +7,10 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
+    app::shared::query::QuerySlice,
     domain::{comment::CreateComment, reply},
     persistence::db::Pool,
-    shared::{
-        extractors::{partial_query::PartialQuery, valid_json::ValidJson},
-        models::select_slice::SelectSlice,
-    },
+    shared::extractors::valid_json::ValidJson,
     sqlx::{insert_response, select_response},
 };
 
@@ -31,7 +29,7 @@ pub async fn get_all(
     pool: Data<Pool>,
     path: Path<Uuid>,
     parent_id: Query<ParentUuid>,
-    slice: PartialQuery<SelectSlice>,
+    slice: Query<QuerySlice>,
 ) -> impl Responder {
     let comment_id = path.into_inner();
 

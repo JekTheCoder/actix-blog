@@ -8,8 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     domain::{blog, comment},
-    persistence::db::Pool,
-    shared::models::select_slice::SelectSlice,
+    persistence::db::{Pool, Slice},
 };
 
 use super::comments::response::CommentByBlog;
@@ -43,11 +42,10 @@ pub async fn endpoint(pool: Data<Pool>, id: Path<Uuid>) -> Result<impl Responder
         comment::by_blog(
             pool.get_ref(),
             id.into_inner(),
-            SelectSlice {
+            Slice {
                 limit: 20,
                 offset: 0
             }
-            .into()
         ),
     );
 

@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 #[derive(Debug)]
-pub struct FlattenSlice {
+pub struct QuerySlice {
     /// Defaults to 20
     pub limit: u32,
     /// Defaults to 0
@@ -19,7 +19,7 @@ fn parse_u32<'de, D: serde::Deserializer<'de>>(
     s.parse().map_err(serde::de::Error::custom)
 }
 
-impl<'de> Deserialize<'de> for FlattenSlice {
+impl<'de> Deserialize<'de> for QuerySlice {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -49,7 +49,7 @@ mod tests {
     #[test]
     fn can_deserialize_as_standalone() {
         let query = "limit=10&offset=20";
-        let Query(FlattenSlice { limit, offset }) = Query::from_query(query).unwrap();
+        let Query(QuerySlice { limit, offset }) = Query::from_query(query).unwrap();
 
         assert_eq!(limit, 10);
         assert_eq!(offset, 20);
@@ -61,7 +61,7 @@ mod tests {
         struct Extended {
             my_arg: u32,
             #[serde(flatten)]
-            slice: FlattenSlice,
+            slice: QuerySlice,
         }
 
         let query = "my_arg=2&limit=10&offset=20";
@@ -78,7 +78,7 @@ mod tests {
         struct Extended {
             my_arg: u32,
             #[serde(flatten)]
-            slice: FlattenSlice,
+            slice: QuerySlice,
         }
 
         let query = "my_arg=2&offset=12";
