@@ -14,7 +14,7 @@ mod server {
 
     use crate::{
         server::{routes, AppConfigurable},
-        domain::images,
+        persistence::images,
         persistence::db::DbConfig,
     };
 

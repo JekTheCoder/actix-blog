@@ -1,21 +1,20 @@
 mod create_path;
 mod save;
 
-pub use path_factory::{ImagePathFactory};
-pub use save::{save, Error as ImageSaveError};
 pub use filename::Filename;
+pub use path_factory::ImagePathFactory;
+pub use save::{save, Error as ImageSaveError};
 
 const BLOG_IMAGES_DIR: &str = "blogs";
 
 pub const ALLOWED_FILETYPES: [mime::Mime; 2] = [mime::IMAGE_PNG, mime::IMAGE_JPEG];
 const ALLOWED_MIME_NAMES: [mime::Name<'static>; 2] = [mime::PNG, mime::JPEG];
 
-
 mod path_factory {
     use actix_web::{http::StatusCode, web::Data, FromRequest, ResponseError};
     use std::future::{ready, Ready};
 
-    use crate::domain::images::ImagesDir;
+    use crate::persistence::images::ImagesDir;
 
     #[derive(thiserror::Error, Debug)]
     #[error("Internal error")]
@@ -61,7 +60,7 @@ mod path_factory {
 mod path {
     use std::path::{Path, PathBuf};
 
-    use crate::domain::images;
+    use crate::persistence::images;
 
     use super::filename::Filename;
 
@@ -88,7 +87,7 @@ mod path {
 pub mod filename {
     use super::ALLOWED_MIME_NAMES;
 
-    use crate::domain::images;
+    use crate::persistence::images;
 
     #[derive(Debug)]
     #[repr(transparent)]
