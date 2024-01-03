@@ -5,11 +5,9 @@ use actix_web::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{
-    account,
-    auth::{AuthEncoder, ClaimsData},
-};
+use crate::domain::account;
 use crate::persistence::db::Pool;
+use crate::server::auth::{AuthEncoder, ClaimsData};
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Request {

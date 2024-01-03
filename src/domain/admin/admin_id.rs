@@ -4,7 +4,7 @@ use actix_web::{web::Data, FromRequest};
 use uuid::Uuid;
 
 use crate::{
-    domain::auth::{Claims, Role},
+    server::auth::{Claims, Role},
     persistence::db::Pool,
     utils::future::DynFuture,
 };

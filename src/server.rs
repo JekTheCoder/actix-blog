@@ -1,4 +1,5 @@
 mod app_config;
+pub mod auth;
 mod routes;
 pub mod shared;
 
@@ -13,9 +14,9 @@ mod server {
     };
 
     use crate::{
-        server::{routes, AppConfigurable},
-        persistence::images,
         persistence::db::DbConfig,
+        persistence::images,
+        server::{routes, AppConfigurable},
     };
 
     pub async fn run() -> Result<(), std::io::Error> {
@@ -46,7 +47,7 @@ mod server {
                 .use_config(server_config.clone())
                 .use_config(db_config.clone())
                 .use_config(images_config.clone())
-                .configure(crate::domain::auth::configure)
+                .configure(super::auth::configure)
                 .configure(routes::router)
                 .wrap(NormalizePath::new(TrailingSlash::Always));
 

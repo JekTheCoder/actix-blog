@@ -3,7 +3,7 @@ use std::future::{ready, Ready};
 use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 use serde::{Deserialize, Serialize};
 
-use crate::domain::auth::{services::auth_decoder::AuthDecoder, utils::bearer};
+use crate::server::auth::{services::auth_decoder::AuthDecoder, utils::bearer};
 
 use super::{claims_data::ClaimsData, role::Role};
 

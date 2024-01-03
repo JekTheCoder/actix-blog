@@ -14,7 +14,7 @@ use crate::{
     sqlx::{insert_response, select_response},
 };
 
-use crate::domain::auth::Claims;
+use crate::server::auth::Claims;
 
 use super::response::ReplyByComment;
 

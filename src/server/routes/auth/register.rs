@@ -1,12 +1,9 @@
 use actix_web::{http::StatusCode, post, web::Data, HttpResponse, Responder, ResponseError};
 
 use crate::{
-    domain::{
-        account,
-        auth::{AuthEncoder, ClaimsData, Role},
-        user,
-    },
+    domain::{account, user},
     persistence::db::Pool,
+    server::auth::{AuthEncoder, ClaimsData, Role},
     shared::{extractors::valid_json::ValidJson, models::insert_return::IdSelect},
 };
 
