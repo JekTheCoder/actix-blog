@@ -3,7 +3,7 @@ use pulldown_cmark::CowStr;
 use uuid::Uuid;
 
 use crate::{
-    modules::{
+    domain::{
         admin::AdminId,
         blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
         category,

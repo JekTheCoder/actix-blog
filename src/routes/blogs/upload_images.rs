@@ -4,7 +4,7 @@ use futures_util::StreamExt;
 use image::EncodableLayout;
 use uuid::Uuid;
 
-use crate::modules::blog::images::{
+use crate::domain::blog::images::{
     self, Filename, ImagePathFactory, ImageSaveError, ALLOWED_FILETYPES,
 };
 

@@ -1,7 +1,7 @@
 use actix_web::{http::StatusCode, post, web::Data, HttpResponse, Responder, ResponseError};
 
 use crate::{
-    modules::{
+    domain::{
         account,
         auth::{AuthEncoder, ClaimsData, Role},
         user,

@@ -2,7 +2,7 @@ use serde::Serialize;
 use uuid::Uuid;
 
 use crate::{
-    modules::reply::ReplyJoinAccount, shared::models::response::public_account::PublicAccount,
+    domain::reply::ReplyJoinAccount, shared::models::response::public_account::PublicAccount,
 };
 
 #[derive(Serialize)]

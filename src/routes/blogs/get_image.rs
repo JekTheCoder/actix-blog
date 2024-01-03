@@ -2,7 +2,7 @@ use actix_files::NamedFile;
 use actix_web::{error::ErrorBadRequest, get, web::Path, Responder};
 use uuid::Uuid;
 
-use crate::modules::blog::images::{Filename, ImagePathFactory};
+use crate::domain::blog::images::{Filename, ImagePathFactory};
 
 #[get("/{id}/public/{filename}/")]
 pub async fn endpoint(

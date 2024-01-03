@@ -6,7 +6,7 @@ use actix_web::{
 use serde::Deserialize;
 
 use crate::{
-    modules::blog,
+    domain::blog,
     persistence::db::Pool,
     shared::models::{flatten_slice::FlattenSlice, select_slice::SelectSlice},
     sqlx::select_response,

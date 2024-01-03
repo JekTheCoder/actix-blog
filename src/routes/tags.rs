@@ -9,7 +9,7 @@ mod delete {
     use uuid::Uuid;
 
     use crate::{
-        modules::{admin::IsAdminFactory, category},
+        domain::{admin::IsAdminFactory, category},
         persistence::db::Pool,
         sqlx::deleted_response,
     };

@@ -1,5 +1,5 @@
 use crate::{
-    modules::comment,
+    domain::comment,
     persistence::db::Pool,
     shared::{extractors::partial_query::PartialQuery, models::select_slice::SelectSlice},
     sqlx::select_response,

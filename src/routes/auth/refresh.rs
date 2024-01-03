@@ -5,7 +5,7 @@ use actix_web::{
 };
 use serde::Deserialize;
 
-use crate::modules::auth::{AuthEncoder, RefreshDecoder};
+use crate::domain::auth::{AuthEncoder, RefreshDecoder};
 
 #[derive(Debug, thiserror::Error)]
 enum Error {

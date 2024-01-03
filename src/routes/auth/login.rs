@@ -5,7 +5,7 @@ use actix_web::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::modules::{
+use crate::domain::{
     account,
     auth::{AuthEncoder, ClaimsData},
 };

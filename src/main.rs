@@ -5,10 +5,10 @@ mod routes;
 mod traits;
 mod utils;
 
-mod modules;
 mod sqlx;
 
 mod app;
+mod domain;
 mod persistence;
 
 use actix_cors::Cors;
@@ -19,7 +19,7 @@ use actix_web::{
 
 use crate::{
     app::AppConfigurable,
-    modules::{images, server},
+    domain::{images, server},
     persistence::db::DbConfig,
 };
 
@@ -55,7 +55,7 @@ async fn run() -> Result<(), std::io::Error> {
             .use_config(server_config.clone())
             .use_config(db_config.clone())
             .use_config(images_config.clone())
-            .configure(modules::auth::configure)
+            .configure(domain::auth::configure)
             .configure(routes::router)
             .wrap(NormalizePath::new(TrailingSlash::Always));
 

@@ -7,7 +7,7 @@ use tokio::join;
 use uuid::Uuid;
 
 use crate::{
-    modules::{blog, comment},
+    domain::{blog, comment},
     persistence::db::Pool,
     shared::models::select_slice::SelectSlice,
 };

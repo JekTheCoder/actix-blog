@@ -7,7 +7,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    modules::{comment::CreateComment, reply},
+    domain::{comment::CreateComment, reply},
     persistence::db::Pool,
     shared::{
         extractors::{partial_query::PartialQuery, valid_json::ValidJson},
@@ -16,7 +16,7 @@ use crate::{
     sqlx::{insert_response, select_response},
 };
 
-use crate::modules::auth::Claims;
+use crate::domain::auth::Claims;
 
 use super::response::ReplyByComment;
 

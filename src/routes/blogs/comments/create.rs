@@ -1,5 +1,5 @@
 use crate::{
-    modules::{auth::Claims, comment},
+    domain::{auth::Claims, comment},
     persistence::db::Pool,
     shared::extractors::valid_json::ValidJson,
     sqlx::insert_response,
