@@ -30,7 +30,7 @@ mod address {
 mod config {
     use actix_web::web::{Data, ServiceConfig};
 
-    use crate::app::AppConfig;
+    use crate::server::AppConfig;
 
     use super::address::Address;
 

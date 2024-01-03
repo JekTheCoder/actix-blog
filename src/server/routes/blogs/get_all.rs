@@ -6,7 +6,7 @@ use actix_web::{
 use serde::Deserialize;
 
 use crate::{
-    app::shared::query::QuerySlice, domain::blog, persistence::db::Pool, sqlx::select_response,
+    server::shared::query::QuerySlice, domain::blog, persistence::db::Pool, sqlx::select_response,
 };
 
 #[derive(Debug, Deserialize)]

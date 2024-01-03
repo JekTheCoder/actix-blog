@@ -162,7 +162,7 @@ mod images_dir {
 mod config {
     use actix_web::web::Data;
 
-    use crate::app::AppConfig;
+    use crate::server::AppConfig;
 
     use super::images_dir::ImagesDir;
 

@@ -1,7 +1,7 @@
 use actix_web::web::{Data, ServiceConfig};
 use sqlx::{migrate, postgres::PgPoolOptions, Database, PgPool, Postgres};
 
-use crate::app::AppConfig;
+use crate::server::AppConfig;
 
 pub type Pool = PgPool;
 pub type QueryResult = <Postgres as Database>::QueryResult;
@@ -39,7 +39,7 @@ impl AppConfig for DbConfig {
 }
 
 mod slice {
-    use crate::app::shared::query::QuerySlice;
+    use crate::server::shared::query::QuerySlice;
 
     pub struct Slice {
         pub limit: i64,

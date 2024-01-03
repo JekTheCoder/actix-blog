@@ -6,10 +6,10 @@ mod utils;
 
 mod sqlx;
 
-mod app;
+mod server;
 mod domain;
 mod persistence;
 
 fn main() -> Result<(), std::io::Error> {
-    <::actix_web::rt::System>::new().block_on(crate::app::run())
+    <::actix_web::rt::System>::new().block_on(crate::server::run())
 }

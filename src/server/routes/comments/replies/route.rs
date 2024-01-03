@@ -7,7 +7,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    app::shared::query::QuerySlice,
+    server::shared::query::QuerySlice,
     domain::{comment::CreateComment, reply},
     persistence::db::Pool,
     shared::extractors::valid_json::ValidJson,

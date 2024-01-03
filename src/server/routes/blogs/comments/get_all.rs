@@ -1,5 +1,5 @@
 use crate::{
-    app::shared::query::QuerySlice, domain::comment, persistence::db::Pool, sqlx::select_response,
+    server::shared::query::QuerySlice, domain::comment, persistence::db::Pool, sqlx::select_response,
 };
 
 use super::response::CommentByBlog;
