@@ -1,5 +1,6 @@
-use crate::error::http::json::JsonResponse;
 use actix_web::ResponseError;
+
+use crate::server::shared::response::JsonResponse;
 
 pub trait IntoHttpErr {
     type Err: ResponseError + Into<actix_web::Error>;

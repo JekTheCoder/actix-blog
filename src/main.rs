@@ -1,6 +1,3 @@
-mod error;
-mod traits;
-
 mod domain;
 mod persistence;
 mod server;

@@ -1,0 +1,2 @@
+- Remove error directory 
+- Remove shared/traits directory

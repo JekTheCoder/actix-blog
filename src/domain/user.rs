@@ -34,8 +34,10 @@ mod models {
 mod db {
     use crate::{
         domain::user::models::PublicUser,
-        error::sqlx::select::SelectErr,
-        persistence::db::{entities::IdSelect, Pool},
+        persistence::db::{
+            entities::{IdSelect, SelectErr},
+            Pool,
+        },
     };
     use sqlx::query_as;
     use uuid::Uuid;

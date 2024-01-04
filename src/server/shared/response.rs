@@ -1,7 +1,13 @@
+mod code;
+mod json;
+
 use actix_web::HttpResponse;
 use serde::Serialize;
 
 use crate::persistence::db::QueryResult;
+
+pub use code::HttpCode;
+pub use json::JsonResponse;
 
 pub fn select_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResponse {
     match result {

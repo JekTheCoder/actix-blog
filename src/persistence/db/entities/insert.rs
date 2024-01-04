@@ -1,4 +1,4 @@
-use crate::{error::http::code::HttpCode, traits::into_http_err::IntoHttpErr};
+use crate::server::shared::{response::HttpCode, traits::into_http_err::IntoHttpErr};
 
 pub enum InsertErr {
     NoInsert,

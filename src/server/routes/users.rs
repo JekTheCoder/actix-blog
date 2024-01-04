@@ -1,6 +1,6 @@
-use crate::persistence::db::Pool;
 use crate::domain::user;
-use crate::traits::json_result::JsonResult;
+use crate::persistence::db::Pool;
+use crate::server::shared::traits::json_result::JsonResult;
 use actix_web::web::Data;
 use actix_web::{
     get,
