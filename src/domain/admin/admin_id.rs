@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{
     server::auth::{Claims, Role},
     persistence::db::Pool,
-    utils::future::DynFuture,
+    shared::future::DynFuture,
 };
 
 use super::error::AdminError;

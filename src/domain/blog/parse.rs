@@ -1,6 +1,6 @@
 use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Parser, Tag};
 
-use crate::utils::vec_set::VecSet;
+use crate::shared::vec_set::VecSet;
 
 use super::images::Filename;
 

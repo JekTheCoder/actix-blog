@@ -2,7 +2,7 @@ use actix_web::{web::Json, FromRequest};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-use crate::utils::future::DynFuture;
+use crate::shared::future::DynFuture;
 
 pub struct ValidJson<T>(T);
 
