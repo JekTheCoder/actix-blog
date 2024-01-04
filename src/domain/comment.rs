@@ -35,10 +35,7 @@ mod db {
     use sqlx::query_as;
     use uuid::Uuid;
 
-    use crate::{
-        persistence::db::{Pool, Slice},
-        shared::models::insert_return::IdSelect,
-    };
+    use crate::persistence::db::{entities::IdSelect, Pool, Slice};
 
     use super::models::{CommentJoinUser, CreateComment};
 

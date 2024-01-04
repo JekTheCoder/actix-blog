@@ -1,9 +1,7 @@
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::{
-    domain::reply::ReplyJoinAccount, shared::models::response::public_account::PublicAccount,
-};
+use crate::domain::{account::PublicAccount, reply::ReplyJoinAccount};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

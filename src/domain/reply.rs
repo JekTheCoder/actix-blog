@@ -21,10 +21,7 @@ mod models {
 }
 
 mod db {
-    use crate::{
-        persistence::db::{Pool, Slice},
-        shared::models::insert_return::IdSelect,
-    };
+    use crate::persistence::db::{entities::IdSelect, Pool, Slice};
     use sqlx::query_as;
     use uuid::Uuid;
 

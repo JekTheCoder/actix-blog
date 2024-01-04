@@ -1,5 +1,3 @@
-mod shared;
-
 mod error;
 mod traits;
 mod utils;

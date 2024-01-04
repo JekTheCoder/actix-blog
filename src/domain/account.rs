@@ -1,5 +1,5 @@
 pub use db::by_username;
-pub use models::AccountResponse;
+pub use models::{AccountResponse, PublicAccount};
 
 mod models {
     use serde::Serialize;
@@ -35,6 +35,13 @@ mod models {
                 kind: value.kind,
             }
         }
+    }
+
+    #[derive(Serialize)]
+    pub struct PublicAccount {
+        pub id: Uuid,
+        pub name: String,
+        pub username: String,
     }
 }
 

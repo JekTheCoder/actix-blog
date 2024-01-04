@@ -8,9 +8,8 @@ use crate::{
         blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
         category,
     },
-    persistence::db::Pool,
+    persistence::db::{entities::IdSelect, Pool},
     server::shared::query::ValidJson,
-    shared::models::insert_return::IdSelect,
 };
 
 use serde::Deserialize;

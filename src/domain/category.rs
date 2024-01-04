@@ -33,8 +33,7 @@ mod models {
 mod db {
     use crate::{
         domain::category::SubCategory,
-        persistence::db::{Driver, Pool, QueryResult},
-        shared::models::insert_return::IdSelect,
+        persistence::db::{entities::IdSelect, Driver, Pool, QueryResult},
     };
     use sqlx::{query, query_as, QueryBuilder};
 

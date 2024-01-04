@@ -1,3 +1,5 @@
+pub mod entities;
+
 use actix_web::web::{Data, ServiceConfig};
 use sqlx::{migrate, postgres::PgPoolOptions, Database, PgPool, Postgres};
 
