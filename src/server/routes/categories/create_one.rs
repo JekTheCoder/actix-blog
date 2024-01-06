@@ -1,9 +1,12 @@
 use actix_web::{post, web::Data, Responder};
 
 use crate::{
-    domain::{admin::IsAdminFactory, category},
+    domain::category,
     persistence::db::Pool,
-    server::shared::{query::ValidJson, response::insert_response},
+    server::{
+        admin::IsAdminFactory,
+        shared::{query::ValidJson, response::insert_response},
+    },
 };
 
 #[derive(serde::Deserialize, validator::Validate)]

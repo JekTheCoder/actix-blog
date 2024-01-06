@@ -23,7 +23,7 @@ impl From<AdminId> for Uuid {
 }
 
 pub mod from_request {
-    use std::{fmt::Display, future::ready};
+    use std::fmt::Display;
 
     use actix_web::{FromRequest, ResponseError};
     use uuid::Uuid;
@@ -63,29 +63,27 @@ pub mod from_request {
         }
     }
 
+    impl AdminId {
+        pub async fn from_req(req: &actix_web::HttpRequest) -> Result<Self, Error> {
+            let id = get_id(req)?;
+            run_check(req, id).await
+        }
+    }
+
     impl FromRequest for AdminId {
         type Error = Error;
         type Future = DynFuture<Result<Self, Self::Error>>;
 
         fn from_request(
             req: &actix_web::HttpRequest,
-            payload: &mut actix_web::dev::Payload,
+            _: &mut actix_web::dev::Payload,
         ) -> Self::Future {
-            let id = match get_id(req) {
-                Ok(id) => id,
-                Err(err) => return Box::pin(ready(Err(err))),
-            };
-
-            Box::pin(run_check(req, payload, id))
+            Box::pin(Self::from_req(req))
         }
     }
 
-    async fn run_check(
-        req: &actix_web::HttpRequest,
-        payload: &mut actix_web::dev::Payload,
-        id: Uuid,
-    ) -> Result<AdminId, Error> {
-        let Ok(command) = ConvertToAdminId::from_request(req, payload).await else {
+    async fn run_check(req: &actix_web::HttpRequest, id: Uuid) -> Result<AdminId, Error> {
+        let Ok(command) = ConvertToAdminId::from_req(req) else {
             return Err(Error::Service);
         };
 

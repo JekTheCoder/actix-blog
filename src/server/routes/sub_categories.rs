@@ -23,9 +23,9 @@ mod delete {
     use uuid::Uuid;
 
     use crate::{
-        domain::{admin::IsAdminFactory, category},
+        domain::category,
         persistence::db::Pool,
-        server::shared::response::deleted_response,
+        server::{admin::IsAdminFactory, shared::response::deleted_response},
     };
 
     #[delete("/{id}/", wrap = "IsAdminFactory")]

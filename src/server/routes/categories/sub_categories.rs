@@ -27,9 +27,12 @@ mod create_one {
     };
 
     use crate::{
-        domain::{admin::IsAdminFactory, category},
+        domain::category,
         persistence::db::Pool,
-        server::shared::{query::ValidJson, response::insert_response},
+        server::{
+            admin::IsAdminFactory,
+            shared::{query::ValidJson, response::insert_response},
+        },
     };
 
     #[derive(serde::Deserialize, validator::Validate)]

@@ -1,19 +1,14 @@
-use std::future::{self, ready, Ready};
+use std::future::{ready, Ready};
 
 use actix_web::dev::{Service, ServiceRequest, Transform};
 
-use actix_web::web::Data;
 use actix_web::{
     dev::{forward_ready, ServiceResponse},
     Error,
 };
 use futures_util::future::LocalBoxFuture;
-use uuid::Uuid;
 
-use crate::server::auth::{Claims, Role};
-use crate::persistence::db::Pool;
-
-use super::error::AdminError;
+use crate::domain::user::value_objects::AdminId;
 
 pub struct IsAdminFactory;
 
@@ -52,38 +47,14 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let claims = match Claims::from_req(req.request()) {
-            Ok(claims) => claims,
-            Err(_) => return Box::pin(ready(Err(AdminError::Claimns.into()))),
-        };
-
-        if claims.role != Role::Admin {
-            return Box::pin(future::ready(Err(AdminError::NotAdmin.into())));
-        }
-
-        let pool = req
-            .app_data::<Data<Pool>>()
-            .expect("Pool not found")
-            .clone();
-
+        let admin_check = AdminId::from_req(req.request());
         let next_res = self.service.call(req);
 
         Box::pin(async move {
-            match is_admin(&pool, claims.id).await {
-                Ok(true) => next_res.await,
-                Ok(false) => Err(AdminError::NotAdmin.into()),
-                Err(_) => Err(AdminError::Database.into()),
+            match admin_check.await {
+                Ok(_) => next_res.await,
+                Err(e) => Err(e.into()),
             }
         })
     }
-}
-
-async fn is_admin(pool: &Pool, account_id: Uuid) -> Result<bool, sqlx::Error> {
-    sqlx::query!(
-        "SELECT COUNT(id) as count FROM admins WHERE account_id = $1",
-        account_id
-    )
-    .fetch_optional(pool)
-    .await
-    .map(|data| data.is_some())
 }

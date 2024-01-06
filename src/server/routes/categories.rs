@@ -11,9 +11,12 @@ use actix_web::{
 use uuid::Uuid;
 
 use crate::{
-    domain::{admin::IsAdminFactory, category},
+    domain::category,
     persistence::db::Pool,
-    server::shared::response::{deleted_response, select_response},
+    server::{
+        admin::IsAdminFactory,
+        shared::response::{deleted_response, select_response},
+    },
 };
 
 #[get("/")]

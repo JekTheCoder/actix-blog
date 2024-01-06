@@ -1,6 +1,6 @@
 use actix_web::web::{self, scope, ServiceConfig};
 
-use crate::domain::admin::IsAdminFactory;
+use crate::server::admin::IsAdminFactory;
 
 mod get_all {
     use actix_web::{

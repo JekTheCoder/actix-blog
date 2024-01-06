@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     domain::{
-        admin::AdminId,
+        user::value_objects::AdminId,
         blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
         category,
     },
@@ -66,7 +66,7 @@ impl From<sqlx::Error> for Error {
 pub async fn endpoint(
     pool: Data<Pool>,
     req: ValidJson<Request>,
-    AdminId { id: admin_id }: AdminId,
+    admin_id: AdminId,
     img_host_injector: ImgHostInjectorFactory,
 ) -> Result<impl Responder, Error> {
     let Request {

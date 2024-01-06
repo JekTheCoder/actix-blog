@@ -3,6 +3,7 @@ pub mod auth;
 mod routes;
 pub mod shared;
 pub mod service;
+pub mod admin;
 
 pub use app_config::{AppConfig, AppConfigurable};
 pub use server::run;
