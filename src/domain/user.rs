@@ -1,5 +1,7 @@
 pub use db::{by_id, create};
 pub use models::CreateRequest;
+pub mod value_objects;
+pub mod features;
 
 mod models {
     use serde::Serialize;

@@ -2,6 +2,7 @@ mod app_config;
 pub mod auth;
 mod routes;
 pub mod shared;
+pub mod service;
 
 pub use app_config::{AppConfig, AppConfigurable};
 pub use server::run;
