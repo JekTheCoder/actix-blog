@@ -5,7 +5,10 @@ use uuid::Uuid;
 
 use crate::{
     domain::{
-        blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
+        blog::{
+            self, parse_preview, value_objects::preview::Preview, BlogParse, ImageUrlInjector,
+            ImgHostInjectorFactory,
+        },
         category,
         user::value_objects::AdminId,
     },
@@ -30,7 +33,10 @@ impl From<blog::parse::Error> for Error {
 
 impl From<sqlx::Error> for Error {
     fn from(e: sqlx::Error) -> Self {
-        todo!()
+        match e {
+            sqlx::Error::Database(_) => Self::Conflict,
+            _ => Self::Database,
+        }
     }
 }
 
@@ -40,7 +46,7 @@ impl CreateOne {
         admin_id: AdminId,
         content: &str,
         category_id: Uuid,
-        preview: Option<String>,
+        preview: Option<&Preview>,
         tags: Vec<Uuid>,
         sub_categories: Vec<Uuid>,
     ) -> Result<Uuid, Error> {
@@ -52,16 +58,19 @@ impl CreateOne {
             title,
             content: html_content,
             images, // TODO
-        } = blog::parse(&content, &injector)?;
+        } = blog::parse(content, &injector)?;
 
+        let owned_preview: Box<_>;
         let preview = match preview {
             Some(preview) => preview,
-            None => match parse_preview(&content) {
-                Some(preview) => preview,
-                None => {
+            None => {
+                let Some(parsed_preview) = parse_preview(content) else {
                     return Err(Error::NoPreview);
-                }
-            },
+                };
+
+                owned_preview = parsed_preview;
+                owned_preview.as_ref()
+            }
         };
 
         let images = images.into_inner();
@@ -93,7 +102,7 @@ impl CreateOne {
             content,
             &html_content,
             category_id,
-            preview,
+            preview.as_ref(),
             main_image,
             &images
         )
@@ -111,5 +120,4 @@ impl CreateOne {
 
         Ok(blog_id)
     }
-
 }

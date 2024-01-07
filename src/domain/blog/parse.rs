@@ -2,7 +2,7 @@ use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Par
 
 use crate::shared::vec_set::VecSet;
 
-use super::images::Filename;
+use super::{images::Filename, value_objects::preview::Preview};
 
 #[derive(Debug)]
 pub struct BlogParse {
@@ -67,13 +67,16 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
         };
     }
 
-    let title = title_elements.iter().cloned().fold(String::new(), |mut title, event| {
-        if let Event::Text(text) = event {
-            title.push_str(&text);
-        }
+    let title = title_elements
+        .iter()
+        .cloned()
+        .fold(String::new(), |mut title, event| {
+            if let Event::Text(text) = event {
+                title.push_str(&text);
+            }
 
-        title
-    });
+            title
+        });
 
     if title.is_empty() {
         return Err(Error::InvalidTitle);
@@ -98,7 +101,7 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
     })
 }
 
-pub fn parse_preview(markdown: &str) -> Option<String> {
+pub fn parse_preview(markdown: &str) -> Option<Box<Preview>> {
     let (preview_start, _) = lines_indices::LinesIndices::new(markdown)
         .find(|&(_, line)| Parser::new(line).take(40).all(|event| is_readable(&event)))?;
 
@@ -118,7 +121,7 @@ pub fn parse_preview(markdown: &str) -> Option<String> {
 
     push_html(&mut preview, first.into_iter().chain(rest));
 
-    Some(preview)
+    Some(unsafe { Preview::from_boxed_unchecked(preview.into_boxed_str()) })
 }
 
 fn is_readable(event: &Event<'_>) -> bool {
@@ -224,7 +227,7 @@ how are you, my friends?
 ![bruda](./bruda.png)"#;
 
         let preview = parse_preview(markdown);
-        assert_eq!(preview.unwrap(), "<p>how are you, my friends?</p>\n");
+        assert_eq!(preview.unwrap().as_ref(), "<p>how are you, my friends?</p>\n");
     }
 
     #[test]
@@ -240,7 +243,7 @@ This is an interesting preview
 This is more content"#;
 
         let preview = parse_preview(markdown);
-        assert_eq!(preview.unwrap(), "<p>This is an interesting preview</p>\n");
+        assert_eq!(preview.unwrap().as_ref(), "<p>This is an interesting preview</p>\n");
     }
 
     #[test]
@@ -251,7 +254,10 @@ This is an interesting preview"#;
 
         let BlogParse { content, .. } = parse(markdown, &NoopInjector {}).unwrap();
 
-        assert_eq!(content, "<h1>Hello my brodas</h1>\n<p>This is an interesting preview</p>\n");
+        assert_eq!(
+            content,
+            "<h1>Hello my brodas</h1>\n<p>This is an interesting preview</p>\n"
+        );
     }
 
     #[test]

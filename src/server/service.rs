@@ -69,7 +69,7 @@ macro_rules! sync_service {
                 let Ok($field_name) = <$field_type as crate::server::service::FromRequestSync>::sync_from_request(req) else {
                     return Err(crate::server::service::Error);
                 };
-                );*
+                )*
 
                 Ok($service_name {$($field_name),*})
             }

@@ -5,8 +5,9 @@ mod parse;
 mod img_host_injector;
 
 pub mod features;
+pub mod value_objects;
 
-pub use db::{by_id, create, get_all};
+pub use db::{by_id, get_all};
 
 pub use parse::{parse, BlogParse, Error as ParseError, parse_preview, ImageUrlInjector};
 

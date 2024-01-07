@@ -1,10 +1,13 @@
-use actix_web::{post, web::Data, HttpResponse, Responder, ResponseError};
-use pulldown_cmark::CowStr;
+use actix_web::{post, HttpResponse, Responder, ResponseError};
+
 use uuid::Uuid;
 
 use crate::{
-    domain::{blog, user::value_objects::AdminId},
-    persistence::db::{entities::IdSelect, Pool},
+    domain::{
+        blog::{self, value_objects::preview::PreviewBuf},
+        user::value_objects::AdminId,
+    },
+    persistence::db::entities::IdSelect,
     server::shared::query::ValidJson,
 };
 
@@ -22,7 +25,7 @@ pub struct Request {
     pub sub_categories: Vec<Uuid>,
     pub tags: Vec<Uuid>,
 
-    pub preview: Option<String>,
+    pub preview: Option<PreviewBuf>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -89,7 +92,7 @@ pub async fn endpoint(
             admin_id,
             &content,
             category_id,
-            preview,
+            preview.as_deref(),
             tags,
             sub_categories,
         )
