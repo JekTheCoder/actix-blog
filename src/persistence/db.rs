@@ -11,6 +11,10 @@ pub type QueryResult = <Database as sqlx::Database>::QueryResult;
 pub type PoolOptions = PgPoolOptions;
 pub type Driver = Postgres;
 
+pub trait Executor<'a>: sqlx::Executor<'a, Database = Database> {}
+
+impl<'a, E> Executor<'a> for E where E: sqlx::Executor<'a, Database = Database> {}
+
 pub use slice::Slice;
 
 #[derive(Clone)]

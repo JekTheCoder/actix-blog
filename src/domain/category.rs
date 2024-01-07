@@ -33,7 +33,7 @@ mod models {
 mod db {
     use crate::{
         domain::category::SubCategory,
-        persistence::db::{entities::IdSelect, Driver, Pool, QueryResult},
+        persistence::db::{entities::IdSelect, Driver, Executor, Pool, QueryResult},
     };
     use sqlx::{query, query_as, QueryBuilder};
 
@@ -111,7 +111,7 @@ mod db {
     }
 
     pub async fn link_sub_categories(
-        pool: &Pool,
+        pool: impl Executor<'_>,
         sub_categories: Vec<uuid::Uuid>,
         blog_id: uuid::Uuid,
     ) -> Result<QueryResult, sqlx::Error> {
@@ -147,7 +147,7 @@ mod db {
     }
 
     pub async fn link_tags(
-        pool: &Pool,
+        pool: impl Executor<'_>,
         tags: Vec<uuid::Uuid>,
         blog_id: uuid::Uuid,
     ) -> Result<QueryResult, sqlx::Error> {

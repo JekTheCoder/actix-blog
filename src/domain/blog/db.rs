@@ -2,12 +2,13 @@ use sqlx::{query, query_as};
 use uuid::Uuid;
 
 use crate::domain::blog::models::{BlogById, BlogPreview};
+use crate::domain::user::value_objects::AdminId;
 use crate::persistence::db::{Pool, QueryResult, Slice};
 
 pub async fn create(
     pool: &Pool,
     id: Uuid,
-    admin_id: Uuid,
+    admin_id: AdminId,
     title: &str,
     content: &str,
     html: &str,
@@ -18,20 +19,20 @@ pub async fn create(
 ) -> Result<QueryResult, sqlx::Error> {
     query!(
         r#"INSERT INTO 
-blogs(
-    id,
-    admin_id,
-    title,
-    content,
-    html,
-    category_id,
-    preview,
-    main_image,
-    images
-) 
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
+        blogs(
+            id,
+            admin_id,
+            title,
+            content,
+            html,
+            category_id,
+            preview,
+            main_image,
+            images
+        ) 
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
         id,
-        admin_id,
+        admin_id.into_inner(),
         title,
         content,
         html,

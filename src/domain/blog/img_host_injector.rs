@@ -1,27 +1,13 @@
-use std::future::{ready, Ready};
-
-use actix_web::{web::Data, FromRequest, ResponseError};
+use actix_web::web::Data;
 use uuid::Uuid;
 
 use super::parse::ImageUrlInjector;
 
-use crate::domain::server::ServerAddress;
+use crate::{domain::server::ServerAddress, server::service::sync_service};
 
-pub struct ImgHostInjectorFactory {
-    server_address: Data<ServerAddress>,
-}
+sync_service!(ImgHostInjectorFactory; server_address: Data<ServerAddress>);
 
 impl ImgHostInjectorFactory {
-    fn new(req: &actix_web::HttpRequest) -> Result<Self, Error> {
-        let Some(server_address) = req.app_data::<Data<ServerAddress>>() else {
-            return Err(Error);
-        };
-
-        Ok(Self {
-            server_address: server_address.clone(),
-        })
-    }
-
     pub fn create(&self, blog_id: Uuid) -> ImgHostInjector {
         ImgHostInjector {
             server_address: &self.server_address,
@@ -33,21 +19,6 @@ impl ImgHostInjectorFactory {
 pub struct ImgHostInjector<'a> {
     server_address: &'a ServerAddress,
     blog_id: Uuid,
-}
-
-#[derive(Debug, thiserror::Error)]
-#[error("")]
-pub struct Error;
-
-impl ResponseError for Error {}
-
-impl FromRequest for ImgHostInjectorFactory {
-    type Error = Error;
-    type Future = Ready<Result<Self, Self::Error>>;
-
-    fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
-        ready(Self::new(req))
-    }
 }
 
 impl<'a> ImageUrlInjector for ImgHostInjector<'a> {

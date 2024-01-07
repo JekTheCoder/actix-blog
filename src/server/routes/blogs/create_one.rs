@@ -3,11 +3,7 @@ use pulldown_cmark::CowStr;
 use uuid::Uuid;
 
 use crate::{
-    domain::{
-        user::value_objects::AdminId,
-        blog::{self, parse_preview, BlogParse, ImageUrlInjector, ImgHostInjectorFactory},
-        category,
-    },
+    domain::{blog, user::value_objects::AdminId},
     persistence::db::{entities::IdSelect, Pool},
     server::shared::query::ValidJson,
 };
@@ -42,6 +38,18 @@ pub enum Error {
     NoPreview,
 }
 
+impl From<blog::features::create_one::Error> for Error {
+    fn from(value: blog::features::create_one::Error) -> Self {
+        match value {
+            blog::features::create_one::Error::Parse(e) => Self::Parse(e),
+            blog::features::create_one::Error::NoPreview => Self::NoPreview,
+            blog::features::create_one::Error::Conflict => Self::Conflict,
+            blog::features::create_one::Error::Database => Self::Database,
+            blog::features::create_one::Error::NoPreview => Self::NoPreview,
+        }
+    }
+}
+
 impl ResponseError for Error {
     fn status_code(&self) -> actix_web::http::StatusCode {
         match self {
@@ -64,75 +72,28 @@ impl From<sqlx::Error> for Error {
 
 #[post("/")]
 pub async fn endpoint(
-    pool: Data<Pool>,
     req: ValidJson<Request>,
     admin_id: AdminId,
-    img_host_injector: ImgHostInjectorFactory,
+    create_one: blog::features::create_one::CreateOne,
 ) -> Result<impl Responder, Error> {
     let Request {
         content,
-        category_id,
-        sub_categories,
         tags,
         preview,
+        category_id,
+        sub_categories,
     } = req.into_inner();
 
-    let id = Uuid::new_v4();
-    let injector = img_host_injector.create(id);
-
-    let BlogParse {
-        title,
-        content: html_content,
-        images, // TODO
-    } = blog::parse(&content, &injector)?;
-
-    let preview = match preview {
-        Some(preview) => preview,
-        None => match parse_preview(&content) {
-            Some(preview) => preview,
-            None => {
-                return Err(Error::NoPreview);
-            }
-        },
-    };
-
-    let images = images.into_inner();
-    let main_image = images.first().map(|image| {
-        let mut cow = CowStr::Borrowed(image);
-        injector.inject(&mut cow);
-
-        cow.to_string()
-    });
-
-    let result = blog::create(
-        pool.get_ref(),
-        id,
-        admin_id,
-        &title,
-        &content,
-        &html_content,
-        category_id,
-        &preview,
-        main_image.as_deref(),
-        &images,
-    )
-    .await?;
-
-    if result.rows_affected() != 1 {
-        return Err(Error::Conflict);
-    }
-
-    if tags.is_empty() {
-        category::link_sub_categories(pool.get_ref(), sub_categories, id).await?;
-    } else {
-        let (categories_result, tags_result) = tokio::join!(
-            category::link_sub_categories(pool.get_ref(), sub_categories, id),
-            category::link_tags(pool.get_ref(), tags, id)
-        );
-
-        categories_result?;
-        tags_result?;
-    }
+    let id = create_one
+        .run(
+            admin_id,
+            &content,
+            category_id,
+            preview,
+            tags,
+            sub_categories,
+        )
+        .await?;
 
     Ok(HttpResponse::Created().json(IdSelect { id }))
 }

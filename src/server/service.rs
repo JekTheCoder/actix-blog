@@ -41,7 +41,7 @@ mod from_request_sync {
 
         impl ResponseError for Error {}
 
-        impl<T: 'static> FromRequestSync for Data<T> {
+        impl<T: ?Sized + 'static> FromRequestSync for Data<T> {
             type Error = Error;
 
             fn sync_from_request(req: &actix_web::HttpRequest) -> Result<Self, Self::Error> {
