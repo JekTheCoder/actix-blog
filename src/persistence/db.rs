@@ -1,12 +1,13 @@
 pub mod entities;
 
 use actix_web::web::{Data, ServiceConfig};
-use sqlx::{migrate, postgres::PgPoolOptions, Database, PgPool, Postgres};
+use sqlx::{self, migrate, postgres::PgPoolOptions, PgPool, Postgres};
 
 use crate::server::AppConfig;
 
+pub type Database = Postgres;
 pub type Pool = PgPool;
-pub type QueryResult = <Postgres as Database>::QueryResult;
+pub type QueryResult = <Database as sqlx::Database>::QueryResult;
 pub type PoolOptions = PgPoolOptions;
 pub type Driver = Postgres;
 
