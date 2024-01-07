@@ -17,8 +17,8 @@ impl AdminId {
 }
 
 impl From<AdminId> for Uuid {
-    fn from(value: AdminId) -> Self {
-        value.0
+    fn from(id: AdminId) -> Self {
+        id.0
     }
 }
 
@@ -30,17 +30,29 @@ pub mod from_request {
 
     use crate::{
         domain::user::features::convert_to_admin_id::ConvertToAdminId,
-        server::auth::{Claims, Role},
+        server::{
+            admin::uncheked_admin_id::{get_unchecked_admin_id, Error as UncheckedAdminError},
+            service::FromRequestSync,
+        },
         shared::future::DynFuture,
     };
 
     use super::AdminId;
 
     #[derive(Debug)]
-    enum Error {
+    pub enum Error {
         Claims,
         NotAdmin,
         Service,
+    }
+
+    impl From<UncheckedAdminError> for Error {
+        fn from(err: UncheckedAdminError) -> Self {
+            match err {
+                UncheckedAdminError::Claims => Self::Claims,
+                UncheckedAdminError::NotAdmin => Self::NotAdmin,
+            }
+        }
     }
 
     impl Display for Error {
@@ -65,8 +77,8 @@ pub mod from_request {
 
     impl AdminId {
         pub async fn from_req(req: &actix_web::HttpRequest) -> Result<Self, Error> {
-            let id = get_id(req)?;
-            run_check(req, id).await
+            let (command, id) = build_command(req)?;
+            command.run(id).await.map_err(|_| Error::NotAdmin)
         }
     }
 
@@ -78,27 +90,20 @@ pub mod from_request {
             req: &actix_web::HttpRequest,
             _: &mut actix_web::dev::Payload,
         ) -> Self::Future {
-            Box::pin(Self::from_req(req))
+            let Ok((command, id)) = build_command(req) else {
+                return Box::pin(async { Err(Error::Claims) });
+            };
+
+            Box::pin(async move { command.run(id).await.map_err(|_| Error::NotAdmin) })
         }
     }
 
-    async fn run_check(req: &actix_web::HttpRequest, id: Uuid) -> Result<AdminId, Error> {
-        let Ok(command) = ConvertToAdminId::from_req(req) else {
-            return Err(Error::Service);
-        };
+    fn build_command(req: &actix_web::HttpRequest) -> Result<(ConvertToAdminId, Uuid), Error> {
+        let id = get_unchecked_admin_id(req)?;
 
-        command.run(id).await.map_err(|_| Error::NotAdmin)
-    }
-
-    fn get_id(req: &actix_web::HttpRequest) -> Result<Uuid, Error> {
-        let Ok(Claims { exp, id, role }) = Claims::from_req(req) else {
-            return Err(Error::Claims);
-        };
-
-        if role != Role::Admin {
-            return Err(Error::Claims);
+        match ConvertToAdminId::sync_from_request(req) {
+            Ok(command) => Ok((command, id)),
+            Err(_) => Err(Error::Service),
         }
-
-        Ok(id)
     }
 }
