@@ -2,7 +2,7 @@ use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Par
 
 use crate::shared::vec_set::VecSet;
 
-use super::{images::Filename, value_objects::preview::Preview};
+use super::{images::Filename, value_objects::preview::PreviewBuf};
 
 #[derive(Debug)]
 pub struct BlogParse {
@@ -101,7 +101,7 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
     })
 }
 
-pub fn parse_preview(markdown: &str) -> Option<Box<Preview>> {
+pub fn parse_preview(markdown: &str) -> Option<PreviewBuf> {
     let (preview_start, _) = lines_indices::LinesIndices::new(markdown)
         .find(|&(_, line)| Parser::new(line).take(40).all(|event| is_readable(&event)))?;
 
@@ -121,7 +121,7 @@ pub fn parse_preview(markdown: &str) -> Option<Box<Preview>> {
 
     push_html(&mut preview, first.into_iter().chain(rest));
 
-    Some(unsafe { Preview::from_boxed_unchecked(preview.into_boxed_str()) })
+    Some(unsafe { PreviewBuf::from_boxed_unchecked(preview.into_boxed_str()) })
 }
 
 fn is_readable(event: &Event<'_>) -> bool {
@@ -227,7 +227,10 @@ how are you, my friends?
 ![bruda](./bruda.png)"#;
 
         let preview = parse_preview(markdown);
-        assert_eq!(preview.unwrap().as_ref(), "<p>how are you, my friends?</p>\n");
+        assert_eq!(
+            preview.unwrap().as_ref(),
+            "<p>how are you, my friends?</p>\n"
+        );
     }
 
     #[test]
@@ -243,7 +246,10 @@ This is an interesting preview
 This is more content"#;
 
         let preview = parse_preview(markdown);
-        assert_eq!(preview.unwrap().as_ref(), "<p>This is an interesting preview</p>\n");
+        assert_eq!(
+            preview.unwrap().as_ref(),
+            "<p>This is an interesting preview</p>\n"
+        );
     }
 
     #[test]

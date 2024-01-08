@@ -60,7 +60,7 @@ impl CreateOne {
             images, // TODO
         } = blog::parse(content, &injector)?;
 
-        let owned_preview: Box<_>;
+        let owned_preview;
         let preview = match preview {
             Some(preview) => preview,
             None => {

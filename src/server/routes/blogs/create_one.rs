@@ -14,7 +14,7 @@ use crate::{
 use serde::Deserialize;
 use validator::Validate;
 
-#[derive(Debug, Clone, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
     #[validate(length(min = 1))]
@@ -48,7 +48,6 @@ impl From<blog::features::create_one::Error> for Error {
             blog::features::create_one::Error::NoPreview => Self::NoPreview,
             blog::features::create_one::Error::Conflict => Self::Conflict,
             blog::features::create_one::Error::Database => Self::Database,
-            blog::features::create_one::Error::NoPreview => Self::NoPreview,
         }
     }
 }
