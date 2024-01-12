@@ -50,7 +50,7 @@ impl DomainValid for PreviewBuf {
         let unchecked = unchecked.trim();
         let mut errors = domain_validation::FieldErrors::default();
 
-        if unchecked.len() == 0 {
+        if unchecked.is_empty() {
             errors.add(FieldError::minlen(unchecked.len(), 1));
         }
 

@@ -12,7 +12,7 @@ use crate::{
     },
     persistence::db::entities::IdSelect,
     server::shared::{
-        domain_validation::{domain_valid, DomainValid},
+        domain_validation::{domain_valid},
         query::DomainJson,
     },
 };
