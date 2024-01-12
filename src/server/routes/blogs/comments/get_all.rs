@@ -1,10 +1,8 @@
 use crate::{
-    domain::comment,
+    domain::comment::{self, models::CommentByBlog},
     persistence::db::Pool,
     server::shared::{query::QuerySlice, response::select_response},
 };
-
-use super::response::CommentByBlog;
 
 use actix_web::{
     get,

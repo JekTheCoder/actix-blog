@@ -1,7 +1,32 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
 
-use crate::domain::{account::PublicAccount, comment::CommentJoinUser};
+use crate::domain::account::PublicAccount;
+
+#[derive(Deserialize, Validate)]
+pub struct CreateComment {
+    #[validate(length(min = 1))]
+    pub content: String,
+}
+
+#[derive(Serialize)]
+pub struct Comment {
+    pub id: Uuid,
+    pub account_id: Uuid,
+    pub blog_id: Uuid,
+    pub content: String,
+}
+
+pub struct CommentJoinUser {
+    pub id: Uuid,
+    pub blog_id: Uuid,
+    pub content: String,
+    pub account_id: Uuid,
+    pub account_name: String,
+    pub account_username: String,
+    pub has_replies: bool,
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

@@ -1,5 +1,3 @@
-pub mod response;
-
 mod get_all;
 mod create;
 

@@ -1,35 +1,6 @@
 pub use db::{by_blog, create};
-pub use models::{CommentJoinUser, CreateComment};
 
-mod models {
-    use serde::{Deserialize, Serialize};
-    use uuid::Uuid;
-    use validator::Validate;
-
-    #[derive(Deserialize, Validate)]
-    pub struct CreateComment {
-        #[validate(length(min = 1))]
-        pub content: String,
-    }
-
-    #[derive(Serialize)]
-    pub struct Comment {
-        pub id: Uuid,
-        pub account_id: Uuid,
-        pub blog_id: Uuid,
-        pub content: String,
-    }
-
-    pub struct CommentJoinUser {
-        pub id: Uuid,
-        pub blog_id: Uuid,
-        pub content: String,
-        pub account_id: Uuid,
-        pub account_name: String,
-        pub account_username: String,
-        pub has_replies: bool,
-    }
-}
+pub mod models;
 
 mod db {
     use sqlx::query_as;

@@ -7,7 +7,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    domain::{comment::CreateComment, reply},
+    domain::{comment::models::CreateComment, reply},
     persistence::db::Pool,
     server::shared::query::QuerySlice,
     server::shared::{

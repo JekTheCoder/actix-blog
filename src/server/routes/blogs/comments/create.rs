@@ -17,7 +17,7 @@ pub async fn endpoint(
     pool: Data<Pool>,
     blog_id: Path<Uuid>,
     claims: Claims,
-    req: ValidJson<comment::CreateComment>,
+    req: ValidJson<comment::models::CreateComment>,
 ) -> impl Responder {
     let result = comment::create(
         pool.get_ref(),
