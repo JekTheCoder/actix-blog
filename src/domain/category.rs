@@ -112,7 +112,7 @@ mod db {
 
     pub async fn link_sub_categories(
         pool: impl Executor<'_>,
-        sub_categories: Vec<uuid::Uuid>,
+        sub_categories: &[uuid::Uuid],
         blog_id: uuid::Uuid,
     ) -> Result<QueryResult, sqlx::Error> {
         let mut query_builder = QueryBuilder::<'_, Driver>::new(

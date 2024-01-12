@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{
     domain::{
         blog::{
-            self, parse_preview, value_objects::{preview::Preview, content::Content}, BlogParse, ImageUrlInjector,
+            self, parse_preview, value_objects::{preview::Preview, content::Content, sub_categories::SubCategories}, BlogParse, ImageUrlInjector,
             ImgHostInjectorFactory,
         },
         category,
@@ -48,7 +48,7 @@ impl CreateOne {
         category_id: Uuid,
         preview: Option<&Preview>,
         tags: Vec<Uuid>,
-        sub_categories: Vec<Uuid>,
+        sub_categories: SubCategories,
     ) -> Result<Uuid, Error> {
         let blog_id = Uuid::new_v4();
 
@@ -113,7 +113,7 @@ impl CreateOne {
             return Err(Error::Conflict);
         }
 
-        category::link_sub_categories(&mut tx, sub_categories, blog_id).await?;
+        category::link_sub_categories(&mut tx, sub_categories.as_ref(), blog_id).await?;
         category::link_tags(&mut tx, tags, blog_id).await?;
 
         tx.commit().await?;

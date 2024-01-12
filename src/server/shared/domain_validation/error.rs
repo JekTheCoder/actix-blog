@@ -57,6 +57,12 @@ impl From<StructErrors> for Error {
     }
 }
 
+impl From<FieldErrors> for Error {
+    fn from(value: FieldErrors) -> Self {
+        Self::Field(value)
+    }
+}
+
 mod display {
     use std::fmt::Display;
 

@@ -6,15 +6,12 @@ use crate::{
     domain::{
         blog::{
             self,
-            value_objects::{content::ContentBuf, preview::PreviewBuf},
+            value_objects::{content::ContentBuf, preview::PreviewBuf, sub_categories::SubCategories},
         },
         user::value_objects::AdminId,
     },
     persistence::db::entities::IdSelect,
-    server::shared::{
-        domain_validation::{domain_valid},
-        query::DomainJson,
-    },
+    server::shared::{domain_validation::domain_valid, query::DomainJson},
 };
 
 domain_valid!(pub struct Request {
@@ -22,7 +19,7 @@ domain_valid!(pub struct Request {
     preview: Option<PreviewBuf>,
     category_id: Uuid,
     tags: Vec<Uuid>,
-    sub_categories: Vec<Uuid>,
+    sub_categories: SubCategories,
 }; UncheckedRequest);
 
 #[derive(Debug, thiserror::Error)]
