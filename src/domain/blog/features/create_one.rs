@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::{
     domain::{
         blog::{
-            self, parse_preview, value_objects::preview::Preview, BlogParse, ImageUrlInjector,
+            self, parse_preview, value_objects::{preview::Preview, content::Content}, BlogParse, ImageUrlInjector,
             ImgHostInjectorFactory,
         },
         category,
@@ -44,7 +44,7 @@ impl CreateOne {
     pub async fn run(
         &self,
         admin_id: AdminId,
-        content: &str,
+        content: &Content,
         category_id: Uuid,
         preview: Option<&Preview>,
         tags: Vec<Uuid>,
@@ -58,13 +58,13 @@ impl CreateOne {
             title,
             content: html_content,
             images, // TODO
-        } = blog::parse(content, &injector)?;
+        } = blog::parse(content.as_ref(), &injector)?;
 
         let owned_preview;
         let preview = match preview {
             Some(preview) => preview,
             None => {
-                let Some(parsed_preview) = parse_preview(content) else {
+                let Some(parsed_preview) = parse_preview(content.as_ref()) else {
                     return Err(Error::NoPreview);
                 };
 
@@ -99,7 +99,7 @@ impl CreateOne {
             blog_id,
             admin_id.into_inner(),
             title,
-            content,
+            content.as_ref(),
             &html_content,
             category_id,
             preview.as_ref(),

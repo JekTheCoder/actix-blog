@@ -4,29 +4,26 @@ use uuid::Uuid;
 
 use crate::{
     domain::{
-        blog::{self, value_objects::preview::PreviewBuf},
+        blog::{
+            self,
+            value_objects::{content::ContentBuf, preview::PreviewBuf},
+        },
         user::value_objects::AdminId,
     },
     persistence::db::entities::IdSelect,
-    server::shared::query::ValidJson,
+    server::shared::{
+        domain_validation::{domain_valid, DomainValid},
+        query::DomainJson,
+    },
 };
 
-use serde::Deserialize;
-use validator::Validate;
-
-#[derive(Debug, Deserialize, Validate)]
-#[serde(rename_all = "camelCase")]
-pub struct Request {
-    #[validate(length(min = 1))]
-    pub content: String,
-
-    pub category_id: Uuid,
-    #[validate(length(min = 1))]
-    pub sub_categories: Vec<Uuid>,
-    pub tags: Vec<Uuid>,
-
-    pub preview: Option<PreviewBuf>,
-}
+domain_valid!(pub struct Request {
+    content: ContentBuf,
+    preview: Option<PreviewBuf>,
+    category_id: Uuid,
+    tags: Vec<Uuid>,
+    sub_categories: Vec<Uuid>,
+}; UncheckedRequest);
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -74,22 +71,22 @@ impl From<sqlx::Error> for Error {
 
 #[post("/")]
 pub async fn endpoint(
-    req: ValidJson<Request>,
+    req: DomainJson<Request>,
     admin_id: AdminId,
     create_one: blog::features::create_one::CreateOne,
 ) -> Result<impl Responder, Error> {
     let Request {
         content,
-        tags,
         preview,
         category_id,
+        tags,
         sub_categories,
     } = req.into_inner();
 
-    let id = create_one
+    let blog_id = create_one
         .run(
             admin_id,
-            &content,
+            content.as_ref(),
             category_id,
             preview.as_deref(),
             tags,
@@ -97,5 +94,5 @@ pub async fn endpoint(
         )
         .await?;
 
-    Ok(HttpResponse::Created().json(IdSelect { id }))
+    Ok(HttpResponse::Created().json(IdSelect { id: blog_id }))
 }

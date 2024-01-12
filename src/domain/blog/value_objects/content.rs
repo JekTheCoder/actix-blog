@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crate::shared::str_wrapper::{buf_ops, super_str, CheckStr, buf_de};
+use crate::{
+    server::shared::domain_validation::{self, DomainValid, FieldError},
+    shared::str_wrapper::{buf_ops, super_str, CheckStr},
+};
 
 #[derive(Debug)]
 pub enum Error {
@@ -9,7 +12,9 @@ pub enum Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "can not be empty")
+        match self {
+            Self::Empty => write!(f, "can not be empty"),
+        }
     }
 }
 
@@ -21,7 +26,11 @@ impl CheckStr for Content {
     type Error = Error;
 
     fn check_str(slice: &str) -> Result<(), Self::Error> {
-        todo!()
+        if slice.is_empty() {
+            return Err(Error::Empty);
+        }
+
+        Ok(())
     }
 }
 
@@ -32,4 +41,23 @@ super_str!(Content);
 pub struct ContentBuf(Box<Content>);
 
 buf_ops!(ContentBuf, Content);
-buf_de!(ContentBuf);
+
+impl DomainValid for ContentBuf {
+    type Unchecked = String;
+
+    fn from_unchecked(unchecked: Self::Unchecked) -> Result<Self, domain_validation::Error> {
+        let unchecked = unchecked.trim();
+        let mut errors = domain_validation::FieldErrors::default();
+
+        if unchecked.len() == 0 {
+            errors.add(FieldError::minlen(unchecked.len(), 1));
+        }
+
+        if errors.is_empty() {
+            let boxed: Box<str> = unchecked.into();
+            Ok(unsafe { Self::from_boxed_unchecked(boxed) })
+        } else {
+            Err(domain_validation::Error::Field(errors))
+        }
+    }
+}
