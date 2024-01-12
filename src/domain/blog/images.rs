@@ -1,18 +1,15 @@
 mod create_path;
-mod save;
 
-use actix_web::web::Data;
 use crate::{persistence::images::ImagesDir, server::service::sync_service};
+use actix_web::web::Data;
 
 pub use filename::Filename;
-pub use save::{save, Error as ImageSaveError};
 pub use path::ImagePathBuf;
 
 const BLOG_IMAGES_DIR: &str = "blogs";
 
 pub const ALLOWED_FILETYPES: [mime::Mime; 2] = [mime::IMAGE_PNG, mime::IMAGE_JPEG];
 const ALLOWED_MIME_NAMES: [mime::Name<'static>; 2] = [mime::PNG, mime::JPEG];
-
 
 sync_service!(ImagePathFactory; images_dir: Data<ImagesDir>);
 

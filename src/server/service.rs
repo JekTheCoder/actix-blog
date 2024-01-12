@@ -64,6 +64,7 @@ macro_rules! sync_service {
         impl crate::server::service::FromRequestSync for $service_name {
             type Error = crate::server::service::Error;
 
+            #[allow(unused_variables)]
             fn sync_from_request(req: &actix_web::HttpRequest) -> Result<Self, Self::Error> {
                 $(
                 let Ok($field_name) = <$field_type as crate::server::service::FromRequestSync>::sync_from_request(req) else {

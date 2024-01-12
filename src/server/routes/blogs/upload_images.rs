@@ -4,8 +4,9 @@ use futures_util::StreamExt;
 use image::EncodableLayout;
 use uuid::Uuid;
 
-use crate::domain::blog::images::{
-    self, Filename, ImagePathFactory, ImageSaveError, ALLOWED_FILETYPES,
+use crate::domain::blog::{
+    features::upload_image::{Error, UploadImage},
+    images::{Filename, ImagePathFactory, ALLOWED_FILETYPES},
 };
 
 #[post("/{id}/public/")]
@@ -13,6 +14,7 @@ pub async fn endpoint(
     path: Path<Uuid>,
     mut multipart: Multipart,
     image_manager: ImagePathFactory,
+    upload_image: UploadImage,
 ) -> HttpResponse {
     let id = path.into_inner();
 
@@ -36,7 +38,7 @@ pub async fn endpoint(
             return HttpResponse::BadRequest().body(format!("invalid filename: {}", filename));
         };
 
-        let image_path = image_manager.create_path(id, filename);
+        let image_path = image_manager.create_path(id, &filename);
 
         while let Some(result) = field.next().await {
             let Ok(bytes) = result else {
@@ -46,10 +48,10 @@ pub async fn endpoint(
             buffer.extend_from_slice(bytes.as_bytes());
         }
 
-        if let Err(e) = images::save(image_path, buffer.as_ref()) {
+        if let Err(e) = upload_image.run(&image_path, buffer.as_ref()) {
             return match e {
-                ImageSaveError::Save => HttpResponse::InternalServerError().finish(),
-                ImageSaveError::Decode => HttpResponse::BadRequest().body("invalid image"),
+                Error::Save => HttpResponse::InternalServerError().finish(),
+                Error::Decode => HttpResponse::BadRequest().body("invalid image"),
             };
         }
 
