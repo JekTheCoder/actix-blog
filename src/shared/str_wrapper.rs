@@ -71,23 +71,8 @@ macro_rules! buf_ops {
     };
 }
 
-macro_rules! buf_de {
-    ($buf_name: ident) => {
-        impl<'de> serde::Deserialize<'de> for $buf_name {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                let data = String::deserialize(deserializer)?;
-                data.try_into().map_err(serde::de::Error::custom)
-            }
-        }
-    };
-}
-
 pub(crate) use buf_ops;
 pub(crate) use super_str;
-pub(crate) use buf_de;
 
 pub trait CheckStr {
     type Error;
