@@ -37,6 +37,7 @@ macro_rules! buf_ops {
                 Self(converted)
             }
 
+            #[allow(dead_code)]
             pub fn as_str(&self) -> &str {
                 self.as_ref().as_ref()
             }
