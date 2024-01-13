@@ -10,7 +10,6 @@ pub enum Error {
     InvalidChar,
 }
 
-const MIN_LEN: usize = 1;
 const MAX_LEN: usize = 100;
 
 fn username_invalid_char(c: char) -> bool {
@@ -33,7 +32,7 @@ impl CheckStr for Username {
             return Err(Error::Empty);
         }
 
-        if slice.len() > 100 {
+        if slice.len() > MAX_LEN {
             return Err(Error::Maxlen);
         }
 
@@ -65,7 +64,7 @@ impl DomainValid for UsernameBuf {
             errors.add(FieldError::minlen(unchecked.len(), 1));
         }
 
-        if unchecked.len() > 100 {
+        if unchecked.len() > MAX_LEN {
             errors.add(FieldError::maxlen(unchecked.len(), 100));
         }
 
