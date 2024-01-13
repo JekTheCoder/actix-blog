@@ -54,21 +54,3 @@ mod models {
         pub username: String,
     }
 }
-
-mod db {
-    use sqlx::query_as;
-
-    use crate::persistence::db::Pool;
-
-    use super::models::Account;
-
-    pub async fn by_username(pool: &Pool, username: &str) -> Result<Account, sqlx::Error> {
-        query_as!(
-            Account,
-            r#"SELECT id, username, password, name, kind AS "kind: _" FROM accounts WHERE username = $1;"#,
-            username
-        )
-        .fetch_one(pool)
-        .await
-    }
-}
