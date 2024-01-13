@@ -12,10 +12,13 @@ pub use json::JsonResponse;
 pub fn select_response<T: Serialize>(result: Result<T, sqlx::Error>) -> HttpResponse {
     match result {
         Ok(body) => HttpResponse::Ok().json(body),
-        Err(e) => match e {
-            sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
-            _ => HttpResponse::InternalServerError().finish(),
-        },
+        Err(e) => {
+            dbg!(&e);
+            match e {
+                sqlx::Error::RowNotFound => HttpResponse::NotFound().finish(),
+                _ => HttpResponse::InternalServerError().finish(),
+            }
+        }
     }
 }
 

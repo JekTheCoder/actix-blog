@@ -1,4 +1,5 @@
 pub mod entities;
+pub mod decode;
 
 use actix_web::web::{Data, ServiceConfig};
 use sqlx::{self, migrate, postgres::PgPoolOptions, PgPool, Postgres};
