@@ -1,3 +1,4 @@
+mod change_password;
 mod login;
 mod refresh;
 mod register;
@@ -9,6 +10,7 @@ pub fn router(cfg: &mut ServiceConfig) {
         scope("/auth")
             .service(login::endpoint)
             .service(register::endpoint)
-            .service(refresh::endpoint),
+            .service(refresh::endpoint)
+            .service(change_password::endpoint),
     );
 }
