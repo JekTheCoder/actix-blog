@@ -11,7 +11,7 @@ use actix_web::{
 use uuid::Uuid;
 
 use crate::{
-    domain::category,
+    domain::blog_grouping,
     persistence::db::Pool,
     server::{
         admin::IsAdminFactory,
@@ -21,13 +21,13 @@ use crate::{
 
 #[get("/")]
 async fn get_all(pool: Data<Pool>) -> impl Responder {
-    let result = category::get_all_categories(pool.as_ref()).await;
+    let result = blog_grouping::get_all_categories(pool.as_ref()).await;
     select_response(result)
 }
 
 #[delete("/{id}/", wrap = "IsAdminFactory")]
 async fn delete_one(id: Path<Uuid>, pool: Data<Pool>) -> impl Responder {
-    let result = category::delete_category(pool.as_ref(), id.into_inner()).await;
+    let result = blog_grouping::delete_category(pool.as_ref(), id.into_inner()).await;
     deleted_response(result)
 }
 

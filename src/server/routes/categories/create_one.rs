@@ -1,7 +1,7 @@
 use actix_web::{post, web::Data, Responder};
 
 use crate::{
-    domain::category,
+    domain::blog_grouping,
     persistence::db::Pool,
     server::{
         admin::IsAdminFactory,
@@ -18,6 +18,6 @@ pub struct Request {
 #[post("/", wrap = "IsAdminFactory")]
 pub async fn endpoint(pool: Data<Pool>, request: ValidJson<Request>) -> impl Responder {
     let Request { name } = request.into_inner();
-    let response = category::create_category(pool.as_ref(), &name).await;
+    let response = blog_grouping::create_category(pool.as_ref(), &name).await;
     insert_response(response)
 }

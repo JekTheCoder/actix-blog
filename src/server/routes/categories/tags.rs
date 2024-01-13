@@ -10,13 +10,13 @@ mod get_all {
     };
 
     use crate::{
-        domain::category, persistence::db::Pool, server::shared::response::select_response,
+        domain::blog_grouping, persistence::db::Pool, server::shared::response::select_response,
     };
 
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>, path: Path<uuid::Uuid>) -> impl Responder {
         let id = path.into_inner();
-        let result = category::get_tags_by_category(pool.get_ref(), id).await;
+        let result = blog_grouping::get_tags_by_category(pool.get_ref(), id).await;
         select_response(result)
     }
 }
@@ -28,7 +28,7 @@ mod create_one {
     };
 
     use crate::{
-        domain::category,
+        domain::blog_grouping,
         persistence::db::Pool,
         server::shared::{query::ValidJson, response::insert_response},
     };
@@ -49,7 +49,7 @@ mod create_one {
         let id = path.into_inner();
         let Request { name, color } = req.into_inner();
 
-        let result = category::create_tag(pool.get_ref(), id, &name, &color).await;
+        let result = blog_grouping::create_tag(pool.get_ref(), id, &name, &color).await;
 
         insert_response(result)
     }

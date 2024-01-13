@@ -10,7 +10,7 @@ use crate::{
             value_objects::{content::Content, preview::Preview, sub_categories::SubCategories},
             BlogParse, ImageUrlInjector, ImgHostInjectorFactory,
         },
-        category,
+        blog_grouping,
         user::value_objects::AdminId,
     },
     persistence::db::Pool,
@@ -114,8 +114,8 @@ impl CreateOne {
             return Err(Error::Conflict);
         }
 
-        category::link_sub_categories(&mut tx, sub_categories.as_ref(), blog_id).await?;
-        category::link_tags(&mut tx, tags, blog_id).await?;
+        blog_grouping::link_sub_categories(&mut tx, sub_categories.as_ref(), blog_id).await?;
+        blog_grouping::link_tags(&mut tx, tags, blog_id).await?;
 
         tx.commit().await?;
 

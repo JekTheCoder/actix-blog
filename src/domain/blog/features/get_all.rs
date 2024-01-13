@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     persistence::db::{decode::inline_vec::InlineVec, DateTime, Pool, Slice},
-    server::{service::sync_service, shared::query::QuerySlice}, domain::category::{category, headless_tag, headless_sub_category},
+    server::{service::sync_service, shared::query::QuerySlice}, domain::blog_grouping::{category, headless_tag, headless_sub_category},
 };
 
 use headless_sub_category::HeadlessSubCategory;

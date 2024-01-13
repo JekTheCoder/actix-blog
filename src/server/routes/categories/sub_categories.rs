@@ -8,13 +8,13 @@ mod get_all {
     };
 
     use crate::{
-        domain::category, persistence::db::Pool, server::shared::response::select_response,
+        domain::blog_grouping, persistence::db::Pool, server::shared::response::select_response,
     };
 
     #[get("/")]
     pub async fn endpoint(pool: Data<Pool>, path: Path<uuid::Uuid>) -> impl Responder {
         let id = path.into_inner();
-        let result = category::get_sub_categories_by_category(pool.get_ref(), id).await;
+        let result = blog_grouping::get_sub_categories_by_category(pool.get_ref(), id).await;
         select_response(result)
     }
 }
@@ -27,7 +27,7 @@ mod create_one {
     };
 
     use crate::{
-        domain::category,
+        domain::blog_grouping,
         persistence::db::Pool,
         server::{
             admin::IsAdminFactory,
@@ -51,7 +51,7 @@ mod create_one {
         let id = path.into_inner();
         let Request { name } = req.into_inner();
 
-        let result = category::create_subcategory(pool.get_ref(), &name, id).await;
+        let result = blog_grouping::create_subcategory(pool.get_ref(), &name, id).await;
 
         insert_response(result)
     }
