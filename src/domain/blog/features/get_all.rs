@@ -3,9 +3,8 @@ use sqlx::query_as;
 use uuid::Uuid;
 
 use crate::{
-    domain::category::{Category, HeadlessTag},
     persistence::db::{decode::inline_vec::InlineVec, DateTime, Pool, Slice},
-    server::{service::sync_service, shared::query::QuerySlice},
+    server::{service::sync_service, shared::query::QuerySlice}, domain::category::{category, headless_tag},
 };
 
 sync_service!(GetAll; pool: Data<Pool>);
@@ -18,8 +17,8 @@ pub struct BlogPreview {
     pub preview: String,
     pub main_image: Option<String>,
     pub created_at: DateTime,
-    pub category: Category,
-    pub tags: Vec<HeadlessTag>,
+    pub category: category::Category,
+    pub tags: Vec<headless_tag::HeadlessTag>,
 }
 
 pub struct BlogData {
@@ -30,7 +29,7 @@ pub struct BlogData {
     pub created_at: DateTime,
     pub category_id: Uuid,
     pub category_name: String,
-    pub tags: InlineVec<HeadlessTag>,
+    pub tags: InlineVec<headless_tag::HeadlessTag>,
 }
 
 impl From<BlogData> for BlogPreview {
@@ -41,7 +40,7 @@ impl From<BlogData> for BlogPreview {
             preview: data.preview,
             main_image: data.main_image,
             created_at: data.created_at,
-            category: Category {
+            category: category::Category {
                 id: data.category_id,
                 name: data.category_name,
             },
@@ -62,7 +61,7 @@ impl GetAll {
             BlogData,
                 r#"SELECT 
                     b.id, b.title, b.preview, b.main_image, c.id as category_id, c.name as category_name, b.created_at, 
-                    STRING_AGG(t.id || ',' || t.name || ',' || t.color, ';') AS "tags!: InlineVec<HeadlessTag>"
+                    STRING_AGG(t.id || ',' || t.name || ',' || t.color, ';') AS "tags!: InlineVec<headless_tag::HeadlessTag>"
                 FROM blogs b
                 JOIN 
                     categories c ON b.category_id = c.id
