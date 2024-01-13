@@ -1,11 +1,14 @@
+mod models;
+mod features;
+
 pub use db::{
     create_category, create_subcategory, create_tag, delete_category, delete_subcategory,
     delete_tag, get_all_categories, get_all_sub_categories, get_sub_categories_by_category,
     get_tags_by_category, link_sub_categories, link_tags,
 };
 pub use models::*;
+pub use features::*;
 
-mod models;
 
 mod db {
     use crate::{
