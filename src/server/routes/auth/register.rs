@@ -4,8 +4,9 @@ use crate::{
     domain::{
         account,
         user::{
-            features::register::{self, Register},
-            value_objects::{EmailBuf, UsernameBuf},
+            email::EmailBuf,
+            register::{self, Register},
+            username::UsernameBuf,
         },
     },
     server::{

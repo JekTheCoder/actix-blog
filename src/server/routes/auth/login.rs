@@ -1,10 +1,11 @@
 use actix_web::{post, web::Data, HttpResponse, Responder, ResponseError};
 use serde::Serialize;
 
-use crate::domain::user::value_objects::UsernameBuf;
+use crate::domain::user::login;
+use crate::domain::user::username::UsernameBuf;
 use crate::server::auth::{AuthEncoder, ClaimsData};
 use crate::{
-    domain::{account, user::features::login},
+    domain::account,
     server::shared::{domain_validation::domain_valid, query::DomainJson},
 };
 

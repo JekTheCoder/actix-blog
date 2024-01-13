@@ -1,10 +1,10 @@
-use super::super::value_objects::Role;
+use super::super::role::Role;
 use actix_web::web::Data;
 use sqlx::{query, query_as};
 use uuid::Uuid;
 
 use crate::{
-    domain::user::value_objects::{EmailBuf, UsernameBuf},
+    domain::user::value_objects::{email::EmailBuf, username::UsernameBuf},
     persistence::db::{entities::IdSelect, Pool},
     server::{auth::HashedPassword, service::sync_service},
 };

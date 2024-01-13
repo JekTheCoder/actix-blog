@@ -11,7 +11,7 @@ use crate::{
             BlogParse, ImageUrlInjector, ImgHostInjectorFactory,
         },
         blog_grouping,
-        user::value_objects::AdminId,
+        user::admin_id::AdminId,
     },
     persistence::db::Pool,
     server::service::sync_service,

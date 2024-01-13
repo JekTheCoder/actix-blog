@@ -4,7 +4,7 @@ use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    domain::user::value_objects::Role,
+    domain::user::role::Role,
     server::auth::{services::auth_decoder::AuthDecoder, utils::bearer},
 };
 

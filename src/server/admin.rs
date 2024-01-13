@@ -12,7 +12,7 @@ mod is_admin_middleware {
     };
     use futures_util::future::LocalBoxFuture;
 
-    use crate::domain::user::features::convert_to_admin_id::ConvertToAdminId;
+    use crate::domain::user::convert_to_admin_id::ConvertToAdminId;
 
     use crate::server::service::FromRequestSync;
 
@@ -86,7 +86,7 @@ mod is_admin_middleware {
 pub mod uncheked_admin_id {
     use uuid::Uuid;
 
-    use crate::{domain::user::value_objects::Role, server::auth::Claims};
+    use crate::{domain::user::role::Role, server::auth::Claims};
 
     pub enum Error {
         Claims,

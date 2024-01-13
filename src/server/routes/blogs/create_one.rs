@@ -10,7 +10,7 @@ use crate::{
                 content::ContentBuf, preview::PreviewBuf, sub_categories::SubCategories,
             },
         },
-        user::value_objects::AdminId,
+        user::admin_id::AdminId,
     },
     persistence::db::entities::IdSelect,
     server::shared::{domain_validation::domain_valid, query::DomainJson},

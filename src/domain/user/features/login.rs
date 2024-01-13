@@ -3,7 +3,7 @@ use sqlx::query_as;
 use uuid::Uuid;
 
 use crate::{
-    domain::user::value_objects::{Role, UsernameBuf},
+    domain::user::{role::Role, username::UsernameBuf},
     persistence::db::Pool,
     server::service::sync_service,
 };

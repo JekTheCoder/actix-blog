@@ -3,7 +3,7 @@ use sqlx::query;
 use uuid::Uuid;
 
 use crate::{
-    domain::user::value_objects::AdminId, persistence::db::Pool, server::service::sync_service,
+    domain::user::admin_id::AdminId, persistence::db::Pool, server::service::sync_service,
 };
 
 sync_service!(ConvertToAdminId; pool: Data<Pool>);

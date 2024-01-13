@@ -4,7 +4,7 @@ mod models {
     use serde::Serialize;
     use uuid::Uuid;
 
-    use crate::domain::user::value_objects::{Role, UsernameBuf};
+    use crate::domain::user::{login, role::Role, username::UsernameBuf};
 
     // Common info of an user or an admin
     #[derive(sqlx::FromRow, Clone, Debug)]
@@ -25,8 +25,8 @@ mod models {
         pub kind: Role,
     }
 
-    impl From<crate::domain::user::features::login::Response> for AccountResponse {
-        fn from(value: crate::domain::user::features::login::Response) -> Self {
+    impl From<login::Response> for AccountResponse {
+        fn from(value: login::Response) -> Self {
             Self {
                 id: value.id,
                 username: value.username,
