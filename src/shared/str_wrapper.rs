@@ -31,9 +31,9 @@ macro_rules! super_str {
 macro_rules! buf_ops {
     ($buf_name: ident, $slice_name: ident) => {
         impl $buf_name {
-            pub unsafe fn from_boxed_unchecked(boxed: Box<str>) -> Self {
+            pub fn from_boxed_unchecked(boxed: Box<str>) -> Self {
                 let raw = Box::into_raw(boxed);
-                let converted = Box::from_raw(raw as *mut _);
+                let converted = unsafe { Box::from_raw(raw as *mut _) };
                 Self(converted)
             }
         }
@@ -57,7 +57,7 @@ macro_rules! buf_ops {
 
             fn try_from(value: Box<str>) -> Result<Self, Self::Error> {
                 <$slice_name as crate::shared::str_wrapper::CheckStr>::check_str(value.as_ref())?;
-                Ok(unsafe { Self::from_boxed_unchecked(value) })
+                Ok(Self::from_boxed_unchecked(value))
             }
         }
 

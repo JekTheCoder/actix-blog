@@ -38,7 +38,7 @@ pub async fn endpoint(
             return HttpResponse::BadRequest().body(format!("invalid filename: {}", filename));
         };
 
-        let image_path = image_manager.create_path(id, &filename);
+        let image_path = image_manager.create_path(id, filename);
 
         while let Some(result) = field.next().await {
             let Ok(bytes) = result else {

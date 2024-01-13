@@ -26,7 +26,7 @@ impl UploadImage {
             image = image.resize(IMAGE_WIDTH, IMAGE_HEIGHT, FilterType::Triangle);
         }
 
-        if image.save(&image_path).is_err() {
+        if image.save(image_path).is_err() {
             return Err(Error::Save);
         }
 

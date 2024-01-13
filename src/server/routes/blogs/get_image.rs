@@ -15,7 +15,7 @@ pub async fn endpoint(
         return Err(ErrorBadRequest(""));
     };
 
-    let image_path = get_image.run(id, &filename);
+    let image_path = get_image.run(id, filename);
 
     Ok(NamedFile::open(image_path)?)
 }

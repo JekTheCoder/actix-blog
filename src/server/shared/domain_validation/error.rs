@@ -43,6 +43,10 @@ impl FieldError {
     pub fn len(got: usize, expected: usize) -> Self {
         Self(format!("length is {}, expected: {}", got, expected).into())
     }
+
+    pub fn email() -> Self {
+        Self("invalid email".into())
+    }
 }
 
 impl FieldErrors {
