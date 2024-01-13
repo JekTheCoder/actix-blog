@@ -1,9 +1,9 @@
 use actix_web::{
     post,
-    web::{Data, Json},
+    web::{Data},
     HttpResponse, Responder, ResponseError,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 
 use crate::domain::user::value_objects::UsernameBuf;
 use crate::server::auth::{AuthEncoder, ClaimsData};

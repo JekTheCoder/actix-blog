@@ -1,4 +1,4 @@
-pub use db::by_username;
+
 pub use models::{AccountResponse, PublicAccount};
 
 mod models {
