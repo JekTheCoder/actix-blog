@@ -1,7 +1,7 @@
-pub use db::{by_id};
+pub use db::by_id;
 
-pub mod value_objects;
 pub mod features;
+pub mod value_objects;
 
 mod models {
     use serde::Serialize;

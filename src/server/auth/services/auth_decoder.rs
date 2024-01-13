@@ -1,5 +1,5 @@
-use std::ops::Deref;
 use super::token_decoder::TokenDecoder;
+use std::ops::Deref;
 
 #[derive(Clone)]
 pub struct AuthDecoder(TokenDecoder);

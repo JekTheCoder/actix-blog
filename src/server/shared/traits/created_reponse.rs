@@ -1,5 +1,5 @@
-use actix_web::HttpResponse;
 use crate::persistence::db::entities::InsertErr;
+use actix_web::HttpResponse;
 
 use super::into_http_err::IntoHttpErr;
 

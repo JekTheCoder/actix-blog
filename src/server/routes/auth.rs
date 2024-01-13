@@ -1,6 +1,6 @@
 mod login;
-mod register;
 mod refresh;
+mod register;
 
 use actix_web::web::{scope, ServiceConfig};
 

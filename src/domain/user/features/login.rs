@@ -37,7 +37,7 @@ impl From<AccountData> for Response {
     fn from(value: AccountData) -> Self {
         Self {
             id: value.id,
-            username: UsernameBuf::from_boxed_unchecked(value.username.into_boxed_str()), 
+            username: UsernameBuf::from_boxed_unchecked(value.username.into_boxed_str()),
             // We know it's a valid username
             name: value.name,
             kind: value.kind,

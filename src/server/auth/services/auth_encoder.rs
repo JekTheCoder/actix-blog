@@ -1,9 +1,7 @@
 use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 
-use crate::server::auth::{
-    error::jwt_encode_error::JwtEncodeError, Claims, Tokens, ClaimsData,
-};
+use crate::server::auth::{error::jwt_encode_error::JwtEncodeError, Claims, ClaimsData, Tokens};
 
 #[derive(Clone)]
 pub struct AuthEncoder {

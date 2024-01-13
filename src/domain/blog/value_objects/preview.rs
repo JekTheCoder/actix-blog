@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use crate::{
-    server::shared::domain_validation::{DomainValid, FieldError, self},
+    server::shared::domain_validation::{self, DomainValid, FieldError},
     shared::str_wrapper::{buf_ops, super_str, CheckStr},
 };
 

@@ -17,4 +17,3 @@ impl ConvertToAdminId {
         Ok(AdminId::unchecked_new(id))
     }
 }
-

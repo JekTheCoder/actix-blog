@@ -6,7 +6,9 @@ use crate::{
     domain::{
         blog::{
             self,
-            value_objects::{content::ContentBuf, preview::PreviewBuf, sub_categories::SubCategories},
+            value_objects::{
+                content::ContentBuf, preview::PreviewBuf, sub_categories::SubCategories,
+            },
         },
         user::value_objects::AdminId,
     },

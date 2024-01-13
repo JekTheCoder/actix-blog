@@ -1,9 +1,9 @@
+pub mod admin;
 mod app_config;
 pub mod auth;
 mod routes;
-pub mod shared;
 pub mod service;
-pub mod admin;
+pub mod shared;
 
 pub use app_config::{AppConfig, AppConfigurable};
 pub use server::run;
