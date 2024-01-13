@@ -14,7 +14,7 @@ pub struct Email(str);
 impl CheckStr for Email {
     type Error = Error;
 
-    fn check_str(slice: &str) -> Result<(), Self::Error> {
+    fn check_str(_slice: &str) -> Result<(), Self::Error> {
         todo!()
     }
 }

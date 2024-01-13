@@ -5,16 +5,12 @@ use crate::{
         account,
         user::{
             features::register::{self, Register},
-            value_objects::{EmailBuf, Role, UsernameBuf},
+            value_objects::{EmailBuf, UsernameBuf},
         },
     },
-    persistence::db::{entities::IdSelect, Pool},
     server::{
         auth::{AuthEncoder, ClaimsData, PasswordHasher},
-        shared::{
-            domain_validation::domain_valid,
-            query::{DomainJson, ValidJson},
-        },
+        shared::{domain_validation::domain_valid, query::DomainJson},
     },
 };
 

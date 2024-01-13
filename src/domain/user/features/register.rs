@@ -44,10 +44,7 @@ impl Register {
         .fetch_one(&mut tx)
         .await?;
 
-        let email = match &email {
-            Some(email) => Some(email.as_ref().as_ref()),
-            None => None,
-        };
+        let email = email.as_ref().map(|email| email.as_ref().as_ref());
 
         query!("INSERT INTO users(id, email) VALUES ($1, $2)", id, email)
             .execute(&mut tx)
