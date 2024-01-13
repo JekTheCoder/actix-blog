@@ -26,6 +26,17 @@ mod models {
         pub kind: Role,
     }
 
+    impl From<crate::domain::user::features::login::Response> for AccountResponse {
+        fn from(value: crate::domain::user::features::login::Response) -> Self {
+            Self {
+                id: value.id,
+                username: value.username,
+                name: value.name,
+                kind: value.kind,
+            }
+        }
+    }
+
     impl From<Account> for AccountResponse {
         fn from(value: Account) -> Self {
             Self {

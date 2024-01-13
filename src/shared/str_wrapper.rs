@@ -36,6 +36,10 @@ macro_rules! buf_ops {
                 let converted = unsafe { Box::from_raw(raw as *mut _) };
                 Self(converted)
             }
+
+            pub fn as_str(&self) -> &str {
+                self.as_ref().as_ref()
+            }
         }
 
         impl std::ops::Deref for $buf_name {

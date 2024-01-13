@@ -5,15 +5,17 @@ use actix_web::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::domain::account;
-use crate::persistence::db::Pool;
+use crate::domain::user::value_objects::UsernameBuf;
 use crate::server::auth::{AuthEncoder, ClaimsData};
+use crate::{
+    domain::{account, user::features::login},
+    server::shared::{domain_validation::domain_valid, query::DomainJson},
+};
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct Request {
-    username: String,
+domain_valid!(pub struct Request {
+    username: UsernameBuf,
     password: String,
-}
+}; UncheckedRequest);
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -45,34 +47,31 @@ impl ResponseError for Error {
 
 #[post("/login/")]
 pub async fn endpoint(
-    pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
-    req: Json<Request>,
+    login: login::Login,
+    req: DomainJson<Request>,
 ) -> Result<impl Responder, Error> {
-    let Request { username, password } = req.0;
+    let Request { username, password } = req.into_inner();
 
-    let found = account::by_username(pool.get_ref(), &username)
-        .await
-        .map_err(|_| Error::BadRequest)?;
+    let account = match login.run(&username, &password).await {
+        Ok(account) => account,
+        Err(login::Error::NotFound) => return Err(Error::BadRequest),
+        Err(login::Error::Password) => return Err(Error::Verify),
+        Err(login::Error::Database) => return Err(Error::BadRequest),
+    };
 
-    let verified = bcrypt::verify(password, &found.password).map_err(|_| Error::Verify)?;
+    let tokens = encoder
+        .generate_tokens(ClaimsData {
+            id: account.id,
+            role: account.kind.clone(),
+        })
+        .map_err(|_| Error::Token)?;
 
-    if verified {
-        let tokens = encoder
-            .generate_tokens(ClaimsData {
-                id: found.id,
-                role: found.kind.clone(),
-            })
-            .map_err(|_| Error::Token)?;
+    let response = Response {
+        user: account.into(),
+        refresh_token: tokens.refresh_token,
+        token: tokens.token,
+    };
 
-        let response = Response {
-            user: found.into(),
-            refresh_token: tokens.refresh_token,
-            token: tokens.token,
-        };
-
-        Ok(HttpResponse::Ok().json(response))
-    } else {
-        Err(Error::BadRequest)
-    }
+    Ok(HttpResponse::Ok().json(response))
 }

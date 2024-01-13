@@ -50,7 +50,7 @@ impl FieldError {
 
     pub fn custom(msg: impl Into<Cow<'static, str>>) -> Self {
         Self(msg.into())
-    )
+    }
 }
 
 impl FieldErrors {
