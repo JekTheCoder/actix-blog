@@ -1,4 +1,4 @@
-use super::role::Role;
+use crate::domain::user::value_objects::Role;
 
 #[derive(Debug, Clone)]
 pub struct ClaimsData {

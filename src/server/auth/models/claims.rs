@@ -3,9 +3,12 @@ use std::future::{ready, Ready};
 use actix_web::{error::ErrorUnauthorized, web::Data, FromRequest};
 use serde::{Deserialize, Serialize};
 
-use crate::server::auth::{services::auth_decoder::AuthDecoder, utils::bearer};
+use crate::{
+    domain::user::value_objects::Role,
+    server::auth::{services::auth_decoder::AuthDecoder, utils::bearer},
+};
 
-use super::{claims_data::ClaimsData, role::Role};
+use super::claims_data::ClaimsData;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {

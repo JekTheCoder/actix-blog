@@ -1,11 +1,10 @@
-pub use is_admin_middleware::{IsAdminFactory};
+pub use is_admin_middleware::IsAdminFactory;
 
 mod is_admin_middleware {
     use std::future::{ready, Ready};
 
     use actix_web::dev::{Service, ServiceRequest, Transform};
-    use actix_web::error::{ErrorForbidden, ErrorUnauthorized, ErrorInternalServerError};
-    
+    use actix_web::error::{ErrorForbidden, ErrorInternalServerError, ErrorUnauthorized};
 
     use actix_web::{
         dev::{forward_ready, ServiceResponse},
@@ -14,7 +13,7 @@ mod is_admin_middleware {
     use futures_util::future::LocalBoxFuture;
 
     use crate::domain::user::features::convert_to_admin_id::ConvertToAdminId;
-    
+
     use crate::server::service::FromRequestSync;
 
     use super::uncheked_admin_id::{self, get_unchecked_admin_id};
@@ -87,7 +86,7 @@ mod is_admin_middleware {
 pub mod uncheked_admin_id {
     use uuid::Uuid;
 
-    use crate::server::auth::{Claims, Role};
+    use crate::{domain::user::value_objects::Role, server::auth::Claims};
 
     pub enum Error {
         Claims,

@@ -1,28 +1,29 @@
 use actix_web::{http::StatusCode, post, web::Data, HttpResponse, Responder, ResponseError};
 
 use crate::{
-    domain::{account, user},
+    domain::{
+        account,
+        user::{
+            features::register::{self, Register},
+            value_objects::{EmailBuf, Role, UsernameBuf},
+        },
+    },
     persistence::db::{entities::IdSelect, Pool},
     server::{
-        auth::{AuthEncoder, ClaimsData, Role},
-        shared::query::ValidJson,
+        auth::{AuthEncoder, ClaimsData, PasswordHasher},
+        shared::{
+            domain_validation::domain_valid,
+            query::{DomainJson, ValidJson},
+        },
     },
 };
 
-use serde::Deserialize;
-use validator::Validate;
-
-#[derive(Deserialize, Validate)]
-pub struct Request {
-    #[validate(length(min = 1), custom(function = "validate_username"))]
-    pub username: String,
-    #[validate(length(min = 1))]
-    pub password: String,
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-    #[validate(email(message = "email not valid"))]
-    pub email: Option<String>,
-}
+domain_valid!(pub struct Request {
+    username: UsernameBuf,
+    password: String,
+    name: Option<String>,
+    email: Option<EmailBuf>,
+}; UncheckedRequest);
 
 fn validate_username(username: &str) -> Result<(), validator::ValidationError> {
     if username.contains(|c: char| {
@@ -54,9 +55,10 @@ impl ResponseError for Error {
 
 #[post("/register/")]
 pub async fn endpoint(
-    pool: Data<Pool>,
     encoder: Data<AuthEncoder>,
-    req: ValidJson<Request>,
+    req: DomainJson<Request>,
+    password_hasher: PasswordHasher,
+    register: Register,
 ) -> Result<impl Responder, Error> {
     let Request {
         username,
@@ -65,30 +67,17 @@ pub async fn endpoint(
         email,
     } = req.into_inner();
 
-    let name = match name {
-        Some(name) => name,
-        None => username.clone(),
-    };
-
-    let mut req = user::CreateRequest {
-        username,
-        password,
-        name,
-        email,
-    };
-
-    let password = bcrypt::hash(req.password, bcrypt::DEFAULT_COST).unwrap();
-
-    req.password = password;
-
-    let IdSelect { id } = user::create(pool.get_ref(), &req)
+    let password = password_hasher.hash(password);
+    let Ok(register::Response { id, role, name }) = register
+        .run(&username, name.as_deref(), email, &password)
         .await
-        .map_err(|_| Error::Database)?;
+    else {
+        return Err(Error::Database);
+    };
 
-    let user::CreateRequest { name, username, .. } = req;
     let agent_response = account::AccountResponse {
         id,
-        kind: Role::User,
+        kind: role,
         name,
         username,
     };

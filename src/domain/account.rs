@@ -5,7 +5,7 @@ mod models {
     use serde::Serialize;
     use uuid::Uuid;
 
-    use crate::server::auth::Role;
+    use crate::domain::user::value_objects::{Role, UsernameBuf};
 
     // Common info of an user or an admin
     #[derive(sqlx::FromRow, Clone, Debug)]
@@ -21,7 +21,7 @@ mod models {
     #[derive(Serialize)]
     pub struct AccountResponse {
         pub id: Uuid,
-        pub username: String,
+        pub username: UsernameBuf,
         pub name: String,
         pub kind: Role,
     }
@@ -30,7 +30,7 @@ mod models {
         fn from(value: Account) -> Self {
             Self {
                 id: value.id,
-                username: value.username,
+                username: value.username.try_into().unwrap(),
                 name: value.name,
                 kind: value.kind,
             }

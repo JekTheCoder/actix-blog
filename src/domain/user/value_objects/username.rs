@@ -3,12 +3,13 @@ use crate::{
     shared::str_wrapper::{buf_ops, super_str, CheckStr},
 };
 
+#[derive(Debug)]
 pub enum Error {
     Empty,
     Maxlen,
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, serde::Serialize)]
 #[repr(transparent)]
 pub struct Username(str);
 
@@ -26,7 +27,7 @@ impl CheckStr for Username {
 
 super_str!(Username);
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize)]
 pub struct UsernameBuf(Box<Username>);
 
 buf_ops!(UsernameBuf, Username);
