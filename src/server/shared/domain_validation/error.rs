@@ -40,10 +40,6 @@ impl FieldError {
         Self(format!("max length is {}, got: {}", expected, got).into())
     }
 
-    pub fn len(got: usize, expected: usize) -> Self {
-        Self(format!("length is {}, expected: {}", got, expected).into())
-    }
-
     pub fn email() -> Self {
         Self("invalid email".into())
     }
