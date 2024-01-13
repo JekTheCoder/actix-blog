@@ -47,6 +47,10 @@ impl FieldError {
     pub fn email() -> Self {
         Self("invalid email".into())
     }
+
+    pub fn custom(msg: impl Into<Cow<'static, str>>) -> Self {
+        Self(msg.into())
+    )
 }
 
 impl FieldErrors {

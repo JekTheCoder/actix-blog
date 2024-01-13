@@ -7,6 +7,18 @@ use crate::{
 pub enum Error {
     Empty,
     Maxlen,
+    InvalidChar,
+}
+
+const MIN_LEN: usize = 1;
+const MAX_LEN: usize = 100;
+
+fn username_invalid_char(c: char) -> bool {
+    !c.is_ascii()
+        || c.is_whitespace()
+        || c.is_ascii_punctuation()
+        || c.is_ascii_control()
+        || c == '@'
 }
 
 #[derive(PartialEq, Eq, Debug, serde::Serialize)]
@@ -19,6 +31,14 @@ impl CheckStr for Username {
     fn check_str(slice: &str) -> Result<(), Self::Error> {
         if slice.is_empty() {
             return Err(Error::Empty);
+        }
+
+        if slice.len() > 100 {
+            return Err(Error::Maxlen);
+        }
+
+        if slice.contains(username_invalid_char) {
+            return Err(Error::InvalidChar);
         }
 
         Ok(())
@@ -47,6 +67,10 @@ impl DomainValid for UsernameBuf {
 
         if unchecked.len() > 100 {
             errors.add(FieldError::maxlen(unchecked.len(), 100));
+        }
+
+        if unchecked.contains(username_invalid_char) {
+            errors.add(FieldError::custom("invalid chars"));
         }
 
         if errors.is_empty() {

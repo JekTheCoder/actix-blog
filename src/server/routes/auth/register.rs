@@ -21,20 +21,6 @@ domain_valid!(pub struct Request {
     email: Option<EmailBuf>,
 }; UncheckedRequest);
 
-fn validate_username(username: &str) -> Result<(), validator::ValidationError> {
-    if username.contains(|c: char| {
-        !c.is_ascii()
-            || c.is_whitespace()
-            || c.is_ascii_punctuation()
-            || c.is_ascii_control()
-            || c == '@'
-    }) {
-        return Err(validator::ValidationError::new("invalid"));
-    }
-
-    Ok(())
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Database error")]
