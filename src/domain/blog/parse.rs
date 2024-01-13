@@ -121,7 +121,7 @@ pub fn parse_preview(markdown: &str) -> Option<PreviewBuf> {
 
     push_html(&mut preview, first.into_iter().chain(rest));
 
-    Some(unsafe { PreviewBuf::from_boxed_unchecked(preview.into_boxed_str()) })
+    Some(PreviewBuf::from_boxed_unchecked(preview.into_boxed_str()))
 }
 
 fn is_readable(event: &Event<'_>) -> bool {

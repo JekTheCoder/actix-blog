@@ -60,7 +60,7 @@ impl DomainValid for PreviewBuf {
 
         if errors.is_empty() {
             let boxed: Box<str> = unchecked.into();
-            Ok(unsafe { Self::from_boxed_unchecked(boxed) })
+            Ok(Self::from_boxed_unchecked(boxed))
         } else {
             Err(domain_validation::Error::Field(errors))
         }
