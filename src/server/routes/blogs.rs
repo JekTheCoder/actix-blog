@@ -2,6 +2,7 @@ mod create_one;
 mod get_all;
 mod get_image;
 mod get_one;
+mod update_one;
 mod upload_images;
 
 mod comments;
@@ -16,6 +17,7 @@ pub fn router(cfg: &mut ServiceConfig) {
             .service(get_one::endpoint)
             .service(upload_images::endpoint)
             .service(get_image::endpoint)
+            .service(update_one::endpoint)
             .configure(comments::router)
             .configure(super::comments::router),
     );
