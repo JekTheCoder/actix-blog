@@ -1,9 +1,4 @@
-use actix_web::{
-    put,
-    web::{Json, Path},
-    HttpResponse, Responder,
-};
-use uuid::Uuid;
+use actix_web::{put, web::Json, HttpResponse, Responder};
 
 use crate::{
     domain::user::change_password,
@@ -16,19 +11,14 @@ pub struct Request {
     old_password: String,
 }
 
-#[put("/{account_id}/password")]
+#[put("/password")]
 pub async fn endpoint(
     req: Json<Request>,
-    account_id: Path<Uuid>,
     password_hasher: PasswordHasher,
     claims: Claims,
     change_password: change_password::ChangePassword,
 ) -> impl Responder {
-    let account_id = account_id.into_inner();
-
-    if claims.id != account_id {
-        return HttpResponse::Unauthorized().finish();
-    }
+    let account_id = claims.id;
 
     let Request {
         new_password,
