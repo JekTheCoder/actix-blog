@@ -32,7 +32,7 @@ pub struct BlogData {
     pub created_at: DateTime,
     pub category_id: Uuid,
     pub category_name: String,
-    pub tags: InlineVec<headless_tag::HeadlessTag>,
+    pub tags: Option<InlineVec<headless_tag::HeadlessTag>>,
     pub sub_categories: InlineVec<headless_sub_category::HeadlessSubCategory>,
 }
 
@@ -48,7 +48,10 @@ impl From<BlogData> for BlogPreview {
                 id: data.category_id,
                 name: data.category_name,
             },
-            tags: data.tags.into_inner(),
+            tags: match data.tags {
+                Some(tags) => tags.into_inner(),
+                None => vec![],
+            },
             sub_categories: data.sub_categories.into_inner(), 
         }
     }
@@ -66,14 +69,14 @@ impl GetAll {
             BlogData,
                 r#"SELECT 
                     b.id, b.title, b.preview, b.main_image, c.id as category_id, c.name as category_name, b.created_at, 
-                    STRING_AGG(t.id || ',' || t.name || ',' || t.color, ';') AS "tags!: InlineVec<headless_tag::HeadlessTag>",
+                    STRING_AGG(t.id || ',' || t.name || ',' || t.color, ';') AS "tags!: Option<InlineVec<headless_tag::HeadlessTag>>",
                     STRING_AGG(sc.id || ',' || sc.name, ';') AS "sub_categories!: InlineVec<HeadlessSubCategory>"
                 FROM blogs b
                 JOIN 
                     categories c ON b.category_id = c.id
-                JOIN
+                LEFT JOIN
                     tags_blogs bt ON b.id = bt.blog_id
-                JOIN
+                LEFT JOIN
                     tags t ON bt.tag_id = t.id
                 JOIN
                     sub_categories_blogs sb ON b.id = sb.blog_id
