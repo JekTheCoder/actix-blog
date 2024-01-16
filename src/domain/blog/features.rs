@@ -4,3 +4,4 @@ pub mod get_by_id;
 pub mod get_image;
 pub mod upload_image;
 pub mod update_one;
+pub mod set_tags;

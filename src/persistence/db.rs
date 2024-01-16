@@ -12,6 +12,7 @@ pub type QueryResult = <Database as sqlx::Database>::QueryResult;
 pub type PoolOptions = PgPoolOptions;
 pub type Driver = Postgres;
 pub type DateTime = chrono::NaiveDateTime;
+pub type Transaction<'c> = sqlx::Transaction<'c, Postgres>;
 
 pub trait Executor<'a>: sqlx::Executor<'a, Database = Database> {}
 

@@ -6,6 +6,7 @@ mod update_one;
 mod upload_images;
 
 mod comments;
+mod tags;
 
 use actix_web::web::{scope, ServiceConfig};
 
@@ -19,6 +20,7 @@ pub fn router(cfg: &mut ServiceConfig) {
             .service(get_image::endpoint)
             .service(update_one::endpoint)
             .configure(comments::router)
-            .configure(super::comments::router),
+            .configure(super::comments::router)
+            .configure(tags::router),
     );
 }
