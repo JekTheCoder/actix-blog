@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     domain::blog_grouping,
-    persistence::db::{Executor, Pool, Transaction},
+    persistence::db::{Pool, Transaction},
     server::service::sync_service,
 };
 
@@ -19,7 +19,19 @@ pub async fn set_tags(
         .execute(&mut *tx)
         .await?;
 
-    blog_grouping::link_tags(tx, tags, blog_id).await?;
+    create_tags(tx, blog_id, tags).await?;
+
+    Ok(())
+}
+
+pub async fn create_tags(
+    tx: &mut Transaction<'_>,
+    blog_id: Uuid,
+    tags: Vec<Uuid>,
+) -> Result<(), sqlx::Error> {
+    if !tags.is_empty() {
+        blog_grouping::link_tags(tx, tags, blog_id).await?;
+    }
 
     Ok(())
 }

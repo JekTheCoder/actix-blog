@@ -16,6 +16,8 @@ use crate::{
     server::service::sync_service,
 };
 
+use super::set_tags;
+
 sync_service!(UpdateOne; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
 pub enum Error {
@@ -78,13 +80,6 @@ impl UpdateOne {
 
         let mut tx = self.pool.begin().await.unwrap();
 
-        query!("DELETE FROM sub_categories_blogs WHERE blog_id = $1", id)
-            .execute(&mut tx)
-            .await?;
-        query!("DELETE FROM tags_blogs WHERE blog_id = $1", id)
-            .execute(&mut tx)
-            .await?;
-
         let result = query!(
             r#"UPDATE blogs 
                 SET 
@@ -112,8 +107,13 @@ impl UpdateOne {
             return Err(Error::NotFound);
         }
 
+        query!("DELETE FROM sub_categories_blogs WHERE blog_id = $1", id)
+            .execute(&mut tx)
+            .await?;
+
         blog_grouping::link_sub_categories(&mut tx, sub_categories.as_ref(), id).await?;
-        blog_grouping::link_tags(&mut tx, tags, id).await?;
+
+        set_tags::set_tags(&mut tx, id, tags).await?;
 
         tx.commit().await?;
 

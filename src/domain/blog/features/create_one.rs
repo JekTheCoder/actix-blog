@@ -17,6 +17,8 @@ use crate::{
     server::service::sync_service,
 };
 
+use super::set_tags;
+
 sync_service!(CreateOne; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
 pub enum Error {
@@ -115,7 +117,7 @@ impl CreateOne {
         }
 
         blog_grouping::link_sub_categories(&mut tx, sub_categories.as_ref(), blog_id).await?;
-        blog_grouping::link_tags(&mut tx, tags, blog_id).await?;
+        set_tags::create_tags(&mut tx, blog_id, tags).await?;
 
         tx.commit().await?;
 
