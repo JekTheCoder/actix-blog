@@ -30,6 +30,6 @@ impl UploadImage {
             return Err(Error::Save);
         }
 
-        todo!()
+        Ok(())
     }
 }
