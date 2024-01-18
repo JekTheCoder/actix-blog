@@ -24,6 +24,7 @@ mod db {
             FROM comments c 
             JOIN accounts a on c.account_id = a.id 
             WHERE blog_id = $1 
+            ORDER BY c.created_at DESC
             LIMIT $2 OFFSET $3"#,
         blog_id,
         limit,

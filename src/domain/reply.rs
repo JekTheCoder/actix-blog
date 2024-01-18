@@ -41,7 +41,9 @@ mod db {
             (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as "has_replies!"
             FROM replies ro
             JOIN accounts a on ro.account_id = a.id 
-            WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4"#,
+            WHERE comment_id = $1 AND parent_id = $2
+            ORDER BY ro.created_at DESC
+            LIMIT $3 OFFSET $4"#,
         comment_id,
         parent_id,
         limit,
@@ -64,7 +66,9 @@ mod db {
             (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as "has_replies!"
             FROM replies ro
             JOIN accounts a on ro.account_id = a.id 
-            WHERE comment_id = $1 AND parent_id IS NULL LIMIT $2 OFFSET $3"#,
+            WHERE comment_id = $1 AND parent_id IS NULL 
+            ORDER BY ro.created_at DESC
+            LIMIT $2 OFFSET $3"#,
             comment_id,
             limit,
             offset,

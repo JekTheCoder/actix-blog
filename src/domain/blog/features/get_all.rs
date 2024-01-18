@@ -3,8 +3,9 @@ use sqlx::query_as;
 use uuid::Uuid;
 
 use crate::{
+    domain::blog_grouping::{category, headless_sub_category, headless_tag},
     persistence::db::{decode::inline_vec::InlineVec, DateTime, Pool, Slice},
-    server::{service::sync_service, shared::query::QuerySlice}, domain::blog_grouping::{category, headless_tag, headless_sub_category},
+    server::{service::sync_service, shared::query::QuerySlice},
 };
 
 use headless_sub_category::HeadlessSubCategory;
@@ -52,7 +53,7 @@ impl From<BlogData> for BlogPreview {
                 Some(tags) => tags.into_inner(),
                 None => vec![],
             },
-            sub_categories: data.sub_categories.into_inner(), 
+            sub_categories: data.sub_categories.into_inner(),
         }
     }
 }
@@ -85,6 +86,7 @@ impl GetAll {
                 WHERE b.title ILIKE $1
                 GROUP BY
                     b.id, c.id, sc.id
+                ORDER BY b.created_at DESC
                 LIMIT $2 OFFSET $3"#,
             format!("%{}%", search),
             limit,
