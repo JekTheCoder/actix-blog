@@ -1,1 +1,612 @@
+<<<<<<< HEAD
 {"db":"PostgreSQL","53a74c4c91f7163dde6c2f4c5d65495df8abc8a5a92146c45d5aa449d671304f":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"title","ordinal":1,"type_info":"Text"},{"name":"preview","ordinal":2,"type_info":"Text"},{"name":"main_image","ordinal":3,"type_info":"Text"},{"name":"category_id","ordinal":4,"type_info":"Uuid"},{"name":"category_name","ordinal":5,"type_info":"Text"},{"name":"created_at","ordinal":6,"type_info":"Timestamp"},{"name":"tags!: Option<InlineVec<headless_tag::HeadlessTag>>","ordinal":7,"type_info":"Text"},{"name":"sub_categories!: InlineVec<HeadlessSubCategory>","ordinal":8,"type_info":"Text"}],"nullable":[false,false,false,true,false,false,false,null,null],"parameters":{"Left":["Text","Int8","Int8"]}},"query":"SELECT \n                    b.id, b.title, b.preview, b.main_image, c.id as category_id, c.name as category_name, b.created_at, \n                    STRING_AGG(t.id || ',' || t.name || ',' || t.color, ';') AS \"tags!: Option<InlineVec<headless_tag::HeadlessTag>>\",\n                    STRING_AGG(sc.id || ',' || sc.name, ';') AS \"sub_categories!: InlineVec<HeadlessSubCategory>\"\n                FROM blogs b\n                JOIN \n                    categories c ON b.category_id = c.id\n                LEFT JOIN\n                    tags_blogs bt ON b.id = bt.blog_id\n                LEFT JOIN\n                    tags t ON bt.tag_id = t.id\n                JOIN\n                    sub_categories_blogs sb ON b.id = sb.blog_id\n                JOIN\n                    sub_categories sc ON sb.sub_category_id = sc.id\n                WHERE b.title ILIKE $1\n                GROUP BY\n                    b.id, c.id, sc.id\n                LIMIT $2 OFFSET $3"},"9487deba471742543c756d8b23f985aeb9a7d4af27bb178e4977423adfff8d21":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"},{"name":"category_id","ordinal":2,"type_info":"Uuid"}],"nullable":[false,false,false],"parameters":{"Left":[]}},"query":"SELECT * FROM sub_categories"},"d5e56a03e8b0c117b29047abf20b4bc889bae5b365fda01a2f0b8f6a0839ca0e":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Uuid"]}},"query":"SELECT id FROM admins WHERE id = $1"},"dbbb1a0494a82e39e09965d2e957085498ec5a2f2cf32d1189bef806ad2dda45":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid"]}},"query":"DELETE FROM categories WHERE id = $1"},"e062d204b6490920dc3ea98c37613d600bc44f9fb155410a454ca2498d0985cd":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid"]}},"query":"DELETE FROM sub_categories WHERE id = $1"},"775459e5800d608a1367c0610b79f3b6c078f5b0c6db12d9aa0736c5b7d0ac69":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"},{"name":"category_id","ordinal":2,"type_info":"Uuid"}],"nullable":[false,false,false],"parameters":{"Left":["Uuid"]}},"query":"SELECT sc.* FROM sub_categories sc JOIN sub_categories_blogs scb ON scb.sub_category_id = sc.id WHERE scb.blog_id = $1"},"b3be6599a3583e12d463987a12fb527d72a264632db75d57f963e34c79ba3818":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Text","Uuid"]}},"query":"INSERT INTO sub_categories (name, category_id) VALUES ($1, $2) RETURNING id"},"454ff71a638ae3b173a28aa5c32fa987b8be62de2c69801ac6e597a9a8873f00":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"username","ordinal":1,"type_info":"Text"},{"name":"password","ordinal":2,"type_info":"Text"},{"name":"name","ordinal":3,"type_info":"Text"},{"name":"kind: _","ordinal":4,"type_info":{"Custom":{"name":"account_kind","kind":{"Enum":["user","admin"]}}}}],"nullable":[false,false,false,false,false],"parameters":{"Left":["Text"]}},"query":"SELECT id, username, password, name, kind AS \"kind: _\" FROM accounts WHERE username = $1;"},"9414b4b5870c1d562dc17386a1c706d9856811dee92de4ac01933afa6f7c3c41":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid","Uuid","Text","Text","Text","Uuid","Text","Text","TextArray"]}},"query":"INSERT INTO\n        blogs(\n            id,\n            admin_id,\n            title,\n            content,\n            html,\n            category_id,\n            preview,\n            main_image,\n            images\n        )\n        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"},"83d61dd063b999822cc16fbdbf3d12102a96a676a5bae8338539881119a8920a":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Uuid","Uuid","Text"]}},"query":"INSERT INTO comments (account_id, blog_id, content) VALUES ($1, $2, $3) RETURNING id"},"d2c59275e1b72728652e961226f9c903e42c7d1bfae8159fedf6939526099fbf":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Text","Text","Text","Uuid","Text","Text","TextArray","Uuid"]}},"query":"UPDATE blogs \n                SET \n                    title = $1,\n                    content = $2,\n                    html = $3,\n                    category_id = $4,\n                    preview = $5,\n                    main_image = $6,\n                    images = $7\n                WHERE id = $8"},"0e113527f239b049a40dfb3c5b05c94dcd256bafe5ff7f4f90de1bad2e0ce18b":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid"]}},"query":"DELETE FROM sub_categories_blogs WHERE blog_id = $1"},"16b30e78424db08af847ccb34f438ae8e50fdb879c8a16e7c65fb928eb8e4b9f":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Text"]}},"query":"INSERT INTO categories (name) VALUES ($1) RETURNING id"},"18b41cf70c19dd5d11ac6a38aad40aec3531a1dd043909debdb475585b9f37a0":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"comment_id","ordinal":1,"type_info":"Uuid"},{"name":"parent_id","ordinal":2,"type_info":"Uuid"},{"name":"content","ordinal":3,"type_info":"Text"},{"name":"account_id","ordinal":4,"type_info":"Uuid"},{"name":"account_name","ordinal":5,"type_info":"Text"},{"name":"account_username","ordinal":6,"type_info":"Text"},{"name":"has_replies!","ordinal":7,"type_info":"Bool"}],"nullable":[false,false,true,false,false,false,false,null],"parameters":{"Left":["Uuid","Int8","Int8"]}},"query":"SELECT \n            ro.id, ro.comment_id, ro.parent_id, ro.content,\n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as \"has_replies!\"\n            FROM replies ro\n            JOIN accounts a on ro.account_id = a.id \n            WHERE comment_id = $1 AND parent_id IS NULL LIMIT $2 OFFSET $3"},"97ae593566a575fb58bb8ee40e90a459a484c4d9bb77cc003724f827b4c7a5a6":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"comment_id","ordinal":1,"type_info":"Uuid"},{"name":"parent_id","ordinal":2,"type_info":"Uuid"},{"name":"content","ordinal":3,"type_info":"Text"},{"name":"account_id","ordinal":4,"type_info":"Uuid"},{"name":"account_name","ordinal":5,"type_info":"Text"},{"name":"account_username","ordinal":6,"type_info":"Text"},{"name":"has_replies!","ordinal":7,"type_info":"Bool"}],"nullable":[false,false,true,false,false,false,false,null],"parameters":{"Left":["Uuid","Uuid","Int8","Int8"]}},"query":"SELECT \n            ro.id, ro.comment_id, ro.parent_id, ro.content,\n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as \"has_replies!\"\n            FROM replies ro\n            JOIN accounts a on ro.account_id = a.id \n            WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4"},"fb873ba729417829064b57f272b70e3f6618d3e18c4245cbb4c7d5bde34289a4":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid","Text"]}},"query":"INSERT INTO users(id, email) VALUES ($1, $2)"},"002d293c501005c025256289cb7ef4f89f767c53ad62a544b68cb7e8f6750c96":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"}],"nullable":[false,false],"parameters":{"Left":[]}},"query":"SELECT * FROM categories"},"18a29f34ec8df6250772b90a632432a528a1e9e8d691fa5b41bf06376534167a":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"}],"nullable":[false,false],"parameters":{"Left":["Uuid"]}},"query":"SELECT * FROM categories WHERE id = $1"},"9b03ae7e10795d845720bf7d5e1c7f578f1be4ad47091b482dfdf41f6d40a56d":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Text","Text","Text",{"Custom":{"name":"account_kind","kind":{"Enum":["user","admin"]}}}]}},"query":"INSERT INTO accounts (username, password, name, kind) VALUES ($1, $2, $3, $4) RETURNING id"},"bbc7f016c7bd8e4ddfc3b393ce55e8d5a72158d502ac9b75da84cb9451d934e2":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Text","Uuid"]}},"query":"UPDATE accounts SET password = $1 WHERE id = $2"},"19a20ebeac3604f0639f85245a9262855d2a5ff93cda665c6fa6d10ffdda2c91":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"},{"name":"color","ordinal":2,"type_info":"Text"},{"name":"category_id","ordinal":3,"type_info":"Uuid"}],"nullable":[false,false,false,false],"parameters":{"Left":["Uuid"]}},"query":"SELECT t.* FROM tags t JOIN tags_blogs tb ON tb.tag_id = t.id WHERE tb.blog_id = $1"},"0748c6b1dcab7271c2c87e1385402dde8145799495d07a5c3244c3a8c22f4e9d":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"},{"name":"category_id","ordinal":2,"type_info":"Uuid"}],"nullable":[false,false,false],"parameters":{"Left":["Uuid"]}},"query":"SELECT * FROM sub_categories WHERE category_id = $1"},"67cd09cd8fe9ff49848cb530d1faade61626037cb58d49ee2f0188672e1cad6f":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid"]}},"query":"DELETE FROM tags_blogs WHERE blog_id = $1"},"2da828f02c820bbf7094b22cf17975ce674a616ccf0c5ccf1149f40d02b3924e":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Text","Uuid","Text"]}},"query":"INSERT INTO tags (name, category_id, color) VALUES ($1, $2, $3) RETURNING id"},"ee8601bfae96b92b47bed13145d601d85982223d5de50531728e202140dc913f":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"}],"nullable":[false],"parameters":{"Left":["Text","Uuid","Uuid","Uuid"]}},"query":"INSERT INTO replies (content, account_id, comment_id, parent_id) VALUES ($1, $2, $3, $4) RETURNING id"},"dd0d0e3fd03f130aab947d13580796eee9a786e2ca01d339fd0e8356f8ad3824":{"describe":{"columns":[],"nullable":[],"parameters":{"Left":["Uuid"]}},"query":"DELETE FROM tags WHERE id = $1"},"205e63852114edcc2da27b80c91b15cf984939d870d63ae847a595725492a21b":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"name","ordinal":1,"type_info":"Text"},{"name":"color","ordinal":2,"type_info":"Text"},{"name":"category_id","ordinal":3,"type_info":"Uuid"}],"nullable":[false,false,false,false],"parameters":{"Left":["Uuid"]}},"query":"SELECT * FROM tags WHERE category_id = $1"},"e439908b36a85a993dd426e322cff96284498ea5b3868833998338c0b0e23842":{"describe":{"columns":[{"name":"password","ordinal":0,"type_info":"Text"}],"nullable":[false],"parameters":{"Left":["Uuid"]}},"query":"SELECT password FROM accounts WHERE id = $1"},"e53c4609aee191e5f22012caf62b06553e866af1f7cdf2728c04562bc77896e7":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"title","ordinal":1,"type_info":"Text"},{"name":"content","ordinal":2,"type_info":"Text"},{"name":"category_id","ordinal":3,"type_info":"Uuid"},{"name":"created_at","ordinal":4,"type_info":"Timestamp"}],"nullable":[false,false,false,false,false],"parameters":{"Left":["Uuid"]}},"query":"SELECT id, title, html as content, category_id, created_at FROM blogs WHERE id = $1"},"42050d28628b6ccf5c8a89f07fea2253fbcbed025b876d243be4fbe087926c89":{"describe":{"columns":[{"name":"id","ordinal":0,"type_info":"Uuid"},{"name":"blog_id","ordinal":1,"type_info":"Uuid"},{"name":"content","ordinal":2,"type_info":"Text"},{"name":"account_id","ordinal":3,"type_info":"Uuid"},{"name":"account_name","ordinal":4,"type_info":"Text"},{"name":"account_username","ordinal":5,"type_info":"Text"},{"name":"has_replies!","ordinal":6,"type_info":"Bool"}],"nullable":[false,false,false,false,false,false,null],"parameters":{"Left":["Uuid","Int8","Int8"]}},"query":"SELECT \n            c.id, c.blog_id, c.content, \n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies r WHERE r.comment_id = c.id AND r.parent_id IS NULL LIMIT 1) as \"has_replies!\"\n            FROM comments c \n            JOIN accounts a on c.account_id = a.id \n            WHERE blog_id = $1 \n            LIMIT $2 OFFSET $3"}}
+=======
+{
+  "db": "PostgreSQL",
+<<<<<<< Updated upstream
+  "16b30e78424db08af847ccb34f438ae8e50fdb879c8a16e7c65fb928eb8e4b9f": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text"] }
+    },
+    "query": "INSERT INTO categories (name) VALUES ($1) RETURNING id"
+  },
+  "0748c6b1dcab7271c2c87e1385402dde8145799495d07a5c3244c3a8c22f4e9d": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 2, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT * FROM sub_categories WHERE category_id = $1"
+  },
+  "88f26472e41c0381a8945804164c12fdc502c55c9bb4f90d64fd38d953e0d5f5": {
+=======
+  "67cd09cd8fe9ff49848cb530d1faade61626037cb58d49ee2f0188672e1cad6f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM tags_blogs WHERE blog_id = $1"
+  },
+  "18a29f34ec8df6250772b90a632432a528a1e9e8d691fa5b41bf06376534167a": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" }
+      ],
+      "nullable": [false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT * FROM categories WHERE id = $1"
+  },
+  "42050d28628b6ccf5c8a89f07fea2253fbcbed025b876d243be4fbe087926c89": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "blog_id", "ordinal": 1, "type_info": "Uuid" },
+        { "name": "content", "ordinal": 2, "type_info": "Text" },
+        { "name": "account_id", "ordinal": 3, "type_info": "Uuid" },
+        { "name": "account_name", "ordinal": 4, "type_info": "Text" },
+        { "name": "account_username", "ordinal": 5, "type_info": "Text" },
+        { "name": "has_replies!", "ordinal": 6, "type_info": "Bool" }
+      ],
+      "nullable": [false, false, false, false, false, false, null],
+      "parameters": { "Left": ["Uuid", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n            c.id, c.blog_id, c.content, \n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies r WHERE r.comment_id = c.id AND r.parent_id IS NULL LIMIT 1) as \"has_replies!\"\n            FROM comments c \n            JOIN accounts a on c.account_id = a.id \n            WHERE blog_id = $1 \n            LIMIT $2 OFFSET $3"
+  },
+  "d5e56a03e8b0c117b29047abf20b4bc889bae5b365fda01a2f0b8f6a0839ca0e": {
+>>>>>>> Stashed changes
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+<<<<<<< Updated upstream
+    "query": "SELECT id FROM users WHERE id = $1"
+  },
+  "18b41cf70c19dd5d11ac6a38aad40aec3531a1dd043909debdb475585b9f37a0": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "comment_id", "ordinal": 1, "type_info": "Uuid" },
+        { "name": "parent_id", "ordinal": 2, "type_info": "Uuid" },
+        { "name": "content", "ordinal": 3, "type_info": "Text" },
+        { "name": "account_id", "ordinal": 4, "type_info": "Uuid" },
+        { "name": "account_name", "ordinal": 5, "type_info": "Text" },
+        { "name": "account_username", "ordinal": 6, "type_info": "Text" },
+        { "name": "has_replies!", "ordinal": 7, "type_info": "Bool" }
+      ],
+      "nullable": [false, false, true, false, false, false, false, null],
+      "parameters": { "Left": ["Uuid", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n            ro.id, ro.comment_id, ro.parent_id, ro.content,\n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as \"has_replies!\"\n            FROM replies ro\n            JOIN accounts a on ro.account_id = a.id \n            WHERE comment_id = $1 AND parent_id IS NULL LIMIT $2 OFFSET $3"
+  },
+  "83d61dd063b999822cc16fbdbf3d12102a96a676a5bae8338539881119a8920a": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Uuid", "Uuid", "Text"] }
+    },
+    "query": "INSERT INTO comments (account_id, blog_id, content) VALUES ($1, $2, $3) RETURNING id"
+  },
+  "5904088267480ca213682942757fc4d4a7a8a104bff61d57735aa9ba51f62a91": {
+    "describe": {
+      "columns": [{ "name": "id!", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [null],
+      "parameters": { "Left": ["Text", "Text", "Text", "Text"] }
+    },
+    "query": "SELECT insert_user($1, $2, $3, $4) AS \"id!\" "
+  },
+  "97ae593566a575fb58bb8ee40e90a459a484c4d9bb77cc003724f827b4c7a5a6": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "comment_id", "ordinal": 1, "type_info": "Uuid" },
+        { "name": "parent_id", "ordinal": 2, "type_info": "Uuid" },
+        { "name": "content", "ordinal": 3, "type_info": "Text" },
+        { "name": "account_id", "ordinal": 4, "type_info": "Uuid" },
+        { "name": "account_name", "ordinal": 5, "type_info": "Text" },
+        { "name": "account_username", "ordinal": 6, "type_info": "Text" },
+        { "name": "has_replies!", "ordinal": 7, "type_info": "Bool" }
+      ],
+      "nullable": [false, false, true, false, false, false, false, null],
+      "parameters": { "Left": ["Uuid", "Uuid", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n            ro.id, ro.comment_id, ro.parent_id, ro.content,\n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as \"has_replies!\"\n            FROM replies ro\n            JOIN accounts a on ro.account_id = a.id \n            WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4"
+  },
+  "dd0d0e3fd03f130aab947d13580796eee9a786e2ca01d339fd0e8356f8ad3824": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM tags WHERE id = $1"
+  },
+  "bc7ef9c04cb141fc1d5202e7152e93d5e492f8fa2ff46400017aa5d2e03f6ba8": {
+=======
+    "query": "SELECT id FROM admins WHERE id = $1"
+  },
+  "0e113527f239b049a40dfb3c5b05c94dcd256bafe5ff7f4f90de1bad2e0ce18b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM sub_categories_blogs WHERE blog_id = $1"
+  },
+  "9b03ae7e10795d845720bf7d5e1c7f578f1be4ad47091b482dfdf41f6d40a56d": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text",
+          "Text",
+          {
+            "Custom": {
+              "name": "account_kind",
+              "kind": { "Enum": ["user", "admin"] }
+            }
+          }
+        ]
+      }
+    },
+    "query": "INSERT INTO accounts (username, password, name, kind) VALUES ($1, $2, $3, $4) RETURNING id"
+  },
+  "454ff71a638ae3b173a28aa5c32fa987b8be62de2c69801ac6e597a9a8873f00": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "username", "ordinal": 1, "type_info": "Text" },
+        { "name": "password", "ordinal": 2, "type_info": "Text" },
+        { "name": "name", "ordinal": 3, "type_info": "Text" },
+        {
+          "name": "kind: _",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "name": "account_kind",
+              "kind": { "Enum": ["user", "admin"] }
+            }
+          }
+        }
+      ],
+      "nullable": [false, false, false, false, false],
+      "parameters": { "Left": ["Text"] }
+    },
+    "query": "SELECT id, username, password, name, kind AS \"kind: _\" FROM accounts WHERE username = $1;"
+  },
+  "ee8601bfae96b92b47bed13145d601d85982223d5de50531728e202140dc913f": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text", "Uuid", "Uuid", "Uuid"] }
+    },
+    "query": "INSERT INTO replies (content, account_id, comment_id, parent_id) VALUES ($1, $2, $3, $4) RETURNING id"
+  },
+  "b3be6599a3583e12d463987a12fb527d72a264632db75d57f963e34c79ba3818": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text", "Uuid"] }
+    },
+    "query": "INSERT INTO sub_categories (name, category_id) VALUES ($1, $2) RETURNING id"
+  },
+  "e53c4609aee191e5f22012caf62b06553e866af1f7cdf2728c04562bc77896e7": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "title", "ordinal": 1, "type_info": "Text" },
+        { "name": "content", "ordinal": 2, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 3, "type_info": "Uuid" },
+        { "name": "created_at", "ordinal": 4, "type_info": "Timestamp" }
+      ],
+      "nullable": [false, false, false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT id, title, html as content, category_id, created_at FROM blogs WHERE id = $1"
+  },
+  "53a74c4c91f7163dde6c2f4c5d65495df8abc8a5a92146c45d5aa449d671304f": {
+>>>>>>> Stashed changes
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "title", "ordinal": 1, "type_info": "Text" },
+        { "name": "preview", "ordinal": 2, "type_info": "Text" },
+        { "name": "main_image", "ordinal": 3, "type_info": "Text" },
+<<<<<<< Updated upstream
+        { "name": "admin_id", "ordinal": 4, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false, true, false],
+      "parameters": { "Left": ["Text", "Int8", "Int8"] }
+    },
+    "query": "SELECT id, title, preview, main_image, admin_id FROM blogs WHERE title ILIKE $1\n                LIMIT $2 OFFSET $3"
+  },
+  "42050d28628b6ccf5c8a89f07fea2253fbcbed025b876d243be4fbe087926c89": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "blog_id", "ordinal": 1, "type_info": "Uuid" },
+        { "name": "content", "ordinal": 2, "type_info": "Text" },
+        { "name": "account_id", "ordinal": 3, "type_info": "Uuid" },
+        { "name": "account_name", "ordinal": 4, "type_info": "Text" },
+        { "name": "account_username", "ordinal": 5, "type_info": "Text" },
+        { "name": "has_replies!", "ordinal": 6, "type_info": "Bool" }
+      ],
+      "nullable": [false, false, false, false, false, false, null],
+      "parameters": { "Left": ["Uuid", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n            c.id, c.blog_id, c.content, \n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies r WHERE r.comment_id = c.id AND r.parent_id IS NULL LIMIT 1) as \"has_replies!\"\n            FROM comments c \n            JOIN accounts a on c.account_id = a.id \n            WHERE blog_id = $1 \n            LIMIT $2 OFFSET $3"
+  },
+  "5458780b02e702de4bc3d9f51b3091701d2f39e7a0d9f6b8d1daf622b6e227a4": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT id FROM admins WHERE account_id = $1"
+  },
+  "002d293c501005c025256289cb7ef4f89f767c53ad62a544b68cb7e8f6750c96": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" }
+      ],
+      "nullable": [false, false],
+      "parameters": { "Left": [] }
+    },
+    "query": "SELECT * FROM categories"
+  },
+  "173dc2aa78a0e9673c02a347e0edcc361f10ebd520e84b0e50f471923fbe0386": {
+=======
+        { "name": "category_id", "ordinal": 4, "type_info": "Uuid" },
+        { "name": "category_name", "ordinal": 5, "type_info": "Text" },
+        { "name": "created_at", "ordinal": 6, "type_info": "Timestamp" },
+        {
+          "name": "tags!: Option<InlineVec<headless_tag::HeadlessTag>>",
+          "ordinal": 7,
+          "type_info": "Text"
+        },
+        {
+          "name": "sub_categories!: InlineVec<HeadlessSubCategory>",
+          "ordinal": 8,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [false, false, false, true, false, false, false, null, null],
+      "parameters": { "Left": ["Text", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n                    b.id, b.title, b.preview, b.main_image, c.id as category_id, c.name as category_name, b.created_at, \n                    STRING_AGG(t.id || ',' || t.name || ',' || t.color, ';') AS \"tags!: Option<InlineVec<headless_tag::HeadlessTag>>\",\n                    STRING_AGG(sc.id || ',' || sc.name, ';') AS \"sub_categories!: InlineVec<HeadlessSubCategory>\"\n                FROM blogs b\n                JOIN \n                    categories c ON b.category_id = c.id\n                LEFT JOIN\n                    tags_blogs bt ON b.id = bt.blog_id\n                LEFT JOIN\n                    tags t ON bt.tag_id = t.id\n                JOIN\n                    sub_categories_blogs sb ON b.id = sb.blog_id\n                JOIN\n                    sub_categories sc ON sb.sub_category_id = sc.id\n                WHERE b.title ILIKE $1\n                GROUP BY\n                    b.id, c.id, sc.id\n                LIMIT $2 OFFSET $3"
+  },
+  "e062d204b6490920dc3ea98c37613d600bc44f9fb155410a454ca2498d0985cd": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM sub_categories WHERE id = $1"
+  },
+  "bbc7f016c7bd8e4ddfc3b393ce55e8d5a72158d502ac9b75da84cb9451d934e2": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Text", "Uuid"] }
+    },
+    "query": "UPDATE accounts SET password = $1 WHERE id = $2"
+  },
+  "97ae593566a575fb58bb8ee40e90a459a484c4d9bb77cc003724f827b4c7a5a6": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "comment_id", "ordinal": 1, "type_info": "Uuid" },
+        { "name": "parent_id", "ordinal": 2, "type_info": "Uuid" },
+        { "name": "content", "ordinal": 3, "type_info": "Text" },
+        { "name": "account_id", "ordinal": 4, "type_info": "Uuid" },
+        { "name": "account_name", "ordinal": 5, "type_info": "Text" },
+        { "name": "account_username", "ordinal": 6, "type_info": "Text" },
+        { "name": "has_replies!", "ordinal": 7, "type_info": "Bool" }
+      ],
+      "nullable": [false, false, true, false, false, false, false, null],
+      "parameters": { "Left": ["Uuid", "Uuid", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n            ro.id, ro.comment_id, ro.parent_id, ro.content,\n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as \"has_replies!\"\n            FROM replies ro\n            JOIN accounts a on ro.account_id = a.id \n            WHERE comment_id = $1 AND parent_id = $2 LIMIT $3 OFFSET $4"
+  },
+  "d2c59275e1b72728652e961226f9c903e42c7d1bfae8159fedf6939526099fbf": {
+>>>>>>> Stashed changes
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+<<<<<<< Updated upstream
+          "Uuid",
+          "Uuid",
+=======
+>>>>>>> Stashed changes
+          "Text",
+          "Text",
+          "Text",
+          "Uuid",
+          "Text",
+          "Text",
+<<<<<<< Updated upstream
+          "TextArray"
+        ]
+      }
+    },
+    "query": "INSERT INTO \nblogs(\n    id,\n    admin_id,\n    title,\n    content,\n    html,\n    category_id,\n    preview,\n    main_image,\n    images\n) \nVALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+  },
+  "dbbb1a0494a82e39e09965d2e957085498ec5a2f2cf32d1189bef806ad2dda45": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM categories WHERE id = $1"
+  },
+  "e062d204b6490920dc3ea98c37613d600bc44f9fb155410a454ca2498d0985cd": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM sub_categories WHERE id = $1"
+  },
+  "454ff71a638ae3b173a28aa5c32fa987b8be62de2c69801ac6e597a9a8873f00": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "username", "ordinal": 1, "type_info": "Text" },
+        { "name": "password", "ordinal": 2, "type_info": "Text" },
+        { "name": "name", "ordinal": 3, "type_info": "Text" },
+        {
+          "name": "kind: _",
+          "ordinal": 4,
+          "type_info": {
+            "Custom": {
+              "name": "account_kind",
+              "kind": { "Enum": ["user", "admin"] }
+            }
+          }
+        }
+      ],
+      "nullable": [false, false, false, false, false],
+      "parameters": { "Left": ["Text"] }
+    },
+    "query": "SELECT id, username, password, name, kind AS \"kind: _\" FROM accounts WHERE username = $1;"
+=======
+          "TextArray",
+          "Uuid"
+        ]
+      }
+    },
+    "query": "UPDATE blogs \n                SET \n                    title = $1,\n                    content = $2,\n                    html = $3,\n                    category_id = $4,\n                    preview = $5,\n                    main_image = $6,\n                    images = $7\n                WHERE id = $8"
+  },
+  "775459e5800d608a1367c0610b79f3b6c078f5b0c6db12d9aa0736c5b7d0ac69": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 2, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT sc.* FROM sub_categories sc JOIN sub_categories_blogs scb ON scb.sub_category_id = sc.id WHERE scb.blog_id = $1"
+  },
+  "0748c6b1dcab7271c2c87e1385402dde8145799495d07a5c3244c3a8c22f4e9d": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 2, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT * FROM sub_categories WHERE category_id = $1"
+>>>>>>> Stashed changes
+  },
+  "2da828f02c820bbf7094b22cf17975ce674a616ccf0c5ccf1149f40d02b3924e": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text", "Uuid", "Text"] }
+    },
+    "query": "INSERT INTO tags (name, category_id, color) VALUES ($1, $2, $3) RETURNING id"
+  },
+<<<<<<< Updated upstream
+  "9766eaf2480e56b57ca36c2b56f4de4d26788020ef65ca988318fbd7a4c6b1e4": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "title", "ordinal": 1, "type_info": "Text" },
+        { "name": "html", "ordinal": 2, "type_info": "Text" }
+      ],
+      "nullable": [false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT id, title, html FROM blogs WHERE id = $1"
+=======
+  "9487deba471742543c756d8b23f985aeb9a7d4af27bb178e4977423adfff8d21": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 2, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false],
+      "parameters": { "Left": [] }
+    },
+    "query": "SELECT * FROM sub_categories"
+  },
+  "18b41cf70c19dd5d11ac6a38aad40aec3531a1dd043909debdb475585b9f37a0": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "comment_id", "ordinal": 1, "type_info": "Uuid" },
+        { "name": "parent_id", "ordinal": 2, "type_info": "Uuid" },
+        { "name": "content", "ordinal": 3, "type_info": "Text" },
+        { "name": "account_id", "ordinal": 4, "type_info": "Uuid" },
+        { "name": "account_name", "ordinal": 5, "type_info": "Text" },
+        { "name": "account_username", "ordinal": 6, "type_info": "Text" },
+        { "name": "has_replies!", "ordinal": 7, "type_info": "Bool" }
+      ],
+      "nullable": [false, false, true, false, false, false, false, null],
+      "parameters": { "Left": ["Uuid", "Int8", "Int8"] }
+    },
+    "query": "SELECT \n            ro.id, ro.comment_id, ro.parent_id, ro.content,\n            a.id as account_id, a.name as account_name, a.username as account_username, \n            (SELECT COUNT(*) > 0 FROM replies ri WHERE ri.parent_id = ro.id LIMIT 1) as \"has_replies!\"\n            FROM replies ro\n            JOIN accounts a on ro.account_id = a.id \n            WHERE comment_id = $1 AND parent_id IS NULL LIMIT $2 OFFSET $3"
+>>>>>>> Stashed changes
+  },
+  "205e63852114edcc2da27b80c91b15cf984939d870d63ae847a595725492a21b": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" },
+        { "name": "color", "ordinal": 2, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 3, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT * FROM tags WHERE category_id = $1"
+  },
+<<<<<<< Updated upstream
+  "71cd287216b5bbf5181b9f808e131f1e689494a5bc7e23da67a237a50b5fe66a": {
+    "describe": {
+      "columns": [{ "name": "count", "ordinal": 0, "type_info": "Int8" }],
+      "nullable": [null],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT COUNT(id) as count FROM admins WHERE account_id = $1"
+  },
+  "b3be6599a3583e12d463987a12fb527d72a264632db75d57f963e34c79ba3818": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text", "Uuid"] }
+    },
+    "query": "INSERT INTO sub_categories (name, category_id) VALUES ($1, $2) RETURNING id"
+  },
+  "ee8601bfae96b92b47bed13145d601d85982223d5de50531728e202140dc913f": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text", "Uuid", "Uuid", "Uuid"] }
+    },
+    "query": "INSERT INTO replies (content, account_id, comment_id, parent_id) VALUES ($1, $2, $3, $4) RETURNING id"
+  },
+  "9487deba471742543c756d8b23f985aeb9a7d4af27bb178e4977423adfff8d21": {
+=======
+  "83d61dd063b999822cc16fbdbf3d12102a96a676a5bae8338539881119a8920a": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Uuid", "Uuid", "Text"] }
+    },
+    "query": "INSERT INTO comments (account_id, blog_id, content) VALUES ($1, $2, $3) RETURNING id"
+  },
+  "dd0d0e3fd03f130aab947d13580796eee9a786e2ca01d339fd0e8356f8ad3824": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM tags WHERE id = $1"
+  },
+  "16b30e78424db08af847ccb34f438ae8e50fdb879c8a16e7c65fb928eb8e4b9f": {
+    "describe": {
+      "columns": [{ "name": "id", "ordinal": 0, "type_info": "Uuid" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Text"] }
+    },
+    "query": "INSERT INTO categories (name) VALUES ($1) RETURNING id"
+  },
+  "e439908b36a85a993dd426e322cff96284498ea5b3868833998338c0b0e23842": {
+    "describe": {
+      "columns": [{ "name": "password", "ordinal": 0, "type_info": "Text" }],
+      "nullable": [false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT password FROM accounts WHERE id = $1"
+  },
+  "19a20ebeac3604f0639f85245a9262855d2a5ff93cda665c6fa6d10ffdda2c91": {
+>>>>>>> Stashed changes
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" },
+<<<<<<< Updated upstream
+        { "name": "category_id", "ordinal": 2, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false],
+      "parameters": { "Left": [] }
+    },
+    "query": "SELECT * FROM sub_categories"
+=======
+        { "name": "color", "ordinal": 2, "type_info": "Text" },
+        { "name": "category_id", "ordinal": 3, "type_info": "Uuid" }
+      ],
+      "nullable": [false, false, false, false],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "SELECT t.* FROM tags t JOIN tags_blogs tb ON tb.tag_id = t.id WHERE tb.blog_id = $1"
+  },
+  "9414b4b5870c1d562dc17386a1c706d9856811dee92de4ac01933afa6f7c3c41": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Text",
+          "Text",
+          "Text",
+          "Uuid",
+          "Text",
+          "Text",
+          "TextArray"
+        ]
+      }
+    },
+    "query": "INSERT INTO\n        blogs(\n            id,\n            admin_id,\n            title,\n            content,\n            html,\n            category_id,\n            preview,\n            main_image,\n            images\n        )\n        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+  },
+  "fb873ba729417829064b57f272b70e3f6618d3e18c4245cbb4c7d5bde34289a4": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid", "Text"] }
+    },
+    "query": "INSERT INTO users(id, email) VALUES ($1, $2)"
+  },
+  "dbbb1a0494a82e39e09965d2e957085498ec5a2f2cf32d1189bef806ad2dda45": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": { "Left": ["Uuid"] }
+    },
+    "query": "DELETE FROM categories WHERE id = $1"
+  },
+  "002d293c501005c025256289cb7ef4f89f767c53ad62a544b68cb7e8f6750c96": {
+    "describe": {
+      "columns": [
+        { "name": "id", "ordinal": 0, "type_info": "Uuid" },
+        { "name": "name", "ordinal": 1, "type_info": "Text" }
+      ],
+      "nullable": [false, false],
+      "parameters": { "Left": [] }
+    },
+    "query": "SELECT * FROM categories"
+>>>>>>> Stashed changes
+  }
+}
+>>>>>>> dev
