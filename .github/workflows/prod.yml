@@ -89,6 +89,6 @@ jobs:
           export PUBLIC_ADDR=${{ vars.PUBLIC_ADDR }}
           export CORS_HOSTS=${{ vars.CORS_HOSTS }}
 
-          docker-compose down
-          docker-compose pull
-          docker-compose up -d
+          docker compose down
+          docker compose pull
+          docker compose up -d
