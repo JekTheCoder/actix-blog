@@ -9,7 +9,7 @@ pub use path::ImagePathBuf;
 const BLOG_IMAGES_DIR: &str = "blogs";
 
 pub const ALLOWED_FILETYPES: [mime::Mime; 2] = [mime::IMAGE_PNG, mime::IMAGE_JPEG];
-const ALLOWED_MIME_NAMES: [mime::Name<'static>; 2] = [mime::PNG, mime::JPEG];
+const ALLOWED_MIME_NAMES: [&'static str; 3] = ["png", "jpg", "jpeg"];
 
 sync_service!(ImagePathFactory; images_dir: Data<ImagesDir>);
 
@@ -53,7 +53,7 @@ pub mod filename {
         pub fn new(filename: &str) -> Result<&Self, images::FilenameError> {
             let (filename, ext) = images::Filename::new_with_extension(filename)?;
 
-            if !ALLOWED_MIME_NAMES.map(|mime| mime.as_str()).contains(&ext) {
+            if !ALLOWED_MIME_NAMES.contains(&ext) {
                 return Err(images::FilenameError::InvalidExtension);
             }
 
