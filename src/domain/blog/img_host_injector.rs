@@ -30,3 +30,29 @@ impl<'a> ImageUrlInjector for ImgHostInjector<'a> {
         *url = modified.into();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::domain::blog::BlogParse;
+
+    use super::*;
+
+    #[test]
+    fn injects_url() {
+        let factory = ImgHostInjectorFactory {
+            server_address: ServerAddress::new_arc("http://localhost:3000").into(),
+        };
+
+        let content = r#"# Hello my brodas
+![image](wosi.jpg)"#;
+
+        let BlogParse {
+            images, content, ..
+        } = crate::domain::blog::parse(content, &factory.create(uuid::Uuid::nil())).unwrap();
+
+        assert!(images.into_inner().iter().any(|image| image == "wosi.jpg"));
+        assert!(content.contains(
+            "http://localhost:3000/blogs/00000000-0000-0000-0000-000000000000/public/wosi.jpg"
+        ));
+    }
+}
