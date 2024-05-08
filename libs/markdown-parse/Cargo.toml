@@ -1,0 +1,11 @@
+[package]
+name = "markdown-parse"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+leptos = { version = "0.6.11", features=["ssr", "experimental-islands"] }
+markdown-islands = { path = "../markdown-islands", features = ["ssr"] }
+pulldown-cmark = { version = "0.9.3", default-features = false, features = ["simd"] }
