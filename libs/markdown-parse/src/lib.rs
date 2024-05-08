@@ -16,7 +16,11 @@ impl MarkdownParser {
         }
     }
 
-    pub fn push_parse(&mut self, buffer: &mut String, parser: pulldown_cmark::Parser) {
+    pub fn push_parse<'a>(
+        &mut self,
+        buffer: &mut String,
+        parser: impl Iterator<Item = Event<'a>>,
+    ) {
         extend_parse(buffer, parser)
     }
 }
@@ -33,87 +37,77 @@ impl Drop for MarkdownParser {
     }
 }
 
-fn extend_parse(buffer: &mut String, parser: pulldown_cmark::Parser) {
+fn extend_parse<'a>(buffer: &mut String, parser: impl Iterator<Item = Event<'a>>) {
     let mut element_events = VecDeque::new();
     let mut in_element = false;
 
-    let elements_iter = parser
-        .inspect(|e| {
-            dbg!(e);
-        })
-        .flat_map(|e| match e {
-            Event::Start(tag) => {
-                element_events.push_front(Event::Start(tag));
-                in_element = true;
+    let elements_iter = parser.flat_map(|e| match e {
+        Event::Start(tag) => {
+            element_events.push_front(Event::Start(tag));
+            in_element = true;
 
+            MDEvents::none()
+        }
+        Event::End(tag) => {
+            element_events.push_front(Event::End(tag.clone()));
+            in_element = false;
+
+            match tag {
+                pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Fenced(language)) => {
+                    let children = element_events
+                        .iter()
+                        .filter_map(|e| match e {
+                            Event::Text(text) => Some(match text {
+                                pulldown_cmark::CowStr::Borrowed(text) => *text,
+                                pulldown_cmark::CowStr::Boxed(text) => text.as_ref(),
+                                pulldown_cmark::CowStr::Inlined(text) => text.as_ref(),
+                            }),
+                            _ => None,
+                        })
+                        .collect::<String>();
+
+                    let children = vec![children
+                        .trim()
+                        .trim_end_matches("```")
+                        .to_owned()
+                        .into_view()];
+                    let children = Box::new(move || leptos::Fragment::new(children));
+
+                    element_events.clear();
+                    let event = pulldown_cmark::Event::Html(
+                        CodeBlock(markdown_islands::CodeBlockProps {
+                            children,
+                            language: Some(match language {
+                                pulldown_cmark::CowStr::Boxed(language) => language.to_string(),
+                                pulldown_cmark::CowStr::Inlined(language) => language.to_string(),
+                                pulldown_cmark::CowStr::Borrowed(language) => language.to_owned(),
+                            }),
+                        })
+                        .into_view()
+                        .render_to_string()
+                        .to_string()
+                        .into(),
+                    );
+
+                    MDEvents::one(event)
+                }
+                _ => {
+                    let events = MDEvents::many(element_events.clone());
+                    element_events.clear();
+
+                    events
+                }
+            }
+        }
+        _ => {
+            if in_element {
+                element_events.push_front(e);
                 MDEvents::none()
+            } else {
+                MDEvents::one(e)
             }
-            Event::End(tag) => {
-                element_events.push_front(Event::End(tag.clone()));
-                in_element = false;
-
-                match tag {
-                    pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Fenced(
-                        language,
-                    )) => {
-                        let children = element_events
-                            .iter()
-                            .filter_map(|e| match e {
-                                Event::Text(text) => Some(match text {
-                                    pulldown_cmark::CowStr::Borrowed(text) => *text,
-                                    pulldown_cmark::CowStr::Boxed(text) => text.as_ref(),
-                                    pulldown_cmark::CowStr::Inlined(text) => text.as_ref(),
-                                }),
-                                _ => None,
-                            })
-                            .collect::<String>();
-
-                        let children = vec![children
-                            .trim()
-                            .trim_end_matches("```")
-                            .to_owned()
-                            .into_view()];
-                        let children = Box::new(move || leptos::Fragment::new(children));
-
-                        element_events.clear();
-                        let event = pulldown_cmark::Event::Html(
-                            CodeBlock(markdown_islands::CodeBlockProps {
-                                children,
-                                language: Some(match language {
-                                    pulldown_cmark::CowStr::Boxed(language) => language.to_string(),
-                                    pulldown_cmark::CowStr::Inlined(language) => {
-                                        language.to_string()
-                                    }
-                                    pulldown_cmark::CowStr::Borrowed(language) => {
-                                        language.to_owned()
-                                    }
-                                }),
-                            })
-                            .into_view()
-                            .render_to_string()
-                            .to_string()
-                            .into(),
-                        );
-
-                        MDEvents::one(event)
-                    }
-                    _ => {
-                        let events = MDEvents::many(element_events.clone());
-                        element_events.clear();
-
-                        events
-                    }
-                }
-            }
-            _ => {
-                if in_element {
-                    element_events.push_front(e);
-                    MDEvents::none()
-                } else {
-                    MDEvents::one(e)
-                }
-            }
-        });
+        }
+    });
 
     pulldown_cmark::html::push_html(buffer, elements_iter);
 }

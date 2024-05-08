@@ -82,17 +82,19 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
         return Err(Error::InvalidTitle);
     }
 
+    let mut md_parser = markdown_parse::MarkdownParser::new();
+
     let mut content = String::new();
     let mut images = VecSet::default();
 
-    push_html(&mut content, title_elements.into_iter());
+    md_parser.push_parse(&mut content, title_elements.into_iter());
 
     let parser = parser.map(|mut item| {
         mutate_item(&mut item, &mut images, injector);
         item
     });
 
-    push_html(&mut content, parser);
+    md_parser.push_parse(&mut content, parser);
 
     Ok(BlogParse {
         title,

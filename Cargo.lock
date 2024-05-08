@@ -16,6 +16,7 @@ dependencies = [
  "futures-util",
  "image",
  "jsonwebtoken",
+ "markdown-parse",
  "mime",
  "pulldown-cmark",
  "serde",
