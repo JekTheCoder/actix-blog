@@ -19,7 +19,6 @@ dependencies = [
  "markdown-parse",
  "mime",
  "par-stream",
- "pulldown-cmark",
  "serde",
  "serde_json",
  "sqlx",

@@ -4,6 +4,7 @@ mod parse;
 
 pub use parse::{parse, parse_preview, Error, ImageUrlInjector, BlogParse};
 pub use value_objects::{content, preview};
+pub use pulldown_cmark::CowStr;
 
 mod vec_set {
     #[derive(Debug, Default)]

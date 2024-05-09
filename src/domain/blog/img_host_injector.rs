@@ -35,7 +35,7 @@ impl<'a> ImageUrlInjector for ImgHostInjector<'a> {
         Filename::new(url).is_ok()
     }
 
-    fn inject(&self, url: &mut pulldown_cmark::CowStr<'_>) {
+    fn inject(&self, url: &mut markdown_parse::CowStr<'_>) {
         let modified = format!(
             "{}/blogs/{}/public/{}",
             self.server_address, self.blog_id, url

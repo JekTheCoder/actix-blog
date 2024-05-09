@@ -1,6 +1,7 @@
 use actix_web::web::Data;
-use markdown_parse::{preview::PreviewBuf, BlogParse, ImageUrlInjector, content::ContentBuf};
-use pulldown_cmark::CowStr;
+use markdown_parse::{
+    content::ContentBuf, preview::PreviewBuf, BlogParse, CowStr, ImageUrlInjector,
+};
 use sqlx::query;
 use uuid::Uuid;
 
