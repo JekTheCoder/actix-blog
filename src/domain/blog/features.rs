@@ -5,3 +5,4 @@ pub mod get_image;
 pub mod upload_image;
 pub mod update_one;
 pub mod set_tags;
+pub mod recompile_markdowns;

@@ -7,6 +7,14 @@ use crate::{domain::server::ServerAddress, server::service::sync_service};
 
 sync_service!(ImgHostInjectorFactory; server_address: Data<ServerAddress>);
 
+impl Clone for ImgHostInjectorFactory {
+    fn clone(&self) -> Self {
+        Self {
+            server_address: self.server_address.clone(),
+        }
+    }
+}
+
 impl ImgHostInjectorFactory {
     pub fn create(&self, blog_id: Uuid) -> ImgHostInjector {
         ImgHostInjector {
