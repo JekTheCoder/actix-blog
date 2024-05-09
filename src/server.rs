@@ -12,12 +12,14 @@ mod server {
     use actix_cors::Cors;
     use actix_web::{
         middleware::{NormalizePath, TrailingSlash},
+        web::Data,
         App, HttpServer,
     };
 
     use crate::{
+        domain::blog,
         persistence::db::DbConfig,
-        persistence::images,
+        persistence::public,
         server::{routes, AppConfigurable},
     };
 
@@ -27,10 +29,15 @@ mod server {
         };
 
         let static_dir = dotenvy::var("STATIC_DIR").expect("could not load STATIC_DIR");
+        let static_dir = Data::from(public::PublicDir::new_arc(&static_dir));
+
         let host = dotenvy::var("HOST").expect("HOST could not load");
 
         let db_config = DbConfig::new().await;
-        let images_config = images::Config::new(static_dir.as_str());
+
+        let public_config = public::Config::new(static_dir.clone());
+        let blog_config = blog::Config::new(static_dir);
+
         let server_config = {
             let public_addr = dotenvy::var("PUBLIC_ADDR").expect("could not load PUBLIC_ADDR");
             crate::domain::server::Config::new(&public_addr)
@@ -48,7 +55,8 @@ mod server {
                 .wrap(cors)
                 .use_config(server_config.clone())
                 .use_config(db_config.clone())
-                .use_config(images_config.clone())
+                .use_config(public_config.clone())
+                .use_config(blog_config.clone())
                 .configure(super::auth::configure)
                 .configure(routes::router)
                 .wrap(NormalizePath::new(TrailingSlash::Always));

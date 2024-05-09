@@ -1,6 +1,6 @@
 mod create_path;
 
-use crate::{persistence::images::ImagesDir, server::service::sync_service};
+use crate::{persistence::public::PublicDir, server::service::sync_service};
 use actix_web::web::Data;
 
 pub use filename::Filename;
@@ -11,7 +11,7 @@ const BLOG_IMAGES_DIR: &str = "blogs";
 pub const ALLOWED_FILETYPES: [mime::Mime; 2] = [mime::IMAGE_PNG, mime::IMAGE_JPEG];
 const ALLOWED_MIME_NAMES: [&'static str; 3] = ["png", "jpg", "jpeg"];
 
-sync_service!(ImagePathFactory; images_dir: Data<ImagesDir>);
+sync_service!(ImagePathFactory; images_dir: Data<PublicDir>);
 
 mod path {
     use std::path::{Path, PathBuf};
