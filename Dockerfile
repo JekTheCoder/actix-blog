@@ -17,8 +17,14 @@ RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path r
 COPY . .
 # Copy migrations
 COPY --from=planner /actix-blog/migrations ./migrations
+
+RUN cargo install wasm-bindgen-cli
+
 # Build application
 RUN cargo build --release --target x86_64-unknown-linux-musl
+
+RUN cargo build --release --package=markdown-hydrate --target=wasm32-unknown-unknown
+RUN wasm-bindgen --no-typescript --out-name=module --out-dir=./static/pkg/ --target=web ./target/wasm32-unknown-unknown/release/markdown_hydrate.wasm
 
 # Create a new stage with a minimal image
 FROM scratch
