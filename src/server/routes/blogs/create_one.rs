@@ -1,15 +1,11 @@
 use actix_web::{post, HttpResponse, Responder, ResponseError};
 
+use markdown_parse::{content::ContentBuf, preview::PreviewBuf};
 use uuid::Uuid;
 
 use crate::{
     domain::{
-        blog::{
-            self,
-            value_objects::{
-                content::ContentBuf, preview::PreviewBuf, sub_categories::SubCategories,
-            },
-        },
+        blog::{self, value_objects::sub_categories::SubCategories},
         user::admin_id::AdminId,
     },
     persistence::db::entities::IdSelect,
@@ -27,7 +23,7 @@ domain_valid!(pub struct Request {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
-    Parse(#[from] blog::ParseError),
+    Parse(#[from] markdown_parse::Error),
     #[error("Conflict creating blog")]
     Conflict,
     #[error("Database error")]
@@ -85,9 +81,9 @@ pub async fn endpoint(
     let blog_id = create_one
         .run(
             admin_id,
-            content.as_ref(),
+            &content,
             category_id,
-            preview.as_deref(),
+            preview.as_ref(),
             tags,
             sub_categories,
         )

@@ -1,22 +1,93 @@
 pub mod error;
 pub use error::{Error, FieldError, FieldErrors};
 
+mod domain_impls {
+    use markdown_parse::{content::ContentBuf, preview::PreviewBuf};
+
+    use super::{DomainValid, FieldError, FieldErrors};
+
+    impl DomainValid for PreviewBuf {
+        type Unchecked = String;
+
+        fn from_unchecked(unchecked: Self::Unchecked) -> Result<Self, super::error::Error> {
+            let unchecked_len = unchecked.len();
+
+            unchecked.try_into().map_err(|err| {
+                let field_err = match err {
+                    markdown_parse::preview::Error::Empty => FieldError::minlen(unchecked_len, 1),
+                    markdown_parse::preview::Error::MaxLen => {
+                        FieldError::maxlen(unchecked_len, 400)
+                    }
+                };
+
+                let mut errs = FieldErrors::default();
+                errs.add(field_err);
+
+                super::error::Error::Field(errs)
+            })
+        }
+    }
+
+    impl DomainValid for ContentBuf {
+        type Unchecked = String;
+
+        fn from_unchecked(unchecked: Self::Unchecked) -> Result<Self, super::error::Error> {
+            let unchecked_len = unchecked.len();
+
+            unchecked.try_into().map_err(|err| {
+                let field_err = match err {
+                    markdown_parse::content::Error::Empty => FieldError::minlen(unchecked_len, 1),
+                };
+
+                let mut errs = FieldErrors::default();
+                errs.add(field_err);
+
+                super::error::Error::Field(errs)
+            })
+        }
+    }
+}
+
 pub trait DomainValid: Sized {
     type Unchecked;
 
     fn from_unchecked(unchecked: Self::Unchecked) -> Result<Self, error::Error>;
 }
 
-impl<T> DomainValid for T
-where
-    T: serde::de::DeserializeOwned,
-{
-    type Unchecked = T;
+macro_rules! dumb_impl_domain_valid {
+    ($($t: ty), *) => {
+        $(
+            impl DomainValid for $t
+            {
+                type Unchecked = $t;
 
-    fn from_unchecked(unchecked: Self::Unchecked) -> Result<Self, error::Error> {
-        Ok(unchecked)
-    }
+                fn from_unchecked(unchecked: Self::Unchecked) -> Result<Self, error::Error> {
+                    Ok(unchecked)
+                }
+            }
+        )*
+    };
 }
+
+dumb_impl_domain_valid!(
+    String,
+    Box<str>,
+    uuid::Uuid,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    f32,
+    f64,
+    bool,
+    char
+);
 
 macro_rules! destructure {
     ($path: path; $name: ident; $($field: ident : $ty: ty,)* ) => {

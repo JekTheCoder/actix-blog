@@ -1,8 +1,8 @@
 use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Parser, Tag};
 
-use crate::shared::vec_set::VecSet;
+use crate::{component_parse::MarkdownParser, vec_set::VecSet};
 
-use super::{images::Filename, value_objects::preview::PreviewBuf};
+use super::value_objects::preview::PreviewBuf;
 
 #[derive(Debug)]
 pub struct BlogParse {
@@ -14,13 +14,23 @@ pub struct BlogParse {
 /// Modifies the url of an image
 pub trait ImageUrlInjector {
     fn inject(&self, url: &mut CowStr<'_>);
+    fn is_valid(&self, url: &str) -> bool;
 }
 
-#[derive(Debug, thiserror::Error, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Error {
-    #[error("Invalid title")]
     InvalidTitle,
 }
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidTitle => write!(f, "Invalid title"),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
 
 fn mutate_item(
     item: &mut Event<'_>,
@@ -28,7 +38,7 @@ fn mutate_item(
     injector: &impl ImageUrlInjector,
 ) {
     if let Event::Start(Tag::Image(LinkType::Inline, url, _)) = item {
-        if Filename::new(url).is_err() {
+        if !injector.is_valid(url) {
             return;
         }
 
@@ -82,7 +92,7 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
         return Err(Error::InvalidTitle);
     }
 
-    let mut md_parser = markdown_parse::MarkdownParser::new();
+    let mut md_parser = MarkdownParser::new();
 
     let mut content = String::new();
     let mut images = VecSet::default();
@@ -186,6 +196,9 @@ mod test {
 
     struct NoopInjector;
     impl ImageUrlInjector for NoopInjector {
+        fn is_valid(&self, _: &str) -> bool {
+            true
+        }
         fn inject(&self, _url: &mut CowStr<'_>) {}
     }
 
@@ -276,3 +289,4 @@ This is an interesting preview"#;
         assert_eq!(title, "Hello my brodas");
     }
 }
+

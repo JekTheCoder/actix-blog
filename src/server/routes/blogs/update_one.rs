@@ -1,11 +1,9 @@
 use actix_web::{put, web::Path, HttpResponse, Responder};
+use markdown_parse::{content::ContentBuf, preview::PreviewBuf};
 use uuid::Uuid;
 
 use crate::{
-    domain::blog::{
-        features::update_one,
-        value_objects::{content::ContentBuf, preview::PreviewBuf, sub_categories::SubCategories},
-    },
+    domain::blog::{features::update_one, value_objects::sub_categories::SubCategories},
     server::admin::IsAdminFactory,
     server::shared::{domain_validation::domain_valid, query::DomainJson},
 };
@@ -35,9 +33,9 @@ pub async fn endpoint(
     match update_one
         .run(
             id.into_inner(),
-            content.as_ref(),
+            &content,
             category_id,
-            preview.as_deref(),
+            preview.as_ref(),
             tags,
             sub_categories,
         )

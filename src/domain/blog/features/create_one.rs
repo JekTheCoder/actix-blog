@@ -1,15 +1,12 @@
 use actix_web::web::Data;
+use markdown_parse::{preview::PreviewBuf, BlogParse, ImageUrlInjector, content::ContentBuf};
 use pulldown_cmark::CowStr;
 use sqlx::query;
 use uuid::Uuid;
 
 use crate::{
     domain::{
-        blog::{
-            self, parse_preview,
-            value_objects::{content::Content, preview::Preview, sub_categories::SubCategories},
-            BlogParse, ImageUrlInjector, ImgHostInjectorFactory,
-        },
+        blog::{value_objects::sub_categories::SubCategories, ImgHostInjectorFactory},
         blog_grouping,
         user::admin_id::AdminId,
     },
@@ -22,14 +19,14 @@ use super::set_tags;
 sync_service!(CreateOne; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
 pub enum Error {
-    Parse(blog::ParseError),
+    Parse(markdown_parse::Error),
     NoPreview,
     Database,
     Conflict,
 }
 
-impl From<blog::parse::Error> for Error {
-    fn from(e: blog::parse::Error) -> Self {
+impl From<markdown_parse::Error> for Error {
+    fn from(e: markdown_parse::Error) -> Self {
         Self::Parse(e)
     }
 }
@@ -47,9 +44,9 @@ impl CreateOne {
     pub async fn run(
         &self,
         admin_id: AdminId,
-        content: &Content,
+        content: &ContentBuf,
         category_id: Uuid,
-        preview: Option<&Preview>,
+        preview: Option<&PreviewBuf>,
         tags: Vec<Uuid>,
         sub_categories: SubCategories,
     ) -> Result<Uuid, Error> {
@@ -61,18 +58,18 @@ impl CreateOne {
             title,
             content: html_content,
             images, // TODO
-        } = blog::parse(content.as_ref(), &injector)?;
+        } = markdown_parse::parse(content.as_ref(), &injector)?;
 
         let owned_preview;
         let preview = match preview {
             Some(preview) => preview,
             None => {
-                let Some(parsed_preview) = parse_preview(content.as_ref()) else {
+                let Some(parsed_preview) = markdown_parse::parse_preview(content.as_ref()) else {
                     return Err(Error::NoPreview);
                 };
 
                 owned_preview = parsed_preview;
-                owned_preview.as_ref()
+                &owned_preview
             }
         };
 

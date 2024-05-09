@@ -1,12 +1,11 @@
 use actix_web::web::Data;
 use futures_util::StreamExt;
+use markdown_parse::BlogParse;
 use par_stream::ParStreamExt;
 use uuid::Uuid;
 
 use crate::{
-    domain::blog::{self, BlogParse, ImgHostInjectorFactory},
-    persistence::db::Pool,
-    server::service::sync_service,
+    domain::blog::ImgHostInjectorFactory, persistence::db::Pool, server::service::sync_service,
 };
 
 sync_service!(RecompileMarkdowns; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
@@ -128,7 +127,7 @@ async fn update_blog(
         let BlogParse {
             content: html_content,
             ..
-        } = blog::parse(content.as_str(), &injector).unwrap();
+        } = markdown_parse::parse(content.as_str(), &injector).unwrap();
 
         let _ = sqlx::query!(
             r#"UPDATE blogs SET html = $1 WHERE id = $2"#,
