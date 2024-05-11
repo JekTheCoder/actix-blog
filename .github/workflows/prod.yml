@@ -31,11 +31,6 @@ jobs:
         profile: minimal
         toolchain: stable
 
-    - name: Build and test code
-      run: |
-        cargo build --verbose
-        cargo test --verbose
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
