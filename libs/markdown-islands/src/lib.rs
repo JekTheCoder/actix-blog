@@ -12,14 +12,16 @@ pub fn CodeBlock(language: Option<String>, children: Children) -> impl IntoView 
     };
 
     view! {
-        <pre>
+        <div class="code-block">
             <div class="code-header">
                 <span>{language}</span>
                 <button class="copy-btn" on:click=on_copy>
                     <iconify-icon icon="bxs:copy" />
                 </button>
             </div>
-            <code ref={code_el}>{children()}</code>
-        </pre>
+            <pre class="code">
+                <code ref={code_el}>{children()}</code>
+            </pre>
+        </div>
     }
 }
