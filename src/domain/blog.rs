@@ -12,16 +12,16 @@ mod config {
 
     use actix_web::web::Data;
 
-    use crate::{persistence::public::PublicDir, server::AppConfig};
+    use crate::{persistence::public::PkgDir, server::AppConfig};
 
     #[derive(Clone)]
     pub struct Config {
-        public_dir: Data<PublicDir>,
+        pkg_dir: Data<PkgDir>,
     }
 
     impl Config {
-        pub fn new(public_dir: Data<PublicDir>) -> Self {
-            Self { public_dir }
+        pub fn new(pkg_dir: Data<PkgDir>) -> Self {
+            Self { pkg_dir }
         }
     }
 
@@ -29,7 +29,7 @@ mod config {
         fn configure(self, config: &mut actix_web::web::ServiceConfig) {
             config.service(actix_files::Files::new(
                 "/blogs/pkg/",
-                PathBuf::from(self.public_dir.as_ref().as_ref()).join("pkg"),
+                PathBuf::from(self.pkg_dir.as_ref()).join("blogs"),
             ));
         }
     }

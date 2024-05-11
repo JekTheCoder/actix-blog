@@ -11,6 +11,7 @@ services:
       HOST: 0.0.0.0:3000
       CORS_HOSTS: ${CORS_HOSTS}
       STATIC_DIR: "/static/"
+      PKG_DIR: "/pkg/"
     build:
       context: .
       dockerfile: Dockerfile

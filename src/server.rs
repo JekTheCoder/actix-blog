@@ -12,7 +12,6 @@ mod server {
     use actix_cors::Cors;
     use actix_web::{
         middleware::{NormalizePath, TrailingSlash},
-        web::Data,
         App, HttpServer,
     };
 
@@ -29,14 +28,19 @@ mod server {
         };
 
         let static_dir = dotenvy::var("STATIC_DIR").expect("could not load STATIC_DIR");
-        let static_dir = Data::from(public::PublicDir::new_arc(&static_dir));
+        let static_dir = public::PublicDir::new_data(&static_dir);
+
+        let pkg_dir = {
+            let pkg_dir = dotenvy::var("PKG_DIR").expect("could not load PKG_DIR");
+            public::PkgDir::new_data(&pkg_dir)
+        };
 
         let host = dotenvy::var("HOST").expect("HOST could not load");
 
         let db_config = DbConfig::new().await;
 
         let public_config = public::Config::new(static_dir.clone());
-        let blog_config = blog::Config::new(static_dir);
+        let blog_config = blog::Config::new(pkg_dir);
 
         let server_config = {
             let public_addr = dotenvy::var("PUBLIC_ADDR").expect("could not load PUBLIC_ADDR");

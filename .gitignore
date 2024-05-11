@@ -5,3 +5,6 @@ static/*
 !static/gitkeep
 
 env
+
+pkg/*
+!pkg/gitkeep
