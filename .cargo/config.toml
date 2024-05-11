@@ -1,0 +1,7 @@
+# Required to build markdown-islands crate
+
+[build]
+rustflags = ["--cfg=web_sys_unstable_apis"]
+
+[env]
+RUSTFLAGS = "--cfg=web_sys_unstable_apis"

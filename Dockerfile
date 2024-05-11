@@ -23,8 +23,8 @@ RUN cargo install wasm-bindgen-cli
 # Build application
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
-RUN cargo build --release --package=markdown-hydrate --target=wasm32-unknown-unknown
-RUN wasm-bindgen --no-typescript --out-name=module --out-dir=./static/pkg/ --target=web ./target/wasm32-unknown-unknown/release/markdown_hydrate.wasm
+RUN chmod +x ./scripts/build-crs.sh
+RUN ./scripts/build-crs.sh
 
 # Create a new stage with a minimal image
 FROM scratch
