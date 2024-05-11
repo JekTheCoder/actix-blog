@@ -1,32 +1,27 @@
 FROM messense/rust-musl-cross:x86_64-musl as chef
 ENV SQLX_OFFLINE=true
-RUN cargo install cargo-chef
+RUN cargo install cargo-chef --locked
 WORKDIR /actix-blog
 
 FROM chef AS planner
-# Copy source code from previous stage
 COPY . .
-# Generate info for caching dependencies
-RUN cargo chef prepare --recipe-path recipe.json
+RUN cargo chef prepare --recipe-path=recipe.json
 
 FROM chef AS builder
 COPY --from=planner /actix-blog/recipe.json recipe.json
 # Build & cache dependencies
-RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
-# Copy source code from previous stage
+RUN cargo chef cook --release --target=x86_64-unknown-linux-musl --recipe-path=recipe.json
+
 COPY . .
-# Copy migrations
 COPY --from=planner /actix-blog/migrations ./migrations
 
 RUN cargo install wasm-bindgen-cli
 
-# Build application
-RUN cargo build --release --target x86_64-unknown-linux-musl
+RUN cargo build --release --target=x86_64-unknown-linux-musl
 
 RUN chmod +x ./scripts/build-crs.sh
 RUN ./scripts/build-crs.sh
 
-# Create a new stage with a minimal image
 FROM scratch
 COPY --from=builder /actix-blog/target/x86_64-unknown-linux-musl/release/actix-blog /actix-blog
 ENTRYPOINT ["/actix-blog"]
