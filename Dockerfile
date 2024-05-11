@@ -24,6 +24,5 @@ RUN ./scripts/build-crs.sh
 
 FROM scratch
 COPY --from=builder /actix-blog/target/x86_64-unknown-linux-musl/release/actix-blog /actix-blog
-COPY --from=builder /actix-blog/static /static
 ENTRYPOINT ["/actix-blog"]
 EXPOSE 3000
