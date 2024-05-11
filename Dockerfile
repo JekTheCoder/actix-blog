@@ -19,6 +19,9 @@ RUN cargo install wasm-bindgen-cli
 
 RUN cargo build --release --target=x86_64-unknown-linux-musl
 
+# Add mannually because actions-rs/toolchain@v1 doesn't support multiple targets
+# Ussually, this install is cheap
+RUN rustup target add wasm32-unknown-unknown
 RUN chmod +x ./scripts/build-crs.sh
 RUN ./scripts/build-crs.sh
 
