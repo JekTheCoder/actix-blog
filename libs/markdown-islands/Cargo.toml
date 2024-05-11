@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 leptos = { version = "0.6.11", features=["experimental-islands"] }
 serde = "1.0.201"
-web-sys = { version = "0.3.69", features = ["Window", "Navigator", "Clipboard"] }
+web-sys = { version = "0.3.69", optional = true, features = ["Window", "Navigator", "Clipboard"] }
 
 [features]
-hydrate = ["leptos/hydrate"]
+hydrate = ["leptos/hydrate", "dep:web-sys"]
 ssr = ["leptos/ssr"]
