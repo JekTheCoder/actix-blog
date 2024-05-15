@@ -9,11 +9,7 @@ impl MarkdownParser {
         }
     }
 
-    pub fn push_parse<'a>(
-        &mut self,
-        buffer: &mut String,
-        parser: impl Iterator<Item = Event<'a>>,
-    ) {
+    pub fn push_parse<'a>(&mut self, buffer: &mut String, parser: impl Iterator<Item = Event<'a>>) {
         extend_parse(buffer, parser)
     }
 }
@@ -35,7 +31,7 @@ use std::collections::VecDeque;
 use leptos::IntoView;
 use pulldown_cmark::Event;
 
-use markdown_islands::CodeBlock;
+use markdown_islands::{CodeBlock, InlineLink, InlineLinkProps};
 
 pub fn extend_parse<'a>(buffer: &mut String, parser: impl Iterator<Item = Event<'a>>) {
     let mut element_events = VecDeque::new();
@@ -53,9 +49,34 @@ pub fn extend_parse<'a>(buffer: &mut String, parser: impl Iterator<Item = Event<
             in_element = false;
 
             match tag {
-                pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Fenced(
-                    language,
-                )) => {
+                pulldown_cmark::Tag::Link(pulldown_cmark::LinkType::Inline, href, title) => {
+                    let children = element_events
+                        .iter()
+                        .filter_map(|e| match e {
+                            Event::Text(text) => Some(text.to_string()),
+                            _ => None,
+                        })
+                        .map(IntoView::into_view)
+                        .collect::<Vec<_>>();
+                    let children = Box::new(move || leptos::Fragment::new(children));
+
+                    element_events.clear();
+
+                    let event = pulldown_cmark::Event::Html(
+                        InlineLink(InlineLinkProps {
+                            children,
+                            href: href.to_string(),
+                            title: title.to_string(),
+                        })
+                        .into_view()
+                        .render_to_string()
+                        .to_string()
+                        .into(),
+                    );
+
+                    MDEvents::one(event)
+                }
+                pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Fenced(language)) => {
                     let children = element_events
                         .iter()
                         .filter_map(|e| match e {
@@ -68,6 +89,9 @@ pub fn extend_parse<'a>(buffer: &mut String, parser: impl Iterator<Item = Event<
                         })
                         .collect::<String>();
 
+                    // Cut off the ``` traingling of code blocks emmited by pulldown_cmark
+                    // This may be a bug from the library, check if it is still required by upper
+                    // versions
                     let children = vec![children
                         .trim()
                         .trim_end_matches("```")
@@ -81,12 +105,8 @@ pub fn extend_parse<'a>(buffer: &mut String, parser: impl Iterator<Item = Event<
                             children,
                             language: Some(match language {
                                 pulldown_cmark::CowStr::Boxed(language) => language.to_string(),
-                                pulldown_cmark::CowStr::Inlined(language) => {
-                                    language.to_string()
-                                }
-                                pulldown_cmark::CowStr::Borrowed(language) => {
-                                    language.to_owned()
-                                }
+                                pulldown_cmark::CowStr::Inlined(language) => language.to_string(),
+                                pulldown_cmark::CowStr::Borrowed(language) => language.to_owned(),
                             }),
                         })
                         .into_view()
@@ -188,4 +208,3 @@ this is CodeBlock```"#,
         println!("{}", res);
     }
 }
-
