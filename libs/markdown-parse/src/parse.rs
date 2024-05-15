@@ -1,3 +1,5 @@
+mod lines_indices;
+
 use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Parser, Tag};
 
 use crate::{component_parse::MarkdownParser, vec_set::VecSet};
@@ -126,6 +128,7 @@ pub fn parse_preview(markdown: &str) -> Option<PreviewBuf> {
         matches!(
             event,
             Event::Text(_)
+                | Event::Code(_)
                 | Event::Start(Tag::Strong | Tag::Emphasis | Tag::Link(_, _, _))
                 | Event::End(Tag::Strong | Tag::Emphasis | Tag::Paragraph | Tag::Link(_, _, _))
         )
@@ -144,50 +147,11 @@ fn is_readable(event: &Event<'_>) -> bool {
     }
     matches!(
         event,
-        Event::Text(_) | Event::Start(readable_tags!()) | Event::End(readable_tags!())
+        Event::Text(_)
+            | Event::Code(_)
+            | Event::Start(readable_tags!())
+            | Event::End(readable_tags!())
     )
-}
-
-mod lines_indices {
-    pub struct LinesIndices<'a> {
-        str: &'a str,
-        last_index: usize,
-        char_indices: std::str::CharIndices<'a>,
-    }
-
-    impl<'a> LinesIndices<'a> {
-        pub fn new(str: &'a str) -> Self {
-            Self {
-                str,
-                last_index: 0,
-                char_indices: str.char_indices(),
-            }
-        }
-    }
-
-    impl<'a> Iterator for LinesIndices<'a> {
-        type Item = (usize, &'a str);
-
-        fn next(&mut self) -> Option<Self::Item> {
-            let (i, _) = self.char_indices.by_ref().find(|item| item.1 == '\n')?;
-            let current_index = self.last_index;
-            self.last_index = i + 1;
-
-            Some((current_index, &self.str[current_index..i]))
-        }
-    }
-
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-
-        #[test]
-        fn yields_indices() {
-            let mut lines = LinesIndices::new("hello\nworld\n");
-            assert_eq!(lines.next(), Some((0, "hello")));
-            assert_eq!(lines.next(), Some((6, "world")));
-        }
-    }
 }
 
 #[cfg(test)]
@@ -289,4 +253,3 @@ This is an interesting preview"#;
         assert_eq!(title, "Hello my brodas");
     }
 }
-
