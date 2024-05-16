@@ -38,12 +38,16 @@ pub fn extend_parse<'a>(buffer: &mut String, parser: impl Iterator<Item = Event<
     let mut in_element = false;
 
     let elements_iter = parser.flat_map(|e| match e {
-        Event::Start(tag) => {
-            element_events.push_front(Event::Start(tag));
-            in_element = true;
+        Event::Start(tag) => match tag {
+            pulldown_cmark::Tag::Link(pulldown_cmark::LinkType::Inline, _, _)
+            | pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Fenced(_)) => {
+                element_events.push_front(Event::Start(tag));
+                in_element = true;
 
-            MDEvents::none()
-        }
+                MDEvents::none()
+            }
+            _ => MDEvents::one(Event::Start(tag)),
+        },
         Event::End(tag) => {
             element_events.push_front(Event::End(tag.clone()));
             in_element = false;
@@ -191,7 +195,16 @@ mod tests {
     }
 
     #[test]
-    pub fn does_not_panic() {
+    fn parses_links_correctly() {
+        let res = parse(r#"[foo](http://b)"#);
+        assert_eq!(
+            res, 
+            "<p><a href=\"http://b\" title=\"\" target=\"_blank\" rel=\"noopener noreferrer\">foo</a></p>\n"
+        );
+    }
+
+    #[test]
+    fn does_not_panic() {
         let _ = parse(
             r#"```javascript
 this is CodeBlock```"#,
@@ -199,7 +212,7 @@ this is CodeBlock```"#,
     }
 
     #[test]
-    pub fn it_parses() {
+    fn it_parses() {
         let res = parse(
             r#"```javascript
 this is CodeBlock```"#,
