@@ -1,7 +1,5 @@
 use actix_web::web::Data;
-use markdown_parse::{
-    content::ContentBuf, preview::PreviewBuf, BlogParse, CowStr, ImageUrlInjector,
-};
+use markdown_parse::{content::ContentBuf, preview::PreviewBuf};
 use sqlx::query;
 use uuid::Uuid;
 
@@ -16,6 +14,8 @@ use crate::{
 };
 
 use super::set_tags;
+
+pub use compile_content::{compile_content, compile_preview, BlogCompile};
 
 sync_service!(CreateOne; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
@@ -54,33 +54,16 @@ impl CreateOne {
         let blog_id = Uuid::new_v4();
 
         let injector = self.injector_factory.create(blog_id);
-
-        let BlogParse {
+        let BlogCompile {
             title,
-            content: html_content,
-            images, // TODO
-        } = markdown_parse::parse(content.as_ref(), &injector)?;
+            html_content,
+            images,
+            main_image,
+        } = compile_content(content, injector)?;
 
-        let owned_preview;
-        let preview = match preview {
-            Some(preview) => preview,
-            None => {
-                let Some(parsed_preview) = markdown_parse::parse_preview(content.as_ref()) else {
-                    return Err(Error::NoPreview);
-                };
-
-                owned_preview = parsed_preview;
-                &owned_preview
-            }
+        let Some(preview) = compile_preview(content, preview) else {
+            return Err(Error::NoPreview);
         };
-
-        let images = images.into_inner();
-        let main_image = images.first().map(|image| {
-            let mut cow = CowStr::Borrowed(image);
-            injector.inject(&mut cow);
-
-            cow.to_string()
-        });
 
         let mut tx = self.pool.begin().await.unwrap();
         let result = query!(
@@ -103,7 +86,7 @@ impl CreateOne {
             content.as_ref(),
             &html_content,
             category_id,
-            preview.as_ref(),
+            preview.as_str(),
             main_image,
             &images
         )
@@ -120,5 +103,70 @@ impl CreateOne {
         tx.commit().await?;
 
         Ok(blog_id)
+    }
+}
+
+mod compile_content {
+    use markdown_parse::{
+        content::ContentBuf, preview::PreviewBuf, BlogParse, CowStr, ImageUrlInjector,
+    };
+
+    pub struct BlogCompile {
+        pub title: String,
+        pub html_content: String,
+        pub images: Vec<String>,
+        pub main_image: Option<String>,
+    }
+
+    pub fn compile_content(
+        content: &ContentBuf,
+        injector: impl ImageUrlInjector,
+    ) -> Result<BlogCompile, markdown_parse::Error> {
+        let BlogParse {
+            title,
+            content: html_content,
+            images,
+        } = markdown_parse::parse(content.as_ref(), &injector)?;
+
+        let images = images.into_inner();
+        let main_image = images.first().map(|image| {
+            let mut cow = CowStr::Borrowed(image);
+            injector.inject(&mut cow);
+
+            cow.to_string()
+        });
+
+        Ok(BlogCompile {
+            title,
+            html_content,
+            images,
+            main_image,
+        })
+    }
+
+    pub enum PreviewCow<'a> {
+        Owned(PreviewBuf),
+        Borrowed(&'a PreviewBuf),
+    }
+
+    impl PreviewCow<'_> {
+        pub fn as_str(&self) -> &str {
+            match self {
+                Self::Owned(preview) => preview.as_ref(),
+                Self::Borrowed(preview) => preview.as_ref(),
+            }
+        }
+    }
+
+    pub fn compile_preview<'a>(
+        content: &'a ContentBuf,
+        preview: Option<&'a PreviewBuf>,
+    ) -> Option<PreviewCow<'a>> {
+        if let Some(preview) = preview {
+            return Some(PreviewCow::Borrowed(preview));
+        }
+
+        let parsed_preview = markdown_parse::parse_preview(content.as_ref())?;
+        Some(PreviewCow::Owned(parsed_preview))
     }
 }

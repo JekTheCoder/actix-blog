@@ -6,6 +6,7 @@ mod get_content;
 mod update_one;
 mod upload_images;
 mod recompile_markdowns;
+mod set_content;
 
 mod comments;
 mod tags;
@@ -23,6 +24,7 @@ pub fn router(cfg: &mut ServiceConfig) {
             .service(get_content::endpoint)
             .service(update_one::endpoint)
             .service(recompile_markdowns::endpoint)
+            .service(set_content::endpoint)
             .configure(comments::router)
             .configure(super::comments::router)
             .configure(tags::router),

@@ -7,3 +7,4 @@ pub mod update_one;
 pub mod set_tags;
 pub mod recompile_markdowns;
 pub mod get_content;
+pub mod set_content;
