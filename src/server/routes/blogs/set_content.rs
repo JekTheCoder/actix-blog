@@ -13,7 +13,7 @@ domain_valid!(pub struct Request {
     preview: Option<PreviewBuf>,
 }; UncheckedRequest);
 
-#[put("/{id}/content", wrap = "IsAdminFactory")]
+#[put("/{id}/content/", wrap = "IsAdminFactory")]
 pub async fn endpoint(
     set_content: SetContent,
     id: Path<Uuid>,
