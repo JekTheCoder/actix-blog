@@ -11,6 +11,16 @@ use super::create_one::{compile_content, compile_preview, BlogCompile};
 
 sync_service!(SetContent; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
+impl Clone for SetContent {
+    fn clone(&self) -> Self {
+        Self {
+            pool: self.pool.clone(),
+            injector_factory: self.injector_factory.clone(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum Error {
     Parse(markdown_parse::Error),
     NoPreview,
@@ -24,7 +34,7 @@ impl From<markdown_parse::Error> for Error {
 }
 
 impl From<sqlx::Error> for Error {
-    fn from(e: sqlx::Error) -> Self {
+    fn from(_: sqlx::Error) -> Self {
         Self::Database
     }
 }
@@ -49,7 +59,8 @@ impl SetContent {
         };
 
         let _ = query!(
-            "UPDATE blogs SET content = $1, html = $2, preview = $3, main_image = $4, images = $5 WHERE id = $6",
+            "UPDATE blogs SET title = $1, content = $2, html = $3, preview = $4, main_image = $5, images = $6 WHERE id = $7",
+            title,
             content.as_ref(),
             html_content,
             preview.as_str(),

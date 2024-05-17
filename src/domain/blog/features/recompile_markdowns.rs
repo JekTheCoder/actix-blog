@@ -1,14 +1,14 @@
 use actix_web::web::Data;
 use futures_util::StreamExt;
-use markdown_parse::BlogParse;
+use markdown_parse::content::ContentBuf;
 use par_stream::ParStreamExt;
 use uuid::Uuid;
 
-use crate::{
-    domain::blog::ImgHostInjectorFactory, persistence::db::Pool, server::service::sync_service,
-};
+use crate::{persistence::db::Pool, server::service::sync_service};
 
-sync_service!(RecompileMarkdowns; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
+use super::set_content::SetContent;
+
+sync_service!(RecompileMarkdowns; pool: Data<Pool>, set_content: SetContent);
 
 struct BlogContent {
     pub id: Uuid,
@@ -93,49 +93,33 @@ mod static_pool {
 }
 
 impl RecompileMarkdowns {
-    pub async fn run(&self) -> Result<(), sqlx::Error> {
-        use static_pool::*;
-
+    pub async fn run(self) -> Result<(), sqlx::Error> {
         let blogs = sqlx::query_as!(BlogContent, "SELECT id, content FROM blogs")
-            .fetch(StaticPool::from(self.pool.clone()));
-
-        let outer_pool = self.pool.clone();
-        let outer_factory = self.injector_factory.clone();
+            .fetch(static_pool::StaticPool::from(self.pool));
 
         blogs
             .par_then(None, move |blog| {
-                let pool = outer_pool.clone();
-                let factory = outer_factory.clone();
+                let set_content = self.set_content.clone();
 
-                update_blog(blog, pool, factory)
+                async move {
+                    let Ok(BlogContent { id, content }) = blog else {
+                        return;
+                    };
+
+                    // Is always valid because it is stored
+                    let content = ContentBuf::from_boxed_unchecked(content.into_boxed_str());
+
+                    if let Err(e) = set_content
+                        .run(id, &content, /* Force to recompile preview */ None)
+                        .await
+                    {
+                        eprintln!("Got error while recompiling markdown: {:?}", e);
+                    }
+                }
             })
             .collect::<Vec<_>>()
             .await;
 
         Ok(())
-    }
-}
-
-async fn update_blog(
-    blog: Result<BlogContent, sqlx::error::Error>,
-    pool: Data<Pool>,
-    factory: ImgHostInjectorFactory,
-) {
-    if let Ok(BlogContent { id, content }) = blog {
-        let injector = factory.create(id);
-
-        let BlogParse {
-            content: html_content,
-            ..
-        } = markdown_parse::parse(content.as_str(), &injector).unwrap();
-
-        let _ = sqlx::query!(
-            r#"UPDATE blogs SET html = $1 WHERE id = $2"#,
-            &html_content,
-            id
-        )
-        .execute(pool.as_ref())
-        .await
-        .unwrap();
     }
 }
