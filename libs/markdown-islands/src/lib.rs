@@ -1,23 +1,70 @@
-use leptos::{component, create_node_ref, island, svg::view, view, Children, IntoView};
+use leptos::{component, create_node_ref, island, create_signal, view, Children, IntoView};
 
 mod unstable;
 
+mod feedback {
+    use leptos::{component, view, IntoView, ReadSignal, Show, SignalGet};
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+    pub enum PopupState {
+        #[default]
+        Opened,
+        Closing,
+        Closed,
+    }
+
+    #[component]
+    pub fn Feedback(opened: ReadSignal<PopupState>, text: &'static str) -> impl IntoView {
+        view! {
+            <>
+                <Show when=move || opened.get() == PopupState::Opened>
+                    <div class="feedback" class:closing={move || opened.get() == PopupState::Closing}>
+                        {text}
+                    </div>
+                </Show>
+            </>
+        }
+    }
+}
+
 #[island]
 pub fn CodeBlock(language: Option<String>, children: Children) -> impl IntoView {
+    use feedback::Feedback;
+    use leptos::{set_timeout, SignalSet};
+
     let code_el = create_node_ref::<leptos::html::Code>();
+    let (opeend, set_opened) = create_signal(feedback::PopupState::default());
 
     let on_copy = move |_| {
         let text = code_el.get_untracked().unwrap().inner_text();
         unstable::copy_to_clipboard(&text);
+
+        set_opened.set(feedback::PopupState::Opened);
+        set_timeout(
+            move || {
+                set_opened.set(feedback::PopupState::Closing);
+                set_timeout(
+                    move || {
+                        set_opened.set(feedback::PopupState::Closed);
+                    },
+                    std::time::Duration::from_millis(100),
+                );
+            },
+            std::time::Duration::from_millis(200),
+        );
     };
 
     view! {
         <div class="code-block">
             <div class="code-header">
                 <span>{language}</span>
-                <button class="copy-btn" on:click=on_copy>
-                    <iconify-icon icon="bxs:copy" />
-                </button>
+                <div class="copy">
+                    <Feedback opened={opeend} text="Copied!" />
+
+                    <button class="copy-btn" on:click=on_copy>
+                        <iconify-icon icon="tdesign:copy" />
+                    </button>
+                </div>
             </div>
             <pre class="code">
                 <code ref={code_el}>{children()}</code>
