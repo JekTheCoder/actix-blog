@@ -7,9 +7,9 @@ mod feedback {
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
     pub enum PopupState {
-        #[default]
         Opened,
         Closing,
+        #[default]
         Closed,
     }
 
@@ -17,7 +17,7 @@ mod feedback {
     pub fn Feedback(opened: ReadSignal<PopupState>, text: &'static str) -> impl IntoView {
         view! {
             <>
-                <Show when=move || opened.get() == PopupState::Opened>
+                <Show when=move || opened.get() != PopupState::Closed>
                     <div class="feedback" class:closing={move || opened.get() == PopupState::Closing}>
                         {text}
                     </div>
