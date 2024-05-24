@@ -4,8 +4,6 @@ use pulldown_cmark::{html::push_html, CowStr, Event, HeadingLevel, LinkType, Par
 
 use crate::{component_parse::MarkdownParser, vec_set::VecSet};
 
-use super::value_objects::preview::PreviewBuf;
-
 #[derive(Debug)]
 pub struct BlogParse {
     pub title: String,
@@ -115,11 +113,15 @@ pub fn parse(markdown: &str, injector: &impl ImageUrlInjector) -> Result<BlogPar
     })
 }
 
-pub fn parse_preview(markdown: &str) -> Option<PreviewBuf> {
+pub struct PreviewParse {
+    pub preview: String,
+    pub description: String,
+}
+
+pub fn parse_preview(markdown: &str) -> Option<PreviewParse> {
     let (preview_start, _) = lines_indices::LinesIndices::new(markdown)
         .find(|&(_, line)| Parser::new(line).take(40).all(|event| is_readable(&event)))?;
 
-    let mut preview = String::new();
     let mut preview_iter = Parser::new(&markdown[preview_start..]).take(40);
 
     let first = preview_iter.by_ref().next();
@@ -134,9 +136,27 @@ pub fn parse_preview(markdown: &str) -> Option<PreviewBuf> {
         )
     });
 
-    push_html(&mut preview, first.into_iter().chain(rest));
+    let events = first.into_iter().chain(rest).collect::<Vec<_>>();
 
-    Some(PreviewBuf::from_boxed_unchecked(preview.into_boxed_str()))
+    let mut preview = String::new();
+    let description = events
+        .iter()
+        .filter_map(|event| match event {
+            Event::Text(text) => Some(text),
+            Event::Code(text) => Some(text),
+            Event::SoftBreak => Some(&pulldown_cmark::CowStr::Borrowed("  ")),
+            Event::FootnoteReference(text) => Some(text),
+            _ => None,
+        })
+        .map(|text| text.as_ref())
+        .collect::<String>();
+
+    push_html(&mut preview, events.into_iter());
+
+    Some(PreviewParse {
+        preview,
+        description,
+    })
 }
 
 fn is_readable(event: &Event<'_>) -> bool {
@@ -207,7 +227,7 @@ how are you, my friends?
 
         let preview = parse_preview(markdown);
         assert_eq!(
-            preview.unwrap().as_ref(),
+            preview.unwrap().preview,
             "<p>how are you, my friends?</p>\n"
         );
     }
@@ -226,7 +246,7 @@ This is more content"#;
 
         let preview = parse_preview(markdown);
         assert_eq!(
-            preview.unwrap().as_ref(),
+            preview.unwrap().preview,
             "<p>This is an interesting preview</p>\n"
         );
     }
@@ -251,5 +271,12 @@ This is an interesting preview"#;
         let BlogParse { title, .. } = parse(markdown, &NoopInjector {}).unwrap();
 
         assert_eq!(title, "Hello my brodas");
+    }
+
+    #[test]
+    fn compile_plain_description() {
+        let markdown = r#"Hello, *world*!"#;
+        let super::PreviewParse { description, .. } = super::parse_preview(markdown).unwrap();
+        assert_eq!(description, "Hello, world!");
     }
 }

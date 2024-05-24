@@ -55,16 +55,17 @@ impl UpdateOne {
             images, // TODO
         } = markdown_parse::parse(content.as_ref(), &injector)?;
 
-        let owned_preview;
-        let preview = match preview {
-            Some(preview) => preview,
-            None => {
-                let Some(parsed_preview) = markdown_parse::parse_preview(content.as_ref()) else {
-                    return Err(Error::NoPreview);
-                };
+        let markdown_parse::PreviewParse {
+            preview,
+            description,
+        } = {
+            let preview_markdown = preview
+                .map(|preview| preview.as_ref())
+                .unwrap_or_else(|| content.as_ref());
 
-                owned_preview = parsed_preview;
-                &owned_preview
+            match markdown_parse::parse_preview(preview_markdown) {
+                Some(preview) => preview,
+                None => return Err(Error::NoPreview),
             }
         };
 
@@ -86,14 +87,16 @@ impl UpdateOne {
                     html = $3,
                     category_id = $4,
                     preview = $5,
-                    main_image = $6,
-                    images = $7
-                WHERE id = $8"#,
+                    description = $6,
+                    main_image = $7,
+                    images = $8
+                WHERE id = $9"#,
             title,
             content.as_ref(),
             &html_content,
             category_id,
-            preview.as_ref(),
+            preview.as_str(),
+            description.as_str(),
             main_image,
             &images,
             id,

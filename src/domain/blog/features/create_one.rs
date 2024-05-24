@@ -15,7 +15,7 @@ use crate::{
 
 use super::set_tags;
 
-pub use compile_content::{compile_content, compile_preview, BlogCompile};
+pub use compile_content::{compile_content, BlogCompile};
 
 sync_service!(CreateOne; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
@@ -61,8 +61,18 @@ impl CreateOne {
             main_image,
         } = compile_content(content, injector)?;
 
-        let Some(preview) = compile_preview(content, preview) else {
-            return Err(Error::NoPreview);
+        let markdown_parse::PreviewParse {
+            preview,
+            description,
+        } = {
+            let preview_markdown = preview
+                .map(|preview| preview.as_ref())
+                .unwrap_or_else(|| content.as_ref());
+
+            match markdown_parse::parse_preview(preview_markdown) {
+                Some(preview) => preview,
+                None => return Err(Error::NoPreview),
+            }
         };
 
         let mut tx = self.pool.begin().await.unwrap();
@@ -76,10 +86,11 @@ impl CreateOne {
             html,
             category_id,
             preview,
+            description,
             main_image,
             images
         )
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"#,
             blog_id,
             admin_id.into_inner(),
             title,
@@ -87,6 +98,7 @@ impl CreateOne {
             &html_content,
             category_id,
             preview.as_str(),
+            description,
             main_image,
             &images
         )
@@ -107,9 +119,7 @@ impl CreateOne {
 }
 
 mod compile_content {
-    use markdown_parse::{
-        content::ContentBuf, preview::PreviewBuf, BlogParse, CowStr, ImageUrlInjector,
-    };
+    use markdown_parse::{content::ContentBuf, BlogParse, CowStr, ImageUrlInjector};
 
     pub struct BlogCompile {
         pub title: String,
@@ -142,31 +152,5 @@ mod compile_content {
             images,
             main_image,
         })
-    }
-
-    pub enum PreviewCow<'a> {
-        Owned(PreviewBuf),
-        Borrowed(&'a PreviewBuf),
-    }
-
-    impl PreviewCow<'_> {
-        pub fn as_str(&self) -> &str {
-            match self {
-                Self::Owned(preview) => preview.as_ref(),
-                Self::Borrowed(preview) => preview.as_ref(),
-            }
-        }
-    }
-
-    pub fn compile_preview<'a>(
-        content: &'a ContentBuf,
-        preview: Option<&'a PreviewBuf>,
-    ) -> Option<PreviewCow<'a>> {
-        if let Some(preview) = preview {
-            return Some(PreviewCow::Borrowed(preview));
-        }
-
-        let parsed_preview = markdown_parse::parse_preview(content.as_ref())?;
-        Some(PreviewCow::Owned(parsed_preview))
     }
 }

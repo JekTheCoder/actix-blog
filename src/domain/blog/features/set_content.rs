@@ -7,7 +7,7 @@ use crate::{
     domain::blog::ImgHostInjectorFactory, persistence::db::Pool, server::service::sync_service,
 };
 
-use super::create_one::{compile_content, compile_preview, BlogCompile};
+use super::create_one::{compile_content, BlogCompile};
 
 sync_service!(SetContent; pool: Data<Pool>, injector_factory: ImgHostInjectorFactory);
 
@@ -54,16 +54,27 @@ impl SetContent {
             main_image,
         } = compile_content(content, injector)?;
 
-        let Some(preview) = compile_preview(content, preview) else {
-            return Err(Error::NoPreview);
+        let markdown_parse::PreviewParse {
+            preview,
+            description,
+        } = {
+            let preview_markdown = preview
+                .map(|preview| preview.as_ref())
+                .unwrap_or_else(|| content.as_ref());
+
+            match markdown_parse::parse_preview(preview_markdown) {
+                Some(preview) => preview,
+                None => return Err(Error::NoPreview),
+            }
         };
 
         let _ = query!(
-            "UPDATE blogs SET title = $1, content = $2, html = $3, preview = $4, main_image = $5, images = $6 WHERE id = $7",
+            "UPDATE blogs SET title = $1, content = $2, html = $3, preview = $4, description = $5, main_image = $6, images = $7 WHERE id = $8",
             title,
             content.as_ref(),
             html_content,
             preview.as_str(),
+            description,
             main_image,
             images.as_slice(),
             blog_id

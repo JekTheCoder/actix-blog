@@ -28,7 +28,7 @@ pub struct BlogById {
     pub id: Uuid,
     pub title: String,
     pub content: String,
-    pub preview: String,
+    pub description: String,
     pub created_at: DateTime,
     pub comments: Vec<CommentByBlog>,
     pub category: category::Category,
@@ -40,7 +40,7 @@ struct RawBlogById {
     pub id: Uuid,
     pub title: String,
     pub content: String,
-    pub preview: String,
+    pub description: String,
     pub created_at: DateTime,
     pub category_id: Uuid,
 }
@@ -78,7 +78,7 @@ impl GetById {
             id: blog.id,
             title: blog.title,
             content: blog.content,
-            preview: blog.preview,
+            description: blog.description,
             created_at: blog.created_at,
             comments: comments.into_iter().map(Into::into).collect(),
             category,
@@ -93,7 +93,7 @@ impl GetById {
 async fn get_by_id(pool: impl Executor<'_>, id: Uuid) -> Result<Option<RawBlogById>, sqlx::Error> {
     query_as!(
         RawBlogById,
-        "SELECT id, title, html as content, preview, category_id, created_at FROM blogs WHERE id = $1",
+        "SELECT id, title, html as content, description, category_id, created_at FROM blogs WHERE id = $1",
         id
     )
     .fetch_optional(pool)
