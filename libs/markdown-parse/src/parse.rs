@@ -131,7 +131,7 @@ mod take_count {
     impl<I, F> TakeCount<I, F>
     where
         I: Iterator,
-        F: FnMut(&I::Item) -> bool,
+        F: FnMut(&I::Item) -> usize,
     {
         pub fn new(iter: I, count: usize, func: F) -> Self {
             Self {
@@ -146,16 +146,15 @@ mod take_count {
     impl<I, F> Iterator for TakeCount<I, F>
     where
         I: Iterator,
-        F: FnMut(&I::Item) -> bool,
+        F: FnMut(&I::Item) -> usize,
     {
         type Item = I::Item;
 
         fn next(&mut self) -> Option<Self::Item> {
             let next = self.iter.next()?;
 
-            if (self.func)(&next) {
-                self.count += 1;
-            }
+            let step = (self.func)(&next);
+            self.count += step;
 
             if self.count >= self.max_count {
                 return None;
@@ -171,7 +170,15 @@ pub fn parse_preview(markdown: &str) -> Option<PreviewParse> {
         .find(|&(_, line)| Parser::new(line).take(40).all(|event| is_readable(&event)))?;
 
     let mut preview_iter =
-        take_count::TakeCount::new(Parser::new(&markdown[preview_start..]), 40, is_readable);
+        take_count::TakeCount::new(Parser::new(&markdown[preview_start..]), 30, |event| {
+            let text = match event {
+                Event::Text(text) => text,
+                Event::Code(text) => text,
+                _ => return 0,
+            };
+
+            text.split_whitespace().count()
+        });
 
     let first = preview_iter.by_ref().next();
 
@@ -182,6 +189,7 @@ pub fn parse_preview(markdown: &str) -> Option<PreviewParse> {
                 | Event::Code(_)
                 | Event::Start(Tag::Strong | Tag::Emphasis | Tag::Link(_, _, _))
                 | Event::End(Tag::Strong | Tag::Emphasis | Tag::Paragraph | Tag::Link(_, _, _))
+                | Event::SoftBreak
         )
     });
 
@@ -220,12 +228,32 @@ fn is_readable(event: &Event<'_>) -> bool {
             | Event::Code(_)
             | Event::Start(readable_tags!())
             | Event::End(readable_tags!())
+            | Event::SoftBreak
     )
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn it_takes_by_text() {
+        let markdown = r#"# How to setup the Delve debugger in NeoVim
+
+In this post I will explain you how did I configured my [Golang](https://go.dev/)
+debugger experience in NeoVim using [mason.nvim](https://github.com/williamboman/mason.nvim), 
+[nvim-dap](https://github.com/mfussenegger/nvim-dap) and the Delve Golang debugger.
+
+This explanation may work for others debuggers as codelldb, but for most dap 
+configurations I just use a plugin.
+
+First of all, if you want to just copy and paste, go [here](#copy-and-paste)
+"#;
+
+        let PreviewParse { description, .. } = parse_preview(markdown).unwrap();
+
+        assert_eq!(description, "In this post I will explain you how did I configured my Golang  debugger experience in NeoVim using mason.nvim,   nvim-dap and the Delve Golang debugger.");
+    }
 
     struct NoopInjector;
     impl ImageUrlInjector for NoopInjector {
@@ -263,7 +291,10 @@ Hello
 
         let BlogParse { images, .. } = parse(markdown, &NoopInjector {}).unwrap();
 
-        assert_eq!(images.into_inner(), vec!["image.png".to_string()]);
+        assert_eq!(
+            images.into_inner(),
+            vec!["image.png".to_string(), "./bruda.png".to_string()]
+        );
     }
 
     #[test]

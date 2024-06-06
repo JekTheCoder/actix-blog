@@ -18,7 +18,10 @@ impl<'a> Iterator for LinesIndices<'a> {
     type Item = (usize, &'a str);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (i, _) = self.char_indices.by_ref().find(|item| item.1 == '\n')?;
+        let Some((i, _)) = self.char_indices.by_ref().find(|item| item.1 == '\n') else {
+            return Some((self.last_index, &self.str[self.last_index..]));
+        };
+
         let current_index = self.last_index;
         self.last_index = i + 1;
 
@@ -37,4 +40,3 @@ mod tests {
         assert_eq!(lines.next(), Some((6, "world")));
     }
 }
-
