@@ -118,11 +118,60 @@ pub struct PreviewParse {
     pub description: String,
 }
 
+mod take_count {
+    use std::iter::Iterator;
+
+    pub struct TakeCount<I, F> {
+        iter: I,
+        max_count: usize,
+        count: usize,
+        func: F,
+    }
+
+    impl<I, F> TakeCount<I, F>
+    where
+        I: Iterator,
+        F: FnMut(&I::Item) -> bool,
+    {
+        pub fn new(iter: I, count: usize, func: F) -> Self {
+            Self {
+                iter,
+                max_count: count,
+                count: 0,
+                func,
+            }
+        }
+    }
+
+    impl<I, F> Iterator for TakeCount<I, F>
+    where
+        I: Iterator,
+        F: FnMut(&I::Item) -> bool,
+    {
+        type Item = I::Item;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            let next = self.iter.next()?;
+
+            if (self.func)(&next) {
+                self.count += 1;
+            }
+
+            if self.count >= self.max_count {
+                return None;
+            }
+
+            Some(next)
+        }
+    }
+}
+
 pub fn parse_preview(markdown: &str) -> Option<PreviewParse> {
     let (preview_start, _) = lines_indices::LinesIndices::new(markdown)
         .find(|&(_, line)| Parser::new(line).take(40).all(|event| is_readable(&event)))?;
 
-    let mut preview_iter = Parser::new(&markdown[preview_start..]).take(40);
+    let mut preview_iter =
+        take_count::TakeCount::new(Parser::new(&markdown[preview_start..]), 40, is_readable);
 
     let first = preview_iter.by_ref().next();
 
