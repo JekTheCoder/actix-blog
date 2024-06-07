@@ -1,7 +1,7 @@
 version: '3'
 services:
   server:
-    image: jekimager/actix-blog
+    image: jekimager/actix-blog:latest
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/blog
       JWT_SECRET: ${JWT_SECRET}
