@@ -39,6 +39,8 @@ pub fn CodeBlock(language: Option<String>, children: Children) -> impl IntoView 
         let text = code_el.get_untracked().unwrap().inner_text();
         unstable::copy_to_clipboard(&text);
 
+        leptos::logging::log!("copied!");
+
         set_opened.set(feedback::PopupState::Opened);
         set_timeout(
             move || {
