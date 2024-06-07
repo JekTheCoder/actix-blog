@@ -50,7 +50,7 @@ pub fn CodeBlock(language: Option<String>, children: Children) -> impl IntoView 
                     std::time::Duration::from_millis(100),
                 );
             },
-            std::time::Duration::from_millis(200),
+            std::time::Duration::from_millis(500),
         );
     };
 
@@ -87,7 +87,7 @@ pub fn InlineLink(href: String, title: String, children: Children) -> impl IntoV
 }
 
 fn is_url(text: &str) -> bool {
-    const PROTOCOL_SEPARATOR: &'static str = "://";
+    const PROTOCOL_SEPARATOR: &str = "://";
 
     text.find(PROTOCOL_SEPARATOR)
         .is_some_and(|i| i > 0 && (i + PROTOCOL_SEPARATOR.len()) < text.len())
